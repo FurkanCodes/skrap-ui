@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Skrap UI
 
-## Getting Started
+Next.js 16 frontend scaffold for your scraping backend.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router + TypeScript
+- Server Components by default
+- Server Actions for scrape/discover form submission
+- Tailwind CSS v4
+- shadcn/ui + Base UI primitives
+
+## Backend contract used
+
+- `POST /api/v1/scrapes`
+- `POST /api/v1/discover`
+
+## Architecture (refactored)
+
+- `src/app/page.tsx` stays a Server Component.
+- Interactive logic is isolated in `src/features/scraper/components/scraper-console.tsx`.
+- Form submission uses a Server Action in `src/features/scraper/server/actions.ts`.
+- Backend URL/env and fetch orchestration live in server-only code:
+  - `src/features/scraper/server/backend-client.ts`
+- Route-segment conventions included:
+  - `src/app/loading.tsx`
+  - `src/app/error.tsx`
+
+## Run
+
+1. Start backend (default expected at `http://127.0.0.1:8000`).
+2. Configure env:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Adjust backend URL if needed:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+BACKEND_BASE_URL=http://127.0.0.1:8000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start UI:
 
-## Learn More
+```bash
+pnpm install
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000).
