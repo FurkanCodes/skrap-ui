@@ -9,20 +9,42 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { METADATA_KEYS } from "@/features/scraper/constants";
 import type { DiscoverResponse, ScrapesResponse } from "@/features/scraper/types";
-import { formatPrice, isDiscoverResponse, pickStringValue } from "@/features/scraper/utils";
+import {
+  formatPrice,
+  isDiscoverResponse,
+  pickImageUrl,
+  pickStringValue,
+} from "@/features/scraper/utils";
 
 interface ScraperResultsProps {
   response: ScrapesResponse | DiscoverResponse;
 }
 
 export function ScraperResults({ response }: ScraperResultsProps) {
+  const isFullySuccessful = response.failure_count === 0;
+  const isAllFailed = response.success_count === 0;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Response summary</CardTitle>
+        <CardTitle>Latest run</CardTitle>
         <CardDescription>Request ID: {response.request_id}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <div
+          className={
+            isFullySuccessful
+              ? "rounded-lg border border-emerald-600/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300"
+              : "rounded-lg border border-amber-600/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300"
+          }
+        >
+          {isFullySuccessful
+            ? "Run completed with no failures."
+            : isAllFailed
+              ? "Run completed, but all URLs failed. Review errors below and retry after adjusting options."
+              : "Run completed with partial failures. Review failed URLs and retry with adjusted fetch strategy."}
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">Total: {response.total_urls}</Badge>
           <Badge variant="secondary">Success: {response.success_count}</Badge>
@@ -41,7 +63,7 @@ export function ScraperResults({ response }: ScraperResultsProps) {
             {response.discovered_urls.length > 0 ? (
               <div className="max-h-40 overflow-auto rounded-lg border bg-background p-3 text-xs">
                 {response.discovered_urls.map((url) => (
-                  <p key={url} className="truncate">
+                  <p key={url} className="break-all">
                     {url}
                   </p>
                 ))}
@@ -55,12 +77,31 @@ export function ScraperResults({ response }: ScraperResultsProps) {
         <div className="grid gap-3">
           {response.results.map((result) => {
             const title = pickStringValue(result, METADATA_KEYS) ?? result.url;
+            const imageUrl = pickImageUrl(result);
 
             return (
               <Card key={`${result.url}-${result.product_id ?? "unknown"}`} size="sm">
                 <CardHeader>
-                  <CardTitle className="line-clamp-2 text-sm">{title}</CardTitle>
-                  <CardDescription className="line-clamp-2">{result.url}</CardDescription>
+                  <div className="flex items-start gap-3">
+                    <div className="size-16 shrink-0 overflow-hidden rounded-md border bg-muted/30">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={title}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="grid h-full place-items-center px-2 text-center text-[10px] text-muted-foreground">
+                          No image
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <CardTitle className="line-clamp-2 text-sm">{title}</CardTitle>
+                      <CardDescription className="line-clamp-2">{result.url}</CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="grid gap-2 pb-3 text-xs text-muted-foreground">
                   <div className="flex flex-wrap gap-2">
@@ -79,7 +120,10 @@ export function ScraperResults({ response }: ScraperResultsProps) {
                   {result.listings.length > 0 ? (
                     <ul className="grid gap-1">
                       {result.listings.map((listing) => (
-                        <li key={listing.item_id} className="rounded-md border bg-background px-2 py-1">
+                        <li
+                          key={listing.item_id}
+                          className="rounded-md border bg-background px-2 py-1 break-words"
+                        >
                           {listing.amount ?? "-"} {listing.currency ?? ""}
                           {listing.seller ? ` • ${listing.seller}` : ""}
                         </li>

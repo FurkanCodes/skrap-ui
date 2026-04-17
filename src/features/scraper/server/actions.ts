@@ -16,7 +16,7 @@ import type {
   ScrapesRequest,
   ScrapesResponse,
 } from "@/features/scraper/types";
-import { splitByWhitespace, toOptionalNumber } from "@/features/scraper/utils";
+import { splitByWhitespace } from "@/features/scraper/utils";
 
 const formSchema = z.object({
   endpointMode: z.enum(["scrapes", "discover"]),
@@ -54,7 +54,27 @@ function normalizeFormData(formData: FormData): ScraperFormValues {
 
 function mapError(error: unknown): string {
   if (error instanceof BackendApiError) {
-    return error.message;
+    if (error.status === 401) {
+      return "Authentication failed while calling backend. Check your backend token or session.";
+    }
+
+    if (error.status === 403) {
+      return "Backend denied this request. Confirm your credentials have scrape/discover permissions.";
+    }
+
+    if (error.status === 404) {
+      return "Requested scrape endpoint was not found. Verify backend routes and base URL.";
+    }
+
+    if (error.status === 429) {
+      return "Rate limited by backend. Wait a moment, then run the job again.";
+    }
+
+    if (error.status >= 500) {
+      return "Backend failed while processing the job. Retry shortly or inspect backend logs.";
+    }
+
+    return error.message || "Request failed while contacting backend.";
   }
 
   if (error instanceof Error) {
@@ -108,7 +128,23 @@ export async function runScraperAction(
   }
 
   const sites = splitByWhitespace(values.sites).map((site) => site.toLowerCase());
-  const timeoutSeconds = toOptionalNumber(values.timeoutSeconds);
+  const timeoutValue = values.timeoutSeconds.trim();
+  const validatedTimeoutSeconds = timeoutValue
+    ? parseBoundedInteger(timeoutValue, {
+        min: 1,
+        max: 120,
+      })
+    : undefined;
+
+  if (validatedTimeoutSeconds === null) {
+    return {
+      form: values,
+      response: null,
+      error: "Timeout must be an integer between 1 and 120 seconds.",
+    };
+  }
+
+  const timeoutSeconds = validatedTimeoutSeconds;
 
   try {
     if (values.endpointMode === "discover") {

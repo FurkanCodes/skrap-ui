@@ -1,5 +1,33 @@
 import type { DiscoverResponse, PriceResultResponse, ScrapesResponse } from "@/features/scraper/types";
 
+const IMAGE_CANDIDATE_KEYS = [
+  "image",
+  "image_url",
+  "imageUrl",
+  "thumbnail",
+  "thumbnail_url",
+  "thumbnailUrl",
+  "photo",
+  "photo_url",
+  "photoUrl",
+  "cover",
+  "cover_image",
+  "coverImage",
+  "avatar",
+  "picture",
+  "images",
+  "image_urls",
+] as const;
+
+const NESTED_IMAGE_KEYS = [
+  "url",
+  "src",
+  "image",
+  "image_url",
+  "thumbnail",
+  "thumbnail_url",
+] as const;
+
 export function splitByWhitespace(input: string): string[] {
   return input
     .split(/\s+/)
@@ -50,4 +78,65 @@ export function formatPrice(result: PriceResultResponse): string {
   }
 
   return "Price unavailable";
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function pickImageFromUnknown(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return isHttpUrl(trimmed) ? trimmed : null;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const picked = pickImageFromUnknown(item);
+      if (picked) {
+        return picked;
+      }
+    }
+
+    return null;
+  }
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+
+    for (const key of NESTED_IMAGE_KEYS) {
+      const picked = pickImageFromUnknown(record[key]);
+      if (picked) {
+        return picked;
+      }
+    }
+
+    for (const [key, nested] of Object.entries(record)) {
+      const normalizedKey = key.toLowerCase();
+      if (normalizedKey.includes("image") || normalizedKey.includes("thumb")) {
+        const picked = pickImageFromUnknown(nested);
+        if (picked) {
+          return picked;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+export function pickImageUrl(result: PriceResultResponse): string | null {
+  for (const key of IMAGE_CANDIDATE_KEYS) {
+    const picked = pickImageFromUnknown(result[key]);
+    if (picked) {
+      return picked;
+    }
+  }
+
+  return null;
 }
