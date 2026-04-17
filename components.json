@@ -20,8 +20,5 @@
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
-  },
-  "registries": {
-    "@shadcn-space": "https://shadcnspace.com/r/{name}.json"
   }
 }
