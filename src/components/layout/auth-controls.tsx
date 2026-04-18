@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Copy, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { clearViewerCache } from "@/features/tracking/viewer/viewer-cache";
 import { authClient } from "@/lib/auth-client";
 
 function mapAuthError(error: unknown): string {
@@ -48,6 +49,7 @@ export default function AuthControls() {
     setStatusMessage(null);
     startTransition(async () => {
       try {
+        clearViewerCache();
         const response = await authClient.signOut();
         if (response.error) {
           setStatusMessage(mapAuthError(response.error.message));

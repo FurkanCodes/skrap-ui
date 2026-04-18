@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { createTrackedItemAction, getMeAction } from "@/features/tracking/server/actions";
+import { createTrackedItemAction } from "@/features/tracking/server/actions";
+import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 import { authClient } from "@/lib/auth-client";
 
 interface TrackResultPanelProps {
@@ -34,50 +35,45 @@ function mapActionError(error: unknown): string {
 
 export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps) {
   const { data: session, isPending: sessionPending } = authClient.useSession();
+  const { me } = useViewer();
   const [isPending, startTransition] = useTransition();
 
   const [mode, setMode] = useState<TrackingMode>("monitor");
   const [targetAmount, setTargetAmount] = useState(amount ?? "");
   const [interval, setInterval] = useState("60");
-  const [minInterval, setMinInterval] = useState(5);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!session?.user) return;
-    void (async () => {
-      try {
-        const response = await getMeAction();
-        const fromEntitlement = Number(response?.entitlement?.min_check_interval_minutes ?? 5);
-        if (!Number.isInteger(fromEntitlement) || fromEntitlement < 1) return;
-        setMinInterval(fromEntitlement);
-        setInterval((current) => {
-          const parsed = Number(current);
-          if (!Number.isInteger(parsed) || parsed < fromEntitlement) {
-            return String(fromEntitlement);
-          }
-          return current;
-        });
-      } catch {
-        // Keep defaults; backend still enforces final bounds.
-      }
-    })();
-  }, [session?.user]);
+  const minInterval = useMemo(() => {
+    const value = Number(me?.entitlement?.min_check_interval_minutes ?? 5);
+    if (!Number.isInteger(value) || value < 1) {
+      return 5;
+    }
+    return value;
+  }, [me?.entitlement?.min_check_interval_minutes]);
+
+  const intervalValue = useMemo(() => {
+    const parsed = Number(interval);
+    if (!Number.isInteger(parsed) || parsed < minInterval) {
+      return String(minInterval);
+    }
+    return interval;
+  }, [interval, minInterval]);
 
   const targetRequired = mode === "alert";
   const canSubmit = useMemo(() => {
     if (sessionPending || !session?.user) return false;
-    if (!interval.trim()) return false;
+    if (!intervalValue.trim()) return false;
     if (targetRequired && !targetAmount.trim()) return false;
     return true;
-  }, [sessionPending, session?.user, interval, targetRequired, targetAmount]);
+  }, [sessionPending, session?.user, intervalValue, targetRequired, targetAmount]);
 
   const runTrack = () => {
     setError(null);
     setMessage(null);
     startTransition(async () => {
       try {
-        const parsedInterval = Number(interval);
+        const parsedInterval = Number(intervalValue);
         if (
           !Number.isInteger(parsedInterval) ||
           parsedInterval < minInterval ||
@@ -171,7 +167,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
             </Label>
             <Input
               id={`interval-${url}`}
-              value={interval}
+              value={intervalValue}
               onChange={(event) => setInterval(event.target.value)}
               inputMode="numeric"
               disabled={isPending}
