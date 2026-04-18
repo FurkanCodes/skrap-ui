@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FETCH_MODES } from "@/features/scraper/constants";
 import { ScraperConsole } from "@/features/scraper/components/scraper-console";
+import { TrackedItemsPanel } from "@/features/tracking/components/tracked-items-panel";
 
 const dashboardStats = [
   {
@@ -49,6 +50,7 @@ export default function HomePage() {
         </section>
 
         <ScraperConsole />
+        <TrackedItemsPanel />
 
         <section className="grid gap-3 md:grid-cols-3">
           {dashboardStats.map((stat) => (

@@ -9,6 +9,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { METADATA_KEYS } from "@/features/scraper/constants";
 import type { DiscoverResponse, ScrapesResponse } from "@/features/scraper/types";
+import { TrackResultPanel } from "@/features/tracking/components/track-result-panel";
 import {
   formatPrice,
   isDiscoverResponse,
@@ -129,6 +130,10 @@ export function ScraperResults({ response }: ScraperResultsProps) {
                         </li>
                       ))}
                     </ul>
+                  ) : null}
+
+                  {result.success ? (
+                    <TrackResultPanel url={result.url} siteKey={result.site_key} amount={result.amount} />
                   ) : null}
                 </CardContent>
               </Card>

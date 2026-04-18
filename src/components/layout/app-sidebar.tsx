@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import Logo from "@/assets/logo/logo";
+import AuthControls from "@/components/layout/auth-controls";
 import {
   Sidebar,
   SidebarContent,
@@ -64,6 +65,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
         <header className="sticky top-0 z-40 flex items-center gap-2 border-b bg-background px-6 py-3">
           <SidebarTrigger className="-ml-1 h-8 w-8" />
           <p className="text-sm font-medium text-muted-foreground">Skrap Workspace</p>
+          <AuthControls />
         </header>
         <main className="flex-1">{children}</main>
       </SidebarInset>

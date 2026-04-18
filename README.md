@@ -9,6 +9,7 @@ Next.js 16 frontend scaffold for your scraping backend.
 - Server Actions for scrape/discover form submission
 - Tailwind CSS v4
 - shadcn/ui + Base UI primitives
+- Drizzle ORM for frontend server-side DB access (Better Auth tables)
 
 ## Backend contract used
 
@@ -41,7 +42,18 @@ cp .env.example .env.local
 BACKEND_BASE_URL=http://127.0.0.1:8000
 ```
 
-4. Start UI:
+4. Configure DB URL for Drizzle/Better Auth:
+
+```bash
+DATABASE_URL=postgresql://postgres.<project-ref>:[PASSWORD]@aws-1-eu-central-1.pooler.supabase.com:6543/postgres
+```
+
+Notes:
+- Keep `DATABASE_URL` server-only (do not prefix with `NEXT_PUBLIC_`).
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are only needed if you use `@supabase/supabase-js` in client code.
+- Drizzle client uses `prepare: false` for Supabase transaction pooler compatibility.
+
+5. Start UI:
 
 ```bash
 pnpm install

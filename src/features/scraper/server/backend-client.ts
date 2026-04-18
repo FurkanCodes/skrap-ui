@@ -1,5 +1,9 @@
 import "server-only";
 
+import { randomUUID } from "crypto";
+
+import { getAccessTokenForFastApi } from "@/lib/server-auth";
+
 const DEFAULT_BACKEND_BASE_URL = "http://127.0.0.1:8000";
 
 interface BackendErrorPayload {
@@ -15,6 +19,11 @@ export class BackendApiError extends Error {
     super(message);
     this.name = "BackendApiError";
   }
+}
+
+interface BackendCallOptions {
+  auth?: boolean;
+  requestId?: string;
 }
 
 function normalizeBaseUrl(baseUrl: string): string {
@@ -68,11 +77,22 @@ function getErrorMessage(payload: unknown): string {
 
 export async function postBackendJson<TResponse, TRequest>(
   path: string,
-  payload: TRequest
+  payload: TRequest,
+  options: BackendCallOptions = {}
 ): Promise<TResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Request-ID": options.requestId?.trim() || randomUUID().replace(/-/g, ""),
+  };
+
+  if (options.auth) {
+    const token = await getAccessTokenForFastApi();
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(buildBackendUrl(path), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
     cache: "no-store",
   });
@@ -93,4 +113,110 @@ export async function postBackendJson<TResponse, TRequest>(
   }
 
   return parsed as TResponse;
+}
+
+export async function patchBackendJson<TResponse, TRequest>(
+  path: string,
+  payload: TRequest,
+  options: BackendCallOptions = {}
+): Promise<TResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Request-ID": options.requestId?.trim() || randomUUID().replace(/-/g, ""),
+  };
+
+  if (options.auth) {
+    const token = await getAccessTokenForFastApi();
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildBackendUrl(path), {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  const responseText = await response.text();
+  const parsed = parseJson(responseText);
+
+  if (!response.ok) {
+    throw new BackendApiError(
+      getErrorMessage(parsed),
+      response.status,
+      (parsed as BackendErrorPayload | null)?.detail
+    );
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    throw new BackendApiError("Backend returned an unexpected response.", response.status);
+  }
+
+  return parsed as TResponse;
+}
+
+export async function getBackendJson<TResponse>(
+  path: string,
+  options: BackendCallOptions = {}
+): Promise<TResponse> {
+  const headers: Record<string, string> = {
+    "X-Request-ID": options.requestId?.trim() || randomUUID().replace(/-/g, ""),
+  };
+
+  if (options.auth) {
+    const token = await getAccessTokenForFastApi();
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildBackendUrl(path), {
+    method: "GET",
+    headers,
+    cache: "no-store",
+  });
+
+  const responseText = await response.text();
+  const parsed = parseJson(responseText);
+
+  if (!response.ok) {
+    throw new BackendApiError(
+      getErrorMessage(parsed),
+      response.status,
+      (parsed as BackendErrorPayload | null)?.detail
+    );
+  }
+  if (!parsed || typeof parsed !== "object") {
+    throw new BackendApiError("Backend returned an unexpected response.", response.status);
+  }
+  return parsed as TResponse;
+}
+
+export async function deleteBackend(path: string, options: BackendCallOptions = {}): Promise<void> {
+  const headers: Record<string, string> = {
+    "X-Request-ID": options.requestId?.trim() || randomUUID().replace(/-/g, ""),
+  };
+
+  if (options.auth) {
+    const token = await getAccessTokenForFastApi();
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildBackendUrl(path), {
+    method: "DELETE",
+    headers,
+    cache: "no-store",
+  });
+
+  if (response.status === 204) {
+    return;
+  }
+
+  const responseText = await response.text();
+  const parsed = parseJson(responseText);
+  if (!response.ok) {
+    throw new BackendApiError(
+      getErrorMessage(parsed),
+      response.status,
+      (parsed as BackendErrorPayload | null)?.detail
+    );
+  }
 }
