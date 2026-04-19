@@ -14,9 +14,7 @@ import {
   Plus,
   RefreshCw,
   Search,
-  ShieldAlert,
   Trash2,
-  Waves,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -178,33 +176,6 @@ function getProgress(item: TrackedItemSummary): { percent: number | null; label:
     percent,
     label: `${Math.round(percent)}% to target`,
   };
-}
-
-function getSparklinePoints(seed: string): string {
-  let hash = 0;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash << 5) - hash + seed.charCodeAt(index);
-    hash |= 0;
-  }
-
-  const points: string[] = [];
-  for (let index = 0; index < 8; index += 1) {
-    const x = index * 14;
-    const noise = Math.sin((hash + index * 17) * 0.13);
-    const y = 22 + noise * 8;
-    points.push(`${x},${Math.max(4, Math.min(36, y)).toFixed(1)}`);
-  }
-
-  return points.join(" ");
-}
-
-function DotSteps({ step }: { step: 1 | 2 }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className={step >= 1 ? "h-1.5 w-6 rounded-full bg-foreground" : "size-1.5 rounded-full bg-border"} />
-      <span className={step >= 2 ? "h-1.5 w-6 rounded-full bg-foreground" : "size-1.5 rounded-full bg-border"} />
-    </div>
-  );
 }
 
 function toOptionalString(value: unknown): string | null {
@@ -542,11 +513,11 @@ export function TrackersDashboardClient({
   }
 
   return (
-    <section className="relative space-y-7">
+    <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-0.5">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Trackers</h1>
-          <p className="text-sm text-muted-foreground">Monitor prices and receive Telegram alerts automatically.</p>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold text-foreground">Trackers</h1>
+          <p className="text-sm text-muted-foreground">Monitor prices and receive Telegram alerts.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -554,7 +525,7 @@ export function TrackersDashboardClient({
             {isRefreshPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
             Refresh
           </Button>
-          <Button type="button" size="sm" className="rounded-xl px-4" onClick={openModal}>
+          <Button type="button" size="sm" className="px-4" onClick={openModal}>
             <Plus className="size-3.5" />
             New Tracker
           </Button>
@@ -565,11 +536,11 @@ export function TrackersDashboardClient({
         <Link
           href="/settings"
           prefetch={false}
-          className="group block rounded-2xl border border-border/80 bg-card/80 px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          className="block rounded-lg border border-border bg-card px-4 py-3"
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-xl bg-zinc-900 text-white">
+              <span className="grid size-8 place-items-center rounded-md bg-zinc-900 text-white">
                 <Bell className="size-4" />
               </span>
               <div>
@@ -585,7 +556,7 @@ export function TrackersDashboardClient({
           </div>
         </Link>
       ) : (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-900 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
+        <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/30 dark:text-emerald-200">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <CheckCircle2 className="size-4" /> Telegram connected
             {botUsername ? <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">@{botUsername}</span> : null}
@@ -593,40 +564,16 @@ export function TrackersDashboardClient({
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <Waves className="size-4" />
-            </span>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Active</p>
-              <p className="text-2xl font-semibold tracking-tight text-foreground">{summary.active}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <Bell className="size-4" />
-            </span>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Alerts</p>
-              <p className="text-2xl font-semibold tracking-tight text-foreground">{summary.alerts}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <ShieldAlert className="size-4" />
-            </span>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Saved</p>
-              <p className="text-2xl font-semibold tracking-tight text-foreground">${Math.round(summary.saved)}</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 text-sm">
+        <span className="text-muted-foreground">
+          Active <strong className="text-foreground">{summary.active}</strong>
+        </span>
+        <span className="text-muted-foreground">
+          Alerts <strong className="text-foreground">{summary.alerts}</strong>
+        </span>
+        <span className="text-muted-foreground">
+          Saved <strong className="text-foreground">${Math.round(summary.saved)}</strong>
+        </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -636,18 +583,18 @@ export function TrackersDashboardClient({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products..."
-            className="h-10 rounded-xl border-border/80 bg-card pl-9"
+            className="h-10 border-border bg-card pl-9"
           />
         </div>
 
-        <div className="inline-flex items-center gap-1 rounded-xl border border-border/80 bg-card p-1 shadow-sm">
+        <div className="inline-flex items-center gap-1 rounded-md border border-border bg-card p-1">
           {FILTERS.map((option) => (
             <Button
               key={option.key}
               type="button"
               size="xs"
               variant={filter === option.key ? "default" : "ghost"}
-              className="rounded-lg px-3"
+              className="px-3"
               onClick={() => setFilter(option.key)}
             >
               {option.label}
@@ -657,19 +604,18 @@ export function TrackersDashboardClient({
       </div>
 
       {displayError ? (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{displayError}</p>
+        <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{displayError}</p>
       ) : null}
 
       <div className="space-y-3">
         {filteredItems.length === 0 ? (
-          <Card className="rounded-2xl border-border/80 bg-card/95 p-6 text-center text-sm text-muted-foreground shadow-sm">
+          <Card className="rounded-lg border-border bg-card p-6 text-center text-sm text-muted-foreground">
             No trackers match this view yet.
           </Card>
         ) : (
           filteredItems.map((item) => {
             const busy = isActionPending && busyItemId === item.item_id;
             const progress = getProgress(item);
-            const sparklinePoints = getSparklinePoints(item.item_id);
             const domain = getDomainLabel(item.source_url);
             const productName = item.product_name ?? item.source_url;
             const imageFallbackText = productName.slice(0, 1).toUpperCase() || "P";
@@ -682,10 +628,10 @@ export function TrackersDashboardClient({
             return (
               <article
                 key={item.item_id}
-                className="grid gap-4 rounded-2xl border border-border/80 bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1fr_auto]"
+                className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-[1fr_auto]"
               >
                 <div className="flex gap-3">
-                  <div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/70 bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
+                  <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
                     {productImageUrl ? (
                       <Image
                         src={productImageUrl}
@@ -706,25 +652,25 @@ export function TrackersDashboardClient({
                     {!productImageUrl ? <span className="relative z-10">{imageFallbackText}</span> : null}
                   </div>
 
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant="outline" className="rounded-md bg-zinc-50 text-[11px] text-zinc-600 dark:bg-zinc-900/40 dark:text-zinc-300">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <Badge variant="outline" className="rounded-sm bg-zinc-50 text-[11px] text-zinc-600 dark:bg-zinc-900/40 dark:text-zinc-300">
                         {domain}
                       </Badge>
-                      <Badge variant={item.tracking_mode === "alert" ? "default" : "secondary"} className="rounded-md text-[11px]">
+                      <Badge variant={item.tracking_mode === "alert" ? "default" : "secondary"} className="rounded-sm text-[11px]">
                         {item.tracking_mode === "alert" ? "Price Alert" : "Monitor"}
                       </Badge>
                       {item.status === "paused" ? (
-                        <Badge variant="outline" className="rounded-md text-[11px]">
+                        <Badge variant="outline" className="rounded-sm text-[11px]">
                           Paused
                         </Badge>
                       ) : null}
                     </div>
 
-                    <p className="line-clamp-1 text-[15px] font-semibold text-foreground">{productName}</p>
+                    <p className="line-clamp-1 text-sm font-semibold text-foreground">{productName}</p>
 
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="text-xl font-bold tracking-tight text-foreground">
+                      <span className="text-2xl font-semibold text-foreground">
                         {formatPrice(item.last_amount, item.currency)}
                       </span>
                       {item.target_amount ? (
@@ -740,9 +686,9 @@ export function TrackersDashboardClient({
                             <span className="font-semibold text-foreground/80">{progress.label}</span>
                             <span>{item.target_amount ?? "-"}</span>
                           </div>
-                          <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                          <div className="h-1.5 overflow-hidden rounded-sm bg-zinc-200 dark:bg-zinc-800">
                             <div
-                              className="h-full rounded-full bg-zinc-900 transition-all duration-500 dark:bg-zinc-100"
+                              className="h-full rounded-sm bg-zinc-900 transition-all duration-500 dark:bg-zinc-100"
                               style={{ width: `${progress.percent}%` }}
                             />
                           </div>
@@ -758,51 +704,38 @@ export function TrackersDashboardClient({
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end justify-between gap-3">
-                  <svg viewBox="0 0 98 40" className="h-10 w-24 text-zinc-400" role="img" aria-label="Price trend">
-                    <polyline
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      points={sparklinePoints}
-                    />
-                  </svg>
-
-                  <div className="flex items-center gap-1.5">
-                    {item.status === "active" ? (
-                      <Button
-                        type="button"
-                        size="icon-sm"
-                        variant="outline"
-                        disabled={busy || isMutating}
-                        onClick={() => runItemAction(item.item_id, "pause")}
-                      >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Pause className="size-3.5" />}
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        size="icon-sm"
-                        variant="outline"
-                        disabled={busy || isMutating}
-                        onClick={() => runItemAction(item.item_id, "resume")}
-                      >
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
-                      </Button>
-                    )}
-
+                <div className="flex items-center justify-end gap-1.5 md:flex-col md:items-end md:justify-center">
+                  {item.status === "active" ? (
                     <Button
                       type="button"
                       size="icon-sm"
                       variant="outline"
                       disabled={busy || isMutating}
-                      onClick={() => runItemAction(item.item_id, "delete")}
+                      onClick={() => runItemAction(item.item_id, "pause")}
                     >
-                      <Trash2 className="size-3.5" />
+                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Pause className="size-3.5" />}
                     </Button>
-                  </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="outline"
+                      disabled={busy || isMutating}
+                      onClick={() => runItemAction(item.item_id, "resume")}
+                    >
+                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    disabled={busy || isMutating}
+                    onClick={() => runItemAction(item.item_id, "delete")}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
                 </div>
               </article>
             );
@@ -815,21 +748,16 @@ export function TrackersDashboardClient({
       </p>
 
       {isModalOpen ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4 backdrop-blur-[1px] animate-in fade-in duration-200">
-          <div className="w-full max-w-[460px] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4">
+          <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
                 <p className="text-base font-bold text-foreground">{modalStep === 1 ? "Add New Tracker" : "Configure Tracker"}</p>
-                <p className="text-xs text-muted-foreground">
-                  {modalStep === 1 ? "Paste a product URL to start." : "Set your alert preferences."}
-                </p>
+                <p className="text-xs text-muted-foreground">Step {modalStep} of 2</p>
               </div>
-              <div className="flex items-center gap-3">
-                <DotSteps step={modalStep} />
-                <Button type="button" size="icon-sm" variant="ghost" onClick={closeModal} disabled={isPreviewPending || isSavePending}>
-                  ×
-                </Button>
-              </div>
+              <Button type="button" size="icon-sm" variant="ghost" onClick={closeModal} disabled={isPreviewPending || isSavePending}>
+                ×
+              </Button>
             </div>
 
             <div className="space-y-5 p-5">
@@ -844,14 +772,14 @@ export function TrackersDashboardClient({
                       value={urlInput}
                       onChange={(event) => setUrlInput(event.target.value)}
                       placeholder="https://amazon.com/dp/..."
-                      className="h-11 rounded-xl border-border/80"
+                      className="h-11 border-border"
                       disabled={isPreviewPending}
                     />
                   </div>
 
                   <Button
                     type="button"
-                    className="h-11 w-full rounded-xl"
+                    className="h-11 w-full"
                     disabled={isPreviewPending || !urlInput.trim()}
                     onClick={fetchProductPreview}
                   >
@@ -859,29 +787,14 @@ export function TrackersDashboardClient({
                     Fetch Product Info
                   </Button>
 
-                  <div className="rounded-xl border border-border/80 bg-muted/20 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Supported stores</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
-                      {[
-                        "Amazon",
-                        "Best Buy",
-                        "Walmart",
-                        "Apple",
-                        "Newegg",
-                        "B&H",
-                        "Target",
-                      ].map((store) => (
-                        <span key={store} className="rounded-md border border-border/70 bg-background px-2 py-0.5">
-                          {store}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="rounded-md border border-border bg-muted/20 p-3 text-[11px] text-muted-foreground">
+                    Supported stores: Amazon, Best Buy, Walmart, Apple, Newegg, B&H, Target.
                   </div>
                 </>
               ) : (
                 <>
                   {preview ? (
-                    <div className="rounded-xl border border-border/80 bg-muted/20 p-3">
+                    <div className="rounded-md border border-border bg-muted/20 p-3">
                       <div className="flex items-center gap-3">
                         <div className="relative size-14 overflow-hidden rounded-lg border border-border/70 bg-zinc-100">
                           {preview.image_url ? (
@@ -908,8 +821,8 @@ export function TrackersDashboardClient({
                         onClick={() => setTrackingMode("alert")}
                         className={
                           trackingMode === "alert"
-                            ? "rounded-xl border-2 border-foreground bg-background p-3 text-left"
-                            : "rounded-xl border border-border/80 bg-background p-3 text-left"
+                            ? "rounded-md border-2 border-foreground bg-background p-3 text-left"
+                            : "rounded-md border border-border bg-background p-3 text-left"
                         }
                       >
                         <p className="text-sm font-semibold text-foreground">Price Alert</p>
@@ -920,8 +833,8 @@ export function TrackersDashboardClient({
                         onClick={() => setTrackingMode("monitor")}
                         className={
                           trackingMode === "monitor"
-                            ? "rounded-xl border-2 border-foreground bg-background p-3 text-left"
-                            : "rounded-xl border border-border/80 bg-background p-3 text-left"
+                            ? "rounded-md border-2 border-foreground bg-background p-3 text-left"
+                            : "rounded-md border border-border bg-background p-3 text-left"
                         }
                       >
                         <p className="text-sm font-semibold text-foreground">Periodic Monitor</p>
@@ -941,7 +854,7 @@ export function TrackersDashboardClient({
                         onChange={(event) => setTargetAmount(event.target.value)}
                         placeholder="84.99"
                         disabled={trackingMode === "monitor" || isSavePending}
-                        className="h-10 rounded-xl border-border/80"
+                        className="h-10 border-border"
                       />
                     </div>
 
@@ -951,7 +864,7 @@ export function TrackersDashboardClient({
                       </Label>
                       <select
                         id="check-every"
-                        className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+                        className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
                         value={interval}
                         onChange={(event) => setInterval(event.target.value)}
                         disabled={isSavePending}
@@ -966,7 +879,7 @@ export function TrackersDashboardClient({
                   </div>
 
                   {telegramConnected === false ? (
-                    <div className="rounded-xl border border-amber-300/50 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
+                    <div className="rounded-md border border-amber-300/50 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
                       <p className="font-semibold">Telegram not connected</p>
                       <p className="mt-0.5">Alerts will not be delivered until you link Telegram in Settings.</p>
                     </div>
@@ -975,16 +888,16 @@ export function TrackersDashboardClient({
               )}
 
               {modalError ? (
-                <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{modalError}</p>
+                <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{modalError}</p>
               ) : null}
             </div>
 
             {modalStep === 2 ? (
-              <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-5 py-4">
+              <div className="flex items-center justify-between border-t border-border bg-muted/20 px-5 py-4">
                 <Button type="button" variant="ghost" size="sm" onClick={() => setModalStep(1)} disabled={isSavePending}>
                   Back
                 </Button>
-                <Button type="button" size="sm" className="rounded-xl px-4" onClick={saveTracker} disabled={isSavePending || isPreviewPending}>
+                <Button type="button" size="sm" className="px-4" onClick={saveTracker} disabled={isSavePending || isPreviewPending}>
                   {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
                   Save Tracker
                 </Button>

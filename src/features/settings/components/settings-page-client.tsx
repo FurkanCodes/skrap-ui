@@ -46,10 +46,10 @@ export function SettingsPageClient({
   }, [maxTrackers, trackedCount]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage integrations and notification preferences.</p>
+        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+        <p className="text-sm text-muted-foreground">Manage integrations and notifications.</p>
       </header>
 
       <TelegramLinkCard
@@ -58,15 +58,15 @@ export function SettingsPageClient({
         initialError={initialError}
       />
 
-      <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm">
+      <Card className="rounded-lg border-border bg-card">
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>
           <CardDescription>Configure global alert behavior.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 p-3">
+          <label className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
             <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
                 <Clock3 className="size-4" />
               </span>
               <div>
@@ -82,9 +82,9 @@ export function SettingsPageClient({
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 p-3">
+          <label className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
             <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
                 <VolumeX className="size-4" />
               </span>
               <div>
@@ -100,9 +100,9 @@ export function SettingsPageClient({
             />
           </label>
 
-          <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 p-3">
+          <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
             <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
                 <Bell className="size-4" />
               </span>
               <div>
@@ -113,7 +113,7 @@ export function SettingsPageClient({
             <select
               value={minimumDrop}
               onChange={(event) => setMinimumDrop(event.target.value)}
-              className="h-9 rounded-lg border border-border/70 bg-background px-3 text-sm"
+              className="h-9 rounded-md border border-border bg-background px-3 text-sm"
             >
               <option value="1">1%</option>
               <option value="3">3%</option>
@@ -124,7 +124,7 @@ export function SettingsPageClient({
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm">
+      <Card className="rounded-lg border-border bg-card">
         <CardHeader>
           <CardTitle>Plan</CardTitle>
           <CardDescription>
