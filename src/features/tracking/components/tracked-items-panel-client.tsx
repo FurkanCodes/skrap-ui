@@ -75,7 +75,6 @@ export function TrackedItemsPanelClient({
         } else {
           await deleteTrackedItemAction(itemId);
         }
-        router.refresh();
       } catch (actionError) {
         setActionError(mapError(actionError));
       } finally {

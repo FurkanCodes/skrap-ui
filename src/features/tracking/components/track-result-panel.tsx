@@ -20,6 +20,9 @@ interface TrackResultPanelProps {
 
 type TrackingMode = "monitor" | "alert";
 
+const MIN_BACKEND_CHECK_INTERVAL_MINUTES = 360;
+const MAX_BACKEND_CHECK_INTERVAL_MINUTES = 10080;
+
 function mapActionError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
     return error;
@@ -40,16 +43,16 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
 
   const [mode, setMode] = useState<TrackingMode>("monitor");
   const [targetAmount, setTargetAmount] = useState(amount ?? "");
-  const [interval, setInterval] = useState("60");
+  const [interval, setInterval] = useState(String(MIN_BACKEND_CHECK_INTERVAL_MINUTES));
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const minInterval = useMemo(() => {
-    const value = Number(me?.entitlement?.min_check_interval_minutes ?? 5);
-    if (!Number.isInteger(value) || value < 1) {
-      return 5;
+    const entitlementMin = Number(me?.entitlement?.min_check_interval_minutes);
+    if (!Number.isInteger(entitlementMin)) {
+      return MIN_BACKEND_CHECK_INTERVAL_MINUTES;
     }
-    return value;
+    return Math.max(entitlementMin, MIN_BACKEND_CHECK_INTERVAL_MINUTES);
   }, [me?.entitlement?.min_check_interval_minutes]);
 
   const intervalValue = useMemo(() => {
@@ -77,9 +80,11 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
         if (
           !Number.isInteger(parsedInterval) ||
           parsedInterval < minInterval ||
-          parsedInterval > 10080
+          parsedInterval > MAX_BACKEND_CHECK_INTERVAL_MINUTES
         ) {
-          setError(`Interval must be an integer between ${minInterval} and 10080 minutes.`);
+          setError(
+            `Interval must be an integer between ${minInterval} and ${MAX_BACKEND_CHECK_INTERVAL_MINUTES} minutes.`
+          );
           return;
         }
 

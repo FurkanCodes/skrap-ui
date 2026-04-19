@@ -1,11 +1,16 @@
 import "server-only";
 
 import { getBackendJson } from "@/features/scraper/server/backend-client";
+import { getTrackedItemsTag } from "@/features/tracking/server/cache-tags";
 import { readCachedMe, writeCachedMe } from "@/features/tracking/server/me-cache";
 import type { MeResponse, TrackedItemsListResponse } from "@/features/tracking/types";
 
 interface GetMeQueryOptions {
   cacheKey?: string | null;
+}
+
+interface ListTrackedItemsQueryOptions {
+  userId?: string | null;
 }
 
 export async function getMeQuery(options: GetMeQueryOptions = {}): Promise<MeResponse> {
@@ -24,8 +29,17 @@ export async function getMeQuery(options: GetMeQueryOptions = {}): Promise<MeRes
   return me;
 }
 
-export async function listTrackedItemsQuery(): Promise<TrackedItemsListResponse> {
-  return getBackendJson<TrackedItemsListResponse>("/api/v1/tracked-items", { auth: true });
+export async function listTrackedItemsQuery(
+  options: ListTrackedItemsQueryOptions = {}
+): Promise<TrackedItemsListResponse> {
+  const userId = options.userId?.trim() || null;
+  const tags = userId ? [getTrackedItemsTag(userId)] : undefined;
+
+  return getBackendJson<TrackedItemsListResponse>("/api/v1/tracked-items", {
+    auth: true,
+    cache: userId ? "force-cache" : "no-store",
+    ...(tags ? { next: { tags } } : {}),
+  });
 }
 
 export async function getTrackedItemQuery<TResponse = unknown>(

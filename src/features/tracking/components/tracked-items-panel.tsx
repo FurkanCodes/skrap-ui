@@ -18,6 +18,23 @@ function mapError(error: unknown): string {
   return "Unable to load tracked items.";
 }
 
+function getSessionUserId(session: unknown): string | null {
+  if (!session || typeof session !== "object") {
+    return null;
+  }
+
+  const user = (session as { user?: { id?: unknown } }).user;
+  if (!user || typeof user !== "object") {
+    return null;
+  }
+
+  if (typeof user.id === "string" && user.id.trim().length > 0) {
+    return user.id;
+  }
+
+  return null;
+}
+
 export async function TrackedItemsPanel() {
   const auth = getAuth();
   const incomingHeaders = await headers();
@@ -37,7 +54,7 @@ export async function TrackedItemsPanel() {
   let initialError: string | null = null;
 
   try {
-    const response = await listTrackedItemsQuery();
+    const response = await listTrackedItemsQuery({ userId: getSessionUserId(session) });
     initialItems = response.items;
   } catch (error) {
     initialError = mapError(error);

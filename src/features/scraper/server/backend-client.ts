@@ -24,6 +24,11 @@ export class BackendApiError extends Error {
 interface BackendCallOptions {
   auth?: boolean;
   requestId?: string;
+  cache?: RequestCache;
+  next?: {
+    tags?: string[];
+    revalidate?: number | false;
+  };
 }
 
 function normalizeBaseUrl(baseUrl: string): string {
@@ -168,11 +173,21 @@ export async function getBackendJson<TResponse>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(buildBackendUrl(path), {
+  const fetchOptions: RequestInit & {
+    next?: {
+      tags?: string[];
+      revalidate?: number | false;
+    };
+  } = {
     method: "GET",
     headers,
-    cache: "no-store",
-  });
+    cache: options.cache ?? "no-store",
+  };
+  if (options.next) {
+    fetchOptions.next = options.next;
+  }
+
+  const response = await fetch(buildBackendUrl(path), fetchOptions);
 
   const responseText = await response.text();
   const parsed = parseJson(responseText);
