@@ -54,7 +54,8 @@ export function TrackedItemsPanelClient({
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isActionPending, setIsActionPending] = useState(false);
+  const [isRefreshPending, startRefreshTransition] = useTransition();
   const displayError = actionError ?? initialError;
 
   const summary = useMemo(() => {
@@ -65,15 +66,19 @@ export function TrackedItemsPanelClient({
   const refresh = () => {
     setActionError(null);
     setBusyItemId(null);
-    startTransition(() => {
+    startRefreshTransition(() => {
       router.refresh();
     });
   };
 
   const runItemAction = (itemId: string, action: "pause" | "resume" | "delete") => {
+    if (isActionPending || isRefreshPending) {
+      return;
+    }
     setBusyItemId(itemId);
     setActionError(null);
-    startTransition(async () => {
+    setIsActionPending(true);
+    void (async () => {
       try {
         if (action === "pause") {
           await pauseTrackedItemAction(itemId);
@@ -86,8 +91,9 @@ export function TrackedItemsPanelClient({
         setActionError(mapError(actionError));
       } finally {
         setBusyItemId(null);
+        setIsActionPending(false);
       }
-    });
+    })();
   };
 
   if (!isAuthenticated) {
@@ -108,8 +114,6 @@ export function TrackedItemsPanelClient({
     );
   }
 
-  const isRefreshing = isPending && busyItemId === null;
-
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
@@ -119,8 +123,14 @@ export function TrackedItemsPanelClient({
             Total {summary.total} • Active {summary.active}
           </CardDescription>
         </div>
-        <Button type="button" size="sm" variant="outline" onClick={refresh} disabled={isPending}>
-          {isRefreshing ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={refresh}
+          disabled={isRefreshPending || isActionPending}
+        >
+          {isRefreshPending ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (
             <RefreshCw className="size-3.5" />
@@ -142,7 +152,7 @@ export function TrackedItemsPanelClient({
           </p>
         ) : (
           initialItems.map((item) => {
-            const busy = isPending && busyItemId === item.item_id;
+            const busy = isActionPending && busyItemId === item.item_id;
             return (
               <div
                 key={item.item_id}
@@ -166,7 +176,7 @@ export function TrackedItemsPanelClient({
                       size="xs"
                       variant="outline"
                       onClick={() => runItemAction(item.item_id, "pause")}
-                      disabled={busy}
+                      disabled={busy || isRefreshPending}
                     >
                       {busy ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -181,7 +191,7 @@ export function TrackedItemsPanelClient({
                       size="xs"
                       variant="outline"
                       onClick={() => runItemAction(item.item_id, "resume")}
-                      disabled={busy}
+                      disabled={busy || isRefreshPending}
                     >
                       {busy ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -196,7 +206,7 @@ export function TrackedItemsPanelClient({
                     size="xs"
                     variant="destructive"
                     onClick={() => runItemAction(item.item_id, "delete")}
-                    disabled={busy}
+                    disabled={busy || isRefreshPending}
                   >
                     <Trash2 className="size-3.5" />
                     Delete
