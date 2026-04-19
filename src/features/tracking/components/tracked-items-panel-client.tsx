@@ -39,6 +39,13 @@ function formatAmount(item: TrackedItemSummary): string {
   return `${item.last_amount} ${item.currency ?? ""}`.trim();
 }
 
+function formatInterval(value: number): string {
+  if (value < 60) {
+    return `${value}s`;
+  }
+  return `${value}m`;
+}
+
 export function TrackedItemsPanelClient({
   isAuthenticated,
   initialItems,
@@ -147,7 +154,7 @@ export function TrackedItemsPanelClient({
                   <div className="flex flex-wrap gap-1">
                     <Badge variant={item.status === "active" ? "secondary" : "outline"}>{item.status}</Badge>
                     <Badge variant="outline">{item.tracking_mode}</Badge>
-                    <Badge variant="outline">Every {item.check_interval_minutes}m</Badge>
+                    <Badge variant="outline">Every {formatInterval(item.check_interval_minutes)}</Badge>
                     <Badge variant="outline">{formatAmount(item)}</Badge>
                   </div>
                 </div>

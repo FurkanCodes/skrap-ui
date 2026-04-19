@@ -20,8 +20,9 @@ interface TrackResultPanelProps {
 
 type TrackingMode = "monitor" | "alert";
 
-const MIN_BACKEND_CHECK_INTERVAL_MINUTES = 360;
+const MIN_BACKEND_CHECK_INTERVAL_MINUTES = 1;
 const MAX_BACKEND_CHECK_INTERVAL_MINUTES = 10080;
+const DEFAULT_TRACK_INTERVAL_VALUE = "60";
 
 function mapActionError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
@@ -43,7 +44,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
 
   const [mode, setMode] = useState<TrackingMode>("monitor");
   const [targetAmount, setTargetAmount] = useState(amount ?? "");
-  const [interval, setInterval] = useState(String(MIN_BACKEND_CHECK_INTERVAL_MINUTES));
+  const [interval, setInterval] = useState(DEFAULT_TRACK_INTERVAL_VALUE);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,7 +84,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
           parsedInterval > MAX_BACKEND_CHECK_INTERVAL_MINUTES
         ) {
           setError(
-            `Interval must be an integer between ${minInterval} and ${MAX_BACKEND_CHECK_INTERVAL_MINUTES} minutes.`
+            `Interval must be an integer between ${minInterval} and ${MAX_BACKEND_CHECK_INTERVAL_MINUTES}. Temporary mode: 1-59 = seconds, 60+ = minutes.`
           );
           return;
         }
@@ -168,7 +169,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
 
           <div className="grid gap-1">
             <Label htmlFor={`interval-${url}`} className="text-[11px] text-muted-foreground">
-              Check interval (min, &gt;= {minInterval})
+              Check interval (temp: 1-59 sec, 60+ min, min {minInterval})
             </Label>
             <Input
               id={`interval-${url}`}
