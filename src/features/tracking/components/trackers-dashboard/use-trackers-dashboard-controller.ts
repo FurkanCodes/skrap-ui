@@ -39,6 +39,7 @@ interface UseTrackersDashboardControllerParams {
 }
 
 const ROW_ACTION_ERROR_DURATION_MS = 4000;
+const DELETE_ROW_EXIT_DURATION_MS = 240;
 
 export function useTrackersDashboardController({
   initialItems,
@@ -72,6 +73,9 @@ export function useTrackersDashboardController({
   const [pendingDeleteItemIds, setPendingDeleteItemIds] = useState<Set<string>>(
     () => new Set()
   );
+  const [exitingDeleteItemIds, setExitingDeleteItemIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
   const [isRefreshPending, startRefreshTransition] = useTransition();
   const [isActionTransitionPending, startActionTransition] = useTransition();
@@ -90,6 +94,9 @@ export function useTrackersDashboardController({
   const rowActionErrorTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map()
   );
+  const deleteExitTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<1 | 2>(1);
@@ -100,7 +107,7 @@ export function useTrackersDashboardController({
   const [interval, setInterval] = useState("60");
   const [modalError, setModalError] = useState<string | null>(null);
   const [isPreviewPending, startPreviewTransition] = useTransition();
-  const [isSavePending, startSaveTransition] = useTransition();
+  const [isSavePending, setIsSavePending] = useState(false);
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
@@ -225,6 +232,34 @@ export function useTrackersDashboardController({
     });
   }, []);
 
+  const clearDeleteExitTimer = useCallback((itemId: string) => {
+    const timer = deleteExitTimersRef.current.get(itemId);
+    if (timer) {
+      clearTimeout(timer);
+      deleteExitTimersRef.current.delete(itemId);
+    }
+  }, []);
+
+  const setDeleteExiting = useCallback(
+    (itemId: string, exiting: boolean) => {
+      setExitingDeleteItemIds((current) => {
+        const hasItem = current.has(itemId);
+        if (exiting === hasItem) {
+          return current;
+        }
+
+        const next = new Set(current);
+        if (exiting) {
+          next.add(itemId);
+        } else {
+          next.delete(itemId);
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   const clearRowActionErrorTimer = useCallback((itemId: string) => {
     const timer = rowActionErrorTimersRef.current.get(itemId);
     if (timer) {
@@ -279,13 +314,16 @@ export function useTrackersDashboardController({
     const resumeTimers = resumeFeedbackTimersRef.current;
     const pauseTimers = pauseFeedbackTimersRef.current;
     const rowErrorTimers = rowActionErrorTimersRef.current;
+    const deleteExitTimers = deleteExitTimersRef.current;
     return () => {
       resumeTimers.forEach((timer) => clearTimeout(timer));
       pauseTimers.forEach((timer) => clearTimeout(timer));
       rowErrorTimers.forEach((timer) => clearTimeout(timer));
+      deleteExitTimers.forEach((timer) => clearTimeout(timer));
       resumeTimers.clear();
       pauseTimers.clear();
       rowErrorTimers.clear();
+      deleteExitTimers.clear();
     };
   }, []);
 
@@ -456,16 +494,24 @@ export function useTrackersDashboardController({
       startActionTransition(async () => {
         try {
           await deleteTrackedItemAction(itemId);
-
-          setItemsState((current) => applyItemAction(current, itemAction));
-          setLocallyDeletedItemIds((current) => {
-            const next = new Set(current);
-            next.add(itemId);
-            return next;
-          });
+          clearDeleteExitTimer(itemId);
+          setDeleteExiting(itemId, true);
+          const exitTimer = setTimeout(() => {
+            deleteExitTimersRef.current.delete(itemId);
+            setItemsState((current) => applyItemAction(current, itemAction));
+            setLocallyDeletedItemIds((current) => {
+              const next = new Set(current);
+              next.add(itemId);
+              return next;
+            });
+            setDeleteExiting(itemId, false);
+            setItemActionPending(itemId, false);
+            setDeletePending(itemId, false);
+          }, DELETE_ROW_EXIT_DURATION_MS);
+          deleteExitTimersRef.current.set(itemId, exitTimer);
         } catch (error) {
           setTimedRowActionError(itemId, mapError(error));
-        } finally {
+          setDeleteExiting(itemId, false);
           setItemActionPending(itemId, false);
           setDeletePending(itemId, false);
         }
@@ -474,11 +520,13 @@ export function useTrackersDashboardController({
     [
       clearPauseFeedbackTimer,
       clearResumeFeedbackTimer,
+      clearDeleteExitTimer,
       isRefreshPending,
       pendingActionItemIds,
       schedulePauseFeedback,
       scheduleResumeFeedback,
       setDeletePending,
+      setDeleteExiting,
       setItemActionPending,
       setPauseFeedbackState,
       setRowActionError,
@@ -555,9 +603,12 @@ export function useTrackersDashboardController({
       return;
     }
 
-    const optimisticItemId = `optimistic-${crypto.randomUUID()}`;
-    const optimisticItem: TrackedItemSummary = {
-      item_id: optimisticItemId,
+    if (isSavePending) {
+      return;
+    }
+
+    const fallbackCommittedItem: TrackedItemSummary = {
+      item_id: crypto.randomUUID(),
       source_url: preview.url,
       product_name: preview.product_name ?? preview.url,
       image_url: preview.image_url,
@@ -573,18 +624,11 @@ export function useTrackersDashboardController({
 
     // Apply optimistic row immediately on user click (not inside transition),
     // so the list updates before the backend roundtrip finishes.
-    setItemsState((current) =>
-      applyItemAction(current, {
-        type: "add",
-        item: optimisticItem,
-      })
-    );
-
     setModalError(null);
     setPageError(null);
-    closeModal();
+    setIsSavePending(true);
 
-    startSaveTransition(async () => {
+    void (async () => {
       try {
         const response = (await createTrackedItemAction({
           url: preview.url,
@@ -594,32 +638,26 @@ export function useTrackersDashboardController({
           target_amount: trackingMode === "alert" ? targetAmount.trim() : null,
         })) as { item?: unknown };
 
-        const committedItem = toTrackedItemSummary(response.item, optimisticItem);
+        const committedItem = toTrackedItemSummary(response.item, fallbackCommittedItem);
         setItemsState((current) => {
-          const withoutTemporaryOrDuplicate = current.filter(
-            (item) =>
-              item.item_id !== optimisticItemId && item.item_id !== committedItem.item_id
+          const withoutDuplicate = current.filter(
+            (item) => item.item_id !== committedItem.item_id
           );
-          return [committedItem, ...withoutTemporaryOrDuplicate];
+          return [committedItem, ...withoutDuplicate];
         });
+        closeModal();
       } catch (error) {
-        setItemsState((current) =>
-          current.filter((item) => item.item_id !== optimisticItemId)
-        );
-        setPageError(mapError(error));
-        startRefreshTransition(() => {
-          router.refresh();
-        });
+        setModalError(mapError(error));
+      } finally {
+        setIsSavePending(false);
       }
-    });
+    })();
   }, [
     closeModal,
     interval,
+    isSavePending,
     minInterval,
     preview,
-    router,
-    startRefreshTransition,
-    startSaveTransition,
     targetAmount,
     trackingMode,
   ]);
@@ -646,6 +684,7 @@ export function useTrackersDashboardController({
     dismissRowActionError,
     pendingActionItemIds,
     pendingDeleteItemIds,
+    exitingDeleteItemIds,
     pauseFeedbackByItemId,
     rowActionErrorByItemId,
     preview,

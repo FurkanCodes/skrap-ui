@@ -13,6 +13,7 @@ interface TrackerRowProps {
   item: TrackedItemSummary;
   isRefreshPending: boolean;
   isItemActionPending: boolean;
+  isDeleteExiting: boolean;
   isDeleteConfirmOpen: boolean;
   isDeletePending: boolean;
   pauseFeedbackState: ActionFeedbackState;
@@ -29,6 +30,7 @@ export const TrackerRow = memo(function TrackerRow({
   item,
   isRefreshPending,
   isItemActionPending,
+  isDeleteExiting,
   isDeleteConfirmOpen,
   isDeletePending,
   pauseFeedbackState,
@@ -43,7 +45,7 @@ export const TrackerRow = memo(function TrackerRow({
   const visibleActionFeedbackState =
     item.status === "active" ? pauseFeedbackState : resumeFeedbackState;
   const visibleActionFeedbackActive = visibleActionFeedbackState !== "idle";
-  const busy = isItemActionPending || visibleActionFeedbackActive;
+  const busy = isItemActionPending || isDeleteExiting || visibleActionFeedbackActive;
   const progress = getProgress(item);
   const domain = getDomainLabel(item.source_url);
   const productName = item.product_name ?? item.source_url;

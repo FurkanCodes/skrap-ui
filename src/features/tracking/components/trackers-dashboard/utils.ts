@@ -1,6 +1,8 @@
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import type { ItemMutationAction } from "@/features/tracking/components/trackers-dashboard/types";
 
+const OPTIMISTIC_ITEM_ID_PREFIX = "optimistic-";
+
 export function mapError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
     return error;
@@ -204,6 +206,55 @@ function getUpdatedAtMs(item: TrackedItemSummary): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isOptimisticItemId(itemId: string): boolean {
+  return itemId.startsWith(OPTIMISTIC_ITEM_ID_PREFIX);
+}
+
+function normalizeAmountForMatch(value: string | null): number | null {
+  const parsed = parseNumberish(value);
+  if (parsed === null) {
+    return null;
+  }
+
+  return Number(parsed.toFixed(4));
+}
+
+function hasSameTargetAmount(
+  left: TrackedItemSummary,
+  right: TrackedItemSummary
+): boolean {
+  return normalizeAmountForMatch(left.target_amount) === normalizeAmountForMatch(right.target_amount);
+}
+
+function isLikelySameTracker(
+  optimisticItem: TrackedItemSummary,
+  candidate: TrackedItemSummary
+): boolean {
+  return (
+    optimisticItem.source_url === candidate.source_url &&
+    optimisticItem.tracking_mode === candidate.tracking_mode &&
+    optimisticItem.check_interval_minutes === candidate.check_interval_minutes &&
+    hasSameTargetAmount(optimisticItem, candidate)
+  );
+}
+
+function findIncomingMatchForOptimisticItem(
+  optimisticItem: TrackedItemSummary,
+  incomingById: Map<string, TrackedItemSummary>
+): [string, TrackedItemSummary] | null {
+  for (const [candidateId, candidate] of incomingById.entries()) {
+    if (isOptimisticItemId(candidateId)) {
+      continue;
+    }
+
+    if (isLikelySameTracker(optimisticItem, candidate)) {
+      return [candidateId, candidate];
+    }
+  }
+
+  return null;
+}
+
 function extractTrackedItemPayload(raw: unknown): unknown {
   if (!raw || typeof raw !== "object") {
     return raw;
@@ -257,6 +308,15 @@ export function reconcileItemsPreservingOrder(
       next.push(nextItem);
       incomingById.delete(existing.item_id);
       continue;
+    }
+
+    if (isOptimisticItemId(existing.item_id)) {
+      const optimisticMatch = findIncomingMatchForOptimisticItem(existing, incomingById);
+      if (optimisticMatch) {
+        next.push(optimisticMatch[1]);
+        incomingById.delete(optimisticMatch[0]);
+        continue;
+      }
     }
 
     next.push(existing);

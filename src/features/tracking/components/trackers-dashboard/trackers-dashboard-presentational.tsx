@@ -54,6 +54,7 @@ export function TrackersDashboardAuthenticatedView({
         isRefreshPending={controller.isRefreshPending}
         deleteConfirmItemId={controller.deleteConfirmItemId}
         dismissRowActionError={controller.dismissRowActionError}
+        exitingDeleteItemIds={controller.exitingDeleteItemIds}
         pendingActionItemIds={controller.pendingActionItemIds}
         pendingDeleteItemIds={controller.pendingDeleteItemIds}
         pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
