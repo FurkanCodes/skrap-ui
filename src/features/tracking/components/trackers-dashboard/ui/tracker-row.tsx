@@ -13,9 +13,14 @@ interface TrackerRowProps {
   item: TrackedItemSummary;
   isRefreshPending: boolean;
   isItemActionPending: boolean;
+  isDeleteConfirmOpen: boolean;
   isDeletePending: boolean;
   pauseFeedbackState: ActionFeedbackState;
+  rowActionError: string | null;
   resumeFeedbackState: ActionFeedbackState;
+  cancelDeleteAction: () => void;
+  confirmDeleteAction: () => void;
+  dismissRowActionError: (itemId: string) => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
 }
@@ -24,9 +29,14 @@ export const TrackerRow = memo(function TrackerRow({
   item,
   isRefreshPending,
   isItemActionPending,
+  isDeleteConfirmOpen,
   isDeletePending,
   pauseFeedbackState,
+  rowActionError,
   resumeFeedbackState,
+  cancelDeleteAction,
+  confirmDeleteAction,
+  dismissRowActionError,
   runItemAction,
   requestDeleteAction,
 }: TrackerRowProps) {
@@ -46,7 +56,7 @@ export const TrackerRow = memo(function TrackerRow({
 
   return (
     <article
-      className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-[1fr_auto]"
+      className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-[minmax(0,1fr)_172px]"
     >
       <div className="flex gap-3">
         <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
@@ -131,9 +141,14 @@ export const TrackerRow = memo(function TrackerRow({
       <TrackerActionButtons
         item={item}
         busy={busy}
+        isDeleteConfirmOpen={isDeleteConfirmOpen}
         isRefreshPending={isRefreshPending}
         pauseFeedbackState={pauseFeedbackState}
         resumeFeedbackState={resumeFeedbackState}
+        rowActionError={rowActionError}
+        cancelDeleteAction={cancelDeleteAction}
+        confirmDeleteAction={confirmDeleteAction}
+        dismissRowActionError={dismissRowActionError}
         isDeletePending={isDeletePending}
         runItemAction={runItemAction}
         requestDeleteAction={requestDeleteAction}

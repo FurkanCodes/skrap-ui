@@ -8,10 +8,15 @@ import type { TrackedItemSummary } from "@/features/tracking/types";
 interface TrackersListProps {
   filteredItems: TrackedItemSummary[];
   isRefreshPending: boolean;
+  deleteConfirmItemId: string | null;
+  rowActionErrorByItemId: Record<string, string>;
+  dismissRowActionError: (itemId: string) => void;
   pendingActionItemIds: Set<string>;
   pendingDeleteItemIds: Set<string>;
   pauseFeedbackByItemId: Record<string, ActionFeedbackState>;
   resumeFeedbackByItemId: Record<string, ActionFeedbackState>;
+  cancelDeleteAction: () => void;
+  confirmDeleteAction: () => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
 }
@@ -19,10 +24,15 @@ interface TrackersListProps {
 export function TrackersList({
   filteredItems,
   isRefreshPending,
+  deleteConfirmItemId,
+  rowActionErrorByItemId,
+  dismissRowActionError,
   pendingActionItemIds,
   pendingDeleteItemIds,
   pauseFeedbackByItemId,
   resumeFeedbackByItemId,
+  cancelDeleteAction,
+  confirmDeleteAction,
   runItemAction,
   requestDeleteAction,
 }: TrackersListProps) {
@@ -44,9 +54,14 @@ export function TrackersList({
           item={item}
           isRefreshPending={isRefreshPending}
           isItemActionPending={pendingActionItemIds.has(item.item_id)}
+          isDeleteConfirmOpen={deleteConfirmItemId === item.item_id}
           isDeletePending={pendingDeleteItemIds.has(item.item_id)}
           pauseFeedbackState={pauseFeedbackByItemId[item.item_id] ?? "idle"}
+          rowActionError={rowActionErrorByItemId[item.item_id] ?? null}
           resumeFeedbackState={resumeFeedbackByItemId[item.item_id] ?? "idle"}
+          cancelDeleteAction={cancelDeleteAction}
+          confirmDeleteAction={confirmDeleteAction}
+          dismissRowActionError={dismissRowActionError}
           runItemAction={runItemAction}
           requestDeleteAction={requestDeleteAction}
         />

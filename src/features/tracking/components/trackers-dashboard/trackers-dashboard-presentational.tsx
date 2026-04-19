@@ -8,7 +8,6 @@ import { TelegramConnectionBanner } from "@/features/tracking/components/tracker
 import { TrackersList } from "@/features/tracking/components/trackers-dashboard/ui/trackers-list";
 import { TrackersDashboardUnauthenticated } from "@/features/tracking/components/trackers-dashboard/ui/unauthenticated-card";
 import type { TrackersDashboardController } from "@/features/tracking/components/trackers-dashboard/use-trackers-dashboard-controller";
-import { ActionConfirmAlert } from "@/components/ui/action-confirm-alert";
 
 export { TrackersDashboardUnauthenticated };
 
@@ -53,10 +52,15 @@ export function TrackersDashboardAuthenticatedView({
       <TrackersList
         filteredItems={controller.filteredItems}
         isRefreshPending={controller.isRefreshPending}
+        deleteConfirmItemId={controller.deleteConfirmItemId}
+        dismissRowActionError={controller.dismissRowActionError}
         pendingActionItemIds={controller.pendingActionItemIds}
         pendingDeleteItemIds={controller.pendingDeleteItemIds}
         pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
+        rowActionErrorByItemId={controller.rowActionErrorByItemId}
         resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
+        cancelDeleteAction={controller.cancelDeleteAction}
+        confirmDeleteAction={controller.confirmDeleteAction}
         runItemAction={controller.runItemAction}
         requestDeleteAction={controller.requestDeleteAction}
       />
@@ -87,24 +91,6 @@ export function TrackersDashboardAuthenticatedView({
         telegramConnected={controller.telegramConnected}
         modalError={controller.modalError}
         saveTracker={controller.saveTracker}
-      />
-
-      <ActionConfirmAlert
-        open={controller.isDeleteConfirmOpen}
-        title="Delete tracker?"
-        description={`This action cannot be undone.${
-          controller.deleteConfirmItem
-            ? ` "${controller.deleteConfirmItem.product_name ?? controller.deleteConfirmItem.source_url}" will be permanently removed.`
-            : ""
-        }`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        isConfirmPending={Boolean(
-          controller.deleteConfirmItem &&
-            controller.pendingDeleteItemIds.has(controller.deleteConfirmItem.item_id)
-        )}
-        onConfirm={controller.confirmDeleteAction}
-        onCancel={controller.cancelDeleteAction}
       />
     </section>
   );

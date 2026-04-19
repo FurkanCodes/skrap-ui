@@ -38,6 +38,8 @@ interface UseTrackersDashboardControllerParams {
   telegramBotUsername: string | null;
 }
 
+const ROW_ACTION_ERROR_DURATION_MS = 4000;
+
 export function useTrackersDashboardController({
   initialItems,
   initialError,
@@ -60,7 +62,10 @@ export function useTrackersDashboardController({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
 
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [rowActionErrorByItemId, setRowActionErrorByItemId] = useState<
+    Record<string, string>
+  >({});
   const [pendingActionItemIds, setPendingActionItemIds] = useState<Set<string>>(
     () => new Set()
   );
@@ -82,6 +87,9 @@ export function useTrackersDashboardController({
   const pauseFeedbackTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map()
   );
+  const rowActionErrorTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<1 | 2>(1);
@@ -96,7 +104,7 @@ export function useTrackersDashboardController({
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
-  const displayError = actionError ?? initialError;
+  const displayError = pageError ?? initialError;
   const botUsername = normalizeBotUsername(telegramBotUsername);
   const isActionPending = pendingActionItemIds.size > 0;
   const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
@@ -217,14 +225,67 @@ export function useTrackersDashboardController({
     });
   }, []);
 
+  const clearRowActionErrorTimer = useCallback((itemId: string) => {
+    const timer = rowActionErrorTimersRef.current.get(itemId);
+    if (timer) {
+      clearTimeout(timer);
+      rowActionErrorTimersRef.current.delete(itemId);
+    }
+  }, []);
+
+  const setRowActionError = useCallback(
+    (itemId: string, message: string | null) => {
+      clearRowActionErrorTimer(itemId);
+      setRowActionErrorByItemId((current) => {
+        if (!message) {
+          if (!(itemId in current)) {
+            return current;
+          }
+          const next = { ...current };
+          delete next[itemId];
+          return next;
+        }
+
+        if (current[itemId] === message) {
+          return current;
+        }
+
+        return { ...current, [itemId]: message };
+      });
+    },
+    [clearRowActionErrorTimer]
+  );
+
+  const dismissRowActionError = useCallback(
+    (itemId: string) => {
+      setRowActionError(itemId, null);
+    },
+    [setRowActionError]
+  );
+
+  const setTimedRowActionError = useCallback(
+    (itemId: string, message: string) => {
+      setRowActionError(itemId, message);
+      const timer = setTimeout(() => {
+        rowActionErrorTimersRef.current.delete(itemId);
+        setRowActionError(itemId, null);
+      }, ROW_ACTION_ERROR_DURATION_MS);
+      rowActionErrorTimersRef.current.set(itemId, timer);
+    },
+    [setRowActionError]
+  );
+
   useEffect(() => {
     const resumeTimers = resumeFeedbackTimersRef.current;
     const pauseTimers = pauseFeedbackTimersRef.current;
+    const rowErrorTimers = rowActionErrorTimersRef.current;
     return () => {
       resumeTimers.forEach((timer) => clearTimeout(timer));
       pauseTimers.forEach((timer) => clearTimeout(timer));
+      rowErrorTimers.forEach((timer) => clearTimeout(timer));
       resumeTimers.clear();
       pauseTimers.clear();
+      rowErrorTimers.clear();
     };
   }, []);
 
@@ -273,11 +334,6 @@ export function useTrackersDashboardController({
     });
   }, [filter, items, query]);
 
-  const deleteConfirmItem = useMemo(
-    () => items.find((item) => item.item_id === deleteConfirmItemId) ?? null,
-    [items, deleteConfirmItemId]
-  );
-
   const resetModal = useCallback(() => {
     setModalStep(1);
     setUrlInput("");
@@ -298,7 +354,7 @@ export function useTrackersDashboardController({
   }, []);
 
   const refresh = useCallback(() => {
-    setActionError(null);
+    setPageError(null);
     startRefreshTransition(() => {
       router.refresh();
     });
@@ -310,7 +366,7 @@ export function useTrackersDashboardController({
         return;
       }
 
-      setActionError(null);
+      setRowActionError(itemId, null);
       setItemActionPending(itemId, true);
       if (action === "delete") {
         setDeletePending(itemId, true);
@@ -339,7 +395,7 @@ export function useTrackersDashboardController({
               setResumeFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
-            setActionError(mapError(error));
+            setTimedRowActionError(itemId, mapError(error));
             const elapsed = Date.now() - resumeActionStartedAt;
             if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
               await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -379,7 +435,7 @@ export function useTrackersDashboardController({
               setPauseFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
-            setActionError(mapError(error));
+            setTimedRowActionError(itemId, mapError(error));
             const elapsed = Date.now() - pauseActionStartedAt;
             if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
               await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -408,10 +464,7 @@ export function useTrackersDashboardController({
             return next;
           });
         } catch (error) {
-          setActionError(mapError(error));
-          startRefreshTransition(() => {
-            router.refresh();
-          });
+          setTimedRowActionError(itemId, mapError(error));
         } finally {
           setItemActionPending(itemId, false);
           setDeletePending(itemId, false);
@@ -423,15 +476,15 @@ export function useTrackersDashboardController({
       clearResumeFeedbackTimer,
       isRefreshPending,
       pendingActionItemIds,
-      router,
       schedulePauseFeedback,
       scheduleResumeFeedback,
       setDeletePending,
       setItemActionPending,
       setPauseFeedbackState,
+      setRowActionError,
       setResumeFeedbackState,
+      setTimedRowActionError,
       startActionTransition,
-      startRefreshTransition,
     ]
   );
 
@@ -441,8 +494,7 @@ export function useTrackersDashboardController({
         return;
       }
 
-      setActionError(null);
-      setDeleteConfirmItemId(itemId);
+      setDeleteConfirmItemId((current) => (current === itemId ? null : itemId));
     },
     [isRefreshPending, pendingActionItemIds]
   );
@@ -529,7 +581,7 @@ export function useTrackersDashboardController({
     );
 
     setModalError(null);
-    setActionError(null);
+    setPageError(null);
     closeModal();
 
     startSaveTransition(async () => {
@@ -554,7 +606,7 @@ export function useTrackersDashboardController({
         setItemsState((current) =>
           current.filter((item) => item.item_id !== optimisticItemId)
         );
-        setActionError(mapError(error));
+        setPageError(mapError(error));
         startRefreshTransition(() => {
           router.refresh();
         });
@@ -590,11 +642,12 @@ export function useTrackersDashboardController({
     minInterval,
     modalError,
     modalStep,
+    deleteConfirmItemId,
+    dismissRowActionError,
     pendingActionItemIds,
     pendingDeleteItemIds,
     pauseFeedbackByItemId,
-    deleteConfirmItem,
-    isDeleteConfirmOpen: deleteConfirmItemId !== null,
+    rowActionErrorByItemId,
     preview,
     query,
     resumeFeedbackByItemId,
