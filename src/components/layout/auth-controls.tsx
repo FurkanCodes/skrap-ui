@@ -7,6 +7,7 @@ import { Copy, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { clearViewerCache } from "@/features/tracking/viewer/viewer-cache";
+import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 import { authClient } from "@/lib/auth-client";
 
 function mapAuthError(error: unknown): string {
@@ -26,7 +27,7 @@ export default function AuthControls() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const { isAuthenticated, sessionPending, sessionUser } = useViewer();
 
   const copyJwt = () => {
     setStatusMessage(null);
@@ -65,22 +66,17 @@ export default function AuthControls() {
 
   return (
     <div className="ml-auto flex items-center gap-2">
-      {sessionPending ? (
-        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="size-3.5 animate-spin" />
-          Checking session
-        </div>
-      ) : session?.user ? (
+      {isAuthenticated ? (
         <>
           <span className="hidden text-xs text-muted-foreground md:inline">
-            {session.user.email ?? session.user.name ?? "Signed in"}
+            {sessionUser?.email ?? sessionUser?.name ?? "Signed in"}
           </span>
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={copyJwt}
-            disabled={isPending}
+            disabled={isPending || sessionPending}
             title="Copy Bearer JWT for Swagger"
           >
             {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Copy className="size-3.5" />}

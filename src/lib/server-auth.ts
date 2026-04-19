@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "crypto";
 import { headers } from "next/headers";
 
+import { getAuthContext } from "@/lib/auth-dal";
 import { getAuth } from "@/lib/auth";
 
 export class UnauthenticatedError extends Error {
@@ -98,15 +99,19 @@ function writeCachedAccessToken(cacheKey: string, token: string, now = Date.now(
 }
 
 export async function requireSession() {
-  const auth = getAuth();
-  const incomingHeaders = await headers();
-  const session = await auth.api.getSession({
-    headers: incomingHeaders,
-  });
-  if (!session) {
+  const authContext = await getAuthContext();
+  if (!authContext) {
     throw new UnauthenticatedError();
   }
-  return session;
+  return authContext.authSession;
+}
+
+export async function requireUserId(): Promise<string> {
+  const authContext = await getAuthContext();
+  if (!authContext) {
+    throw new UnauthenticatedError();
+  }
+  return authContext.userId;
 }
 
 export async function getAccessTokenForFastApi(): Promise<string> {

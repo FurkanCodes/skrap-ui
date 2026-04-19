@@ -11,7 +11,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import { authClient } from "@/lib/auth-client";
 import type { MeResponse } from "@/features/tracking/types";
 import {
   clearViewerCache as clearViewerCacheStore,
@@ -21,11 +20,13 @@ import {
   subscribeViewerCache,
   writeViewerCache,
 } from "@/features/tracking/viewer/viewer-cache";
+import type { ViewerSessionUser } from "@/lib/session-user";
 
 interface ViewerProviderProps {
   children: React.ReactNode;
   initialMe: MeResponse | null;
   initialUserKey: string | null;
+  initialSessionUser: ViewerSessionUser | null;
 }
 
 interface ViewerContextValue {
@@ -33,46 +34,23 @@ interface ViewerContextValue {
   fetchedAt: number | null;
   expiresAt: number | null;
   isFresh: boolean;
+  isAuthenticated: boolean;
+  sessionPending: boolean;
+  sessionUser: ViewerSessionUser | null;
   clearViewerCache: () => void;
   refreshViewer: () => void;
 }
 
 const ViewerContext = createContext<ViewerContextValue | null>(null);
 
-function getSessionUserKey(session: unknown): string | null {
-  if (!session || typeof session !== "object") {
-    return null;
-  }
-
-  const user = (session as { user?: { id?: unknown; email?: unknown; name?: unknown } }).user;
-  if (!user || typeof user !== "object") {
-    return null;
-  }
-
-  if (typeof user.id === "string" && user.id.trim().length > 0) {
-    return user.id;
-  }
-
-  if (typeof user.email === "string" && user.email.trim().length > 0) {
-    return user.email;
-  }
-
-  if (typeof user.name === "string" && user.name.trim().length > 0) {
-    return user.name;
-  }
-
-  return null;
-}
-
 export function ViewerProvider({
   children,
   initialMe,
   initialUserKey,
+  initialSessionUser,
 }: ViewerProviderProps) {
   const router = useRouter();
-  const { data: session, isPending: sessionPending } = authClient.useSession();
   const didRefreshForExpiry = useRef(false);
-  const sessionUserKey = useMemo(() => getSessionUserKey(session), [session]);
   const viewerRecord = useSyncExternalStore(
     subscribeViewerCache,
     readViewerCache,
@@ -91,11 +69,7 @@ export function ViewerProvider({
   }, [initialMe, initialUserKey]);
 
   useEffect(() => {
-    if (sessionPending) {
-      return;
-    }
-
-    if (!sessionUserKey) {
+    if (!initialUserKey) {
       clearViewerCacheStore();
       didRefreshForExpiry.current = false;
       return;
@@ -106,7 +80,7 @@ export function ViewerProvider({
       return;
     }
 
-    if (snapshot.userKey !== sessionUserKey) {
+    if (snapshot.userKey !== initialUserKey) {
       clearViewerCacheStore();
       return;
     }
@@ -121,14 +95,14 @@ export function ViewerProvider({
     }
 
     didRefreshForExpiry.current = false;
-  }, [router, sessionPending, sessionUserKey, viewerRecord?.expiresAt, viewerRecord?.userKey]);
+  }, [initialUserKey, router, viewerRecord?.expiresAt, viewerRecord?.userKey]);
 
   useEffect(() => {
-    if (sessionPending || !sessionUserKey || !viewerUserKey || !viewerExpiresAt) {
+    if (!initialUserKey || !viewerUserKey || !viewerExpiresAt) {
       return;
     }
 
-    if (viewerUserKey !== sessionUserKey) {
+    if (viewerUserKey !== initialUserKey) {
       clearViewerCacheStore();
       return;
     }
@@ -148,7 +122,7 @@ export function ViewerProvider({
       if (!snapshot) {
         return;
       }
-      if (snapshot.userKey !== sessionUserKey) {
+      if (snapshot.userKey !== initialUserKey) {
         clearViewerCacheStore();
         return;
       }
@@ -165,9 +139,8 @@ export function ViewerProvider({
 
     return () => window.clearTimeout(timer);
   }, [
+    initialUserKey,
     router,
-    sessionPending,
-    sessionUserKey,
     viewerExpiresAt,
     viewerUserKey,
   ]);
@@ -185,27 +158,32 @@ export function ViewerProvider({
     if (!initialMe || !initialUserKey) {
       return null;
     }
-    if (sessionPending) {
-      return initialMe;
-    }
-    if (!sessionUserKey || sessionUserKey !== initialUserKey) {
-      return null;
-    }
     return initialMe;
-  }, [initialMe, initialUserKey, sessionPending, sessionUserKey]);
+  }, [initialMe, initialUserKey]);
 
   const value = useMemo<ViewerContextValue>(() => {
     const isFreshRecord = viewerRecord ? isViewerCacheFresh(viewerRecord) : false;
     const me = isFreshRecord ? viewerRecord?.data ?? null : fallbackMe;
+
     return {
       me,
       fetchedAt: isFreshRecord ? viewerRecord?.fetchedAt ?? null : null,
       expiresAt: isFreshRecord ? viewerRecord?.expiresAt ?? null : null,
       isFresh: isFreshRecord || Boolean(fallbackMe),
+      isAuthenticated: Boolean(initialUserKey),
+      sessionPending: false,
+      sessionUser: initialSessionUser,
       clearViewerCache,
       refreshViewer,
     };
-  }, [clearViewerCache, fallbackMe, refreshViewer, viewerRecord]);
+  }, [
+    clearViewerCache,
+    fallbackMe,
+    initialUserKey,
+    initialSessionUser,
+    refreshViewer,
+    viewerRecord,
+  ]);
 
   return <ViewerContext.Provider value={value}>{children}</ViewerContext.Provider>;
 }

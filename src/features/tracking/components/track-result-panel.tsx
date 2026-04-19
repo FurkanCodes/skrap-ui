@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createTrackedItemAction } from "@/features/tracking/server/actions";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
-import { authClient } from "@/lib/auth-client";
 
 interface TrackResultPanelProps {
   url: string;
@@ -38,8 +37,7 @@ function mapActionError(error: unknown): string {
 }
 
 export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps) {
-  const { data: session, isPending: sessionPending } = authClient.useSession();
-  const { me } = useViewer();
+  const { isAuthenticated, me } = useViewer();
   const [isPending, startTransition] = useTransition();
 
   const [mode, setMode] = useState<TrackingMode>("monitor");
@@ -66,11 +64,11 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
 
   const targetRequired = mode === "alert";
   const canSubmit = useMemo(() => {
-    if (sessionPending || !session?.user) return false;
+    if (!isAuthenticated) return false;
     if (!intervalValue.trim()) return false;
     if (targetRequired && !targetAmount.trim()) return false;
     return true;
-  }, [sessionPending, session?.user, intervalValue, targetRequired, targetAmount]);
+  }, [intervalValue, isAuthenticated, targetRequired, targetAmount]);
 
   const runTrack = () => {
     setError(null);
@@ -135,7 +133,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
         </div>
       </div>
 
-      {!session?.user ? (
+      {!isAuthenticated ? (
         <p className="text-xs text-muted-foreground">
           Sign in to start tracking this product.{" "}
           <Link href="/auth/sign-in?next=/" className="underline underline-offset-4">

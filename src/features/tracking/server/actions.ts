@@ -16,31 +16,10 @@ import type {
   TrackedItemRequest,
   TrackedItemUpdateRequest,
 } from "@/features/tracking/types";
-import { requireSession } from "@/lib/server-auth";
-
-function getSessionUserId(session: unknown): string | null {
-  if (!session || typeof session !== "object") {
-    return null;
-  }
-
-  const user = (session as { user?: { id?: unknown } }).user;
-  if (!user || typeof user !== "object") {
-    return null;
-  }
-
-  if (typeof user.id === "string" && user.id.trim().length > 0) {
-    return user.id;
-  }
-
-  return null;
-}
+import { requireSession, requireUserId } from "@/lib/server-auth";
 
 async function getTrackedItemsTagForCurrentSession(): Promise<string | null> {
-  const session = await requireSession();
-  const userId = getSessionUserId(session);
-  if (!userId) {
-    return null;
-  }
+  const userId = await requireUserId();
   return getTrackedItemsTag(userId);
 }
 

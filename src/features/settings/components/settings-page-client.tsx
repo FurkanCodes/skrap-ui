@@ -9,7 +9,6 @@ import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 
 interface SettingsPageClientProps {
-  isAuthenticated: boolean;
   initialStatus: TelegramActiveStatusResponse | null;
   initialError: string | null;
   trackedCount: number;
@@ -27,12 +26,11 @@ function formatMinimumInterval(value: number): string {
 }
 
 export function SettingsPageClient({
-  isAuthenticated,
   initialStatus,
   initialError,
   trackedCount,
 }: SettingsPageClientProps) {
-  const { me } = useViewer();
+  const { isAuthenticated, me } = useViewer();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
@@ -54,7 +52,11 @@ export function SettingsPageClient({
         <p className="text-sm text-muted-foreground">Manage integrations and notification preferences.</p>
       </header>
 
-      <TelegramLinkCard isAuthenticated={isAuthenticated} initialStatus={initialStatus} initialError={initialError} />
+      <TelegramLinkCard
+        isAuthenticated={isAuthenticated}
+        initialStatus={initialStatus}
+        initialError={initialError}
+      />
 
       <Card className="rounded-2xl border-border/80 bg-card/95 shadow-sm">
         <CardHeader>

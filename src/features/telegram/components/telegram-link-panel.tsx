@@ -1,9 +1,7 @@
-import { headers } from "next/headers";
-
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
-import { getAuth } from "@/lib/auth";
+import { getAuthContext } from "@/lib/auth-dal";
 
 function mapError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
@@ -19,11 +17,8 @@ function mapError(error: unknown): string {
 }
 
 export async function TelegramLinkPanel() {
-  const auth = getAuth();
-  const incomingHeaders = await headers();
-  const session = await auth.api.getSession({ headers: incomingHeaders });
-
-  if (!session?.user) {
+  const auth = await getAuthContext();
+  if (!auth) {
     return (
       <TelegramLinkCard
         isAuthenticated={false}

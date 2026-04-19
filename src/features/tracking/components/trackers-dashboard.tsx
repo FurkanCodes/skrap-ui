@@ -1,10 +1,8 @@
-import { headers } from "next/headers";
-
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { TrackersDashboardClient } from "@/features/tracking/components/trackers-dashboard-client";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import type { TrackedItemSummary } from "@/features/tracking/types";
-import { getAuth } from "@/lib/auth";
+import { getAuthContext } from "@/lib/auth-dal";
 
 function mapError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
@@ -19,29 +17,9 @@ function mapError(error: unknown): string {
   return "Unable to load trackers.";
 }
 
-function getSessionUserId(session: unknown): string | null {
-  if (!session || typeof session !== "object") {
-    return null;
-  }
-
-  const user = (session as { user?: { id?: unknown } }).user;
-  if (!user || typeof user !== "object") {
-    return null;
-  }
-
-  if (typeof user.id === "string" && user.id.trim().length > 0) {
-    return user.id;
-  }
-
-  return null;
-}
-
 export async function TrackersDashboard() {
-  const auth = getAuth();
-  const incomingHeaders = await headers();
-  const session = await auth.api.getSession({ headers: incomingHeaders });
-
-  if (!session?.user) {
+  const auth = await getAuthContext();
+  if (!auth) {
     return (
       <TrackersDashboardClient
         isAuthenticated={false}
@@ -58,18 +36,21 @@ export async function TrackersDashboard() {
   let telegramConnected: boolean | null = null;
   let telegramBotUsername: string | null = null;
 
-  try {
-    const response = await listTrackedItemsQuery({ userId: getSessionUserId(session) });
-    initialItems = response.items;
-  } catch (error) {
-    initialError = mapError(error);
+  const [trackedResult, telegramResult] = await Promise.allSettled([
+    listTrackedItemsQuery({ userId: auth.userId }),
+    getTelegramStatusQuery(),
+  ]);
+
+  if (trackedResult.status === "fulfilled") {
+    initialItems = trackedResult.value.items;
+  } else {
+    initialError = mapError(trackedResult.reason);
   }
 
-  try {
-    const telegram = await getTelegramStatusQuery();
-    telegramConnected = telegram.connected;
-    telegramBotUsername = telegram.bot_username;
-  } catch {
+  if (telegramResult.status === "fulfilled") {
+    telegramConnected = telegramResult.value.connected;
+    telegramBotUsername = telegramResult.value.bot_username;
+  } else {
     telegramConnected = null;
     telegramBotUsername = null;
   }

@@ -1,9 +1,7 @@
-import { headers } from "next/headers";
-
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import { TrackedItemsPanelClient } from "@/features/tracking/components/tracked-items-panel-client";
 import type { TrackedItemSummary } from "@/features/tracking/types";
-import { getAuth } from "@/lib/auth";
+import { getAuthContext } from "@/lib/auth-dal";
 
 function mapError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
@@ -18,29 +16,9 @@ function mapError(error: unknown): string {
   return "Unable to load tracked items.";
 }
 
-function getSessionUserId(session: unknown): string | null {
-  if (!session || typeof session !== "object") {
-    return null;
-  }
-
-  const user = (session as { user?: { id?: unknown } }).user;
-  if (!user || typeof user !== "object") {
-    return null;
-  }
-
-  if (typeof user.id === "string" && user.id.trim().length > 0) {
-    return user.id;
-  }
-
-  return null;
-}
-
 export async function TrackedItemsPanel() {
-  const auth = getAuth();
-  const incomingHeaders = await headers();
-  const session = await auth.api.getSession({ headers: incomingHeaders });
-
-  if (!session?.user) {
+  const auth = await getAuthContext();
+  if (!auth) {
     return (
       <TrackedItemsPanelClient
         isAuthenticated={false}
@@ -54,7 +32,7 @@ export async function TrackedItemsPanel() {
   let initialError: string | null = null;
 
   try {
-    const response = await listTrackedItemsQuery({ userId: getSessionUserId(session) });
+    const response = await listTrackedItemsQuery({ userId: auth.userId });
     initialItems = response.items;
   } catch (error) {
     initialError = mapError(error);
