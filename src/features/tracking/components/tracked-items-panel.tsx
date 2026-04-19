@@ -38,8 +38,14 @@ export async function TrackedItemsPanel() {
     initialError = mapError(error);
   }
 
+  const itemsKey = initialItems
+    .map((item) => `${item.item_id}:${item.status}:${item.updated_at}`)
+    .join("|");
+  const panelKey = `${auth.userId}:${itemsKey}`;
+
   return (
     <TrackedItemsPanelClient
+      key={panelKey}
       isAuthenticated={true}
       initialItems={initialItems}
       initialError={initialError}

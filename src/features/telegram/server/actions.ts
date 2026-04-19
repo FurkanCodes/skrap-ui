@@ -1,14 +1,15 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 import { getBackendJson, postBackendJson } from "@/features/scraper/server/backend-client";
+import { getTelegramStatusTag } from "@/features/telegram/server/cache-tags";
 import type {
   TelegramActiveStatusResponse,
   TelegramConnectStartResponse,
   TelegramConnectStatusResponse,
 } from "@/features/telegram/types";
-import { requireSession } from "@/lib/server-auth";
+import { requireSession, requireUserId } from "@/lib/server-auth";
 
 function normalizeConnectState(state: string): string {
   const normalized = state.trim();
@@ -16,6 +17,11 @@ function normalizeConnectState(state: string): string {
     throw new Error("Connect state is required.");
   }
   return normalized;
+}
+
+async function revalidateTelegramStatus(): Promise<void> {
+  const userId = await requireUserId();
+  revalidateTag(getTelegramStatusTag(userId), "max");
 }
 
 export async function startTelegramConnectAction(): Promise<TelegramConnectStartResponse> {
@@ -40,7 +46,7 @@ export async function checkTelegramConnectStatusAction(
   );
 
   if (status.status === "connected") {
-    revalidatePath("/", "page");
+    await revalidateTelegramStatus();
   }
 
   return status;
@@ -49,8 +55,10 @@ export async function checkTelegramConnectStatusAction(
 export async function refreshTelegramStatusAction(): Promise<TelegramActiveStatusResponse> {
   await requireSession();
 
-  return getBackendJson<TelegramActiveStatusResponse>("/api/v1/integrations/telegram/status", {
+  const status = await getBackendJson<TelegramActiveStatusResponse>("/api/v1/integrations/telegram/status", {
     auth: true,
     cache: "no-store",
   });
+  await revalidateTelegramStatus();
+  return status;
 }

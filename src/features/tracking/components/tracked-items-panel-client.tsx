@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
@@ -19,6 +19,11 @@ interface TrackedItemsPanelClientProps {
   isAuthenticated: boolean;
   initialItems: TrackedItemSummary[];
   initialError: string | null;
+}
+
+interface ItemOptimisticAction {
+  type: "pause" | "resume" | "delete";
+  itemId: string;
 }
 
 function mapError(error: unknown): string {
@@ -46,22 +51,43 @@ function formatInterval(value: number): string {
   return `${value}m`;
 }
 
+function applyItemAction(
+  current: TrackedItemSummary[],
+  action: ItemOptimisticAction
+): TrackedItemSummary[] {
+  if (action.type === "delete") {
+    return current.filter((item) => item.item_id !== action.itemId);
+  }
+
+  const nextStatus = action.type === "pause" ? "paused" : "active";
+  return current.map((item) =>
+    item.item_id === action.itemId ? { ...item, status: nextStatus } : item
+  );
+}
+
 export function TrackedItemsPanelClient({
   isAuthenticated,
   initialItems,
   initialError,
 }: TrackedItemsPanelClientProps) {
   const router = useRouter();
+  const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
+  const [items, applyOptimisticItemAction] = useOptimistic<
+    TrackedItemSummary[],
+    ItemOptimisticAction
+  >(itemsState, applyItemAction);
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshPending, startRefreshTransition] = useTransition();
+  const [isActionTransitionPending, startActionTransition] = useTransition();
   const displayError = actionError ?? initialError;
+  const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
 
   const summary = useMemo(() => {
-    const active = initialItems.filter((item) => item.status === "active").length;
-    return { total: initialItems.length, active };
-  }, [initialItems]);
+    const active = items.filter((item) => item.status === "active").length;
+    return { total: items.length, active };
+  }, [items]);
 
   const refresh = () => {
     setActionError(null);
@@ -72,13 +98,16 @@ export function TrackedItemsPanelClient({
   };
 
   const runItemAction = (itemId: string, action: "pause" | "resume" | "delete") => {
-    if (isActionPending || isRefreshPending) {
+    if (isMutating) {
       return;
     }
     setBusyItemId(itemId);
     setActionError(null);
     setIsActionPending(true);
-    void (async () => {
+    const itemAction: ItemOptimisticAction = { type: action, itemId };
+
+    startActionTransition(async () => {
+      applyOptimisticItemAction(itemAction);
       try {
         if (action === "pause") {
           await pauseTrackedItemAction(itemId);
@@ -87,13 +116,18 @@ export function TrackedItemsPanelClient({
         } else {
           await deleteTrackedItemAction(itemId);
         }
+
+        setItemsState((current) => applyItemAction(current, itemAction));
       } catch (actionError) {
         setActionError(mapError(actionError));
+        startRefreshTransition(() => {
+          router.refresh();
+        });
       } finally {
         setBusyItemId(null);
         setIsActionPending(false);
       }
-    })();
+    });
   };
 
   if (!isAuthenticated) {
@@ -128,7 +162,7 @@ export function TrackedItemsPanelClient({
           size="sm"
           variant="outline"
           onClick={refresh}
-          disabled={isRefreshPending || isActionPending}
+          disabled={isMutating}
         >
           {isRefreshPending ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -146,12 +180,12 @@ export function TrackedItemsPanelClient({
           </p>
         ) : null}
 
-        {initialItems.length === 0 ? (
+        {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             You don&apos;t have tracked items yet. Run a scrape and click <strong>Track item</strong>.
           </p>
         ) : (
-          initialItems.map((item) => {
+          items.map((item) => {
             const busy = isActionPending && busyItemId === item.item_id;
             return (
               <div
@@ -176,7 +210,7 @@ export function TrackedItemsPanelClient({
                       size="xs"
                       variant="outline"
                       onClick={() => runItemAction(item.item_id, "pause")}
-                      disabled={busy || isRefreshPending}
+                      disabled={busy || isMutating}
                     >
                       {busy ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -191,7 +225,7 @@ export function TrackedItemsPanelClient({
                       size="xs"
                       variant="outline"
                       onClick={() => runItemAction(item.item_id, "resume")}
-                      disabled={busy || isRefreshPending}
+                      disabled={busy || isMutating}
                     >
                       {busy ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -206,7 +240,7 @@ export function TrackedItemsPanelClient({
                     size="xs"
                     variant="destructive"
                     onClick={() => runItemAction(item.item_id, "delete")}
-                    disabled={busy || isRefreshPending}
+                    disabled={busy || isMutating}
                   >
                     <Trash2 className="size-3.5" />
                     Delete

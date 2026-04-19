@@ -55,8 +55,14 @@ export async function TrackersDashboard() {
     telegramBotUsername = null;
   }
 
+  const itemsKey = initialItems
+    .map((item) => `${item.item_id}:${item.status}:${item.updated_at}`)
+    .join("|");
+  const dashboardKey = `${auth.userId}:${itemsKey}:${telegramConnected ?? "unknown"}:${telegramBotUsername ?? ""}`;
+
   return (
     <TrackersDashboardClient
+      key={dashboardKey}
       isAuthenticated={true}
       initialItems={initialItems}
       initialError={initialError}

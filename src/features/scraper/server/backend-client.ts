@@ -164,9 +164,14 @@ export async function getBackendJson<TResponse>(
   path: string,
   options: BackendCallOptions = {}
 ): Promise<TResponse> {
-  const headers: Record<string, string> = {
-    "X-Request-ID": options.requestId?.trim() || randomUUID().replace(/-/g, ""),
-  };
+  const cacheMode = options.cache ?? "no-store";
+  const explicitRequestId = options.requestId?.trim() || "";
+  const requestId =
+    explicitRequestId || (cacheMode === "no-store" ? randomUUID().replace(/-/g, "") : "");
+  const headers: Record<string, string> = {};
+  if (requestId) {
+    headers["X-Request-ID"] = requestId;
+  }
 
   if (options.auth) {
     const token = await getAccessTokenForFastApi();
@@ -181,7 +186,7 @@ export async function getBackendJson<TResponse>(
   } = {
     method: "GET",
     headers,
-    cache: options.cache ?? "no-store",
+    cache: cacheMode,
   };
   if (options.next) {
     fetchOptions.next = options.next;

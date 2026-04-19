@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 import {
   deleteBackend,
@@ -27,7 +27,6 @@ function revalidateTrackedItems(tag: string | null): void {
   if (tag) {
     revalidateTag(tag, "max");
   }
-  revalidatePath("/", "page");
 }
 
 function normalizeProductUrl(rawUrl: string): string {

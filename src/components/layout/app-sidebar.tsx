@@ -40,7 +40,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <Sidebar className="border-r border-sidebar-border bg-white/90 backdrop-blur">
         <SidebarHeader className="px-4 py-4">
-          <Link href="/" className="inline-flex items-center">
+          <Link href="/" prefetch={false} className="inline-flex items-center">
             <Logo />
           </Link>
         </SidebarHeader>
@@ -57,7 +57,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      render={<Link href={item.href} />}
+                      render={<Link href={item.href} prefetch={false} />}
                       className="h-10 rounded-xl px-3 text-sm"
                     >
                       <item.icon className="size-4" />

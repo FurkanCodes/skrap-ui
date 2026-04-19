@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,16 @@ interface TrackersDashboardClientProps {
   telegramConnected: boolean | null;
   telegramBotUsername: string | null;
 }
+
+type ItemOptimisticAction =
+  | {
+      type: "pause" | "resume" | "delete";
+      itemId: string;
+    }
+  | {
+      type: "add";
+      item: TrackedItemSummary;
+    };
 
 type FilterKey = "all" | "active" | "paused" | "alert" | "monitor";
 type TrackingMode = "alert" | "monitor";
@@ -197,6 +207,91 @@ function DotSteps({ step }: { step: 1 | 2 }) {
   );
 }
 
+function toOptionalString(value: unknown): string | null {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  return null;
+}
+
+function toTrackedItemSummary(
+  raw: unknown,
+  fallback: TrackedItemSummary
+): TrackedItemSummary {
+  if (!raw || typeof raw !== "object") {
+    return fallback;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const status =
+    record.status === "paused" || record.status === "active"
+      ? record.status
+      : fallback.status;
+  const trackingMode =
+    record.tracking_mode === "monitor" || record.tracking_mode === "alert"
+      ? record.tracking_mode
+      : fallback.tracking_mode;
+  const interval =
+    typeof record.check_interval_minutes === "number" &&
+    Number.isInteger(record.check_interval_minutes) &&
+    record.check_interval_minutes > 0
+      ? record.check_interval_minutes
+      : fallback.check_interval_minutes;
+
+  return {
+    item_id: toOptionalString(record.item_id) ?? fallback.item_id,
+    source_url:
+      toOptionalString(record.source_url) ??
+      toOptionalString(record.url) ??
+      fallback.source_url,
+    product_name:
+      record.product_name === null
+        ? null
+        : (toOptionalString(record.product_name) ?? fallback.product_name),
+    status,
+    tracking_mode: trackingMode,
+    check_interval_minutes: interval,
+    target_amount:
+      record.target_amount === null
+        ? null
+        : (toOptionalString(record.target_amount) ?? fallback.target_amount),
+    last_amount:
+      record.last_amount === null
+        ? null
+        : (toOptionalString(record.last_amount) ?? fallback.last_amount),
+    currency:
+      record.currency === null
+        ? null
+        : (toOptionalString(record.currency) ?? fallback.currency),
+    next_check_at:
+      record.next_check_at === null
+        ? null
+        : (toOptionalString(record.next_check_at) ?? fallback.next_check_at),
+    updated_at: toOptionalString(record.updated_at) ?? fallback.updated_at,
+  };
+}
+
+function applyItemAction(
+  current: TrackedItemSummary[],
+  action: ItemOptimisticAction
+): TrackedItemSummary[] {
+  if (action.type === "add") {
+    return [action.item, ...current];
+  }
+
+  if (action.type === "delete") {
+    return current.filter((item) => item.item_id !== action.itemId);
+  }
+
+  const nextStatus = action.type === "pause" ? "paused" : "active";
+  return current.map((item) =>
+    item.item_id === action.itemId ? { ...item, status: nextStatus } : item
+  );
+}
+
 export function TrackersDashboardClient({
   isAuthenticated,
   initialItems,
@@ -206,6 +301,11 @@ export function TrackersDashboardClient({
 }: TrackersDashboardClientProps) {
   const router = useRouter();
   const { me } = useViewer();
+  const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
+  const [items, applyOptimisticItemAction] = useOptimistic<
+    TrackedItemSummary[],
+    ItemOptimisticAction
+  >(itemsState, applyItemAction);
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -214,6 +314,7 @@ export function TrackersDashboardClient({
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshPending, startRefreshTransition] = useTransition();
+  const [isActionTransitionPending, startActionTransition] = useTransition();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<1 | 2>(1);
@@ -230,12 +331,13 @@ export function TrackersDashboardClient({
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
   const displayError = actionError ?? initialError;
   const botUsername = normalizeBotUsername(telegramBotUsername);
+  const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
 
   const summary = useMemo(() => {
-    const active = initialItems.filter((item) => item.status === "active").length;
-    const alerts = initialItems.filter((item) => item.tracking_mode === "alert").length;
+    const active = items.filter((item) => item.status === "active").length;
+    const alerts = items.filter((item) => item.tracking_mode === "alert").length;
 
-    const saved = initialItems.reduce((sum, item) => {
+    const saved = items.reduce((sum, item) => {
       const current = parseNumberish(item.last_amount);
       const target = parseNumberish(item.target_amount);
       if (!current || !target) {
@@ -249,12 +351,12 @@ export function TrackersDashboardClient({
       alerts,
       saved,
     };
-  }, [initialItems]);
+  }, [items]);
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return initialItems.filter((item) => {
+    return items.filter((item) => {
       const matchesQuery =
         normalizedQuery.length === 0 ||
         (item.product_name ?? "").toLowerCase().includes(normalizedQuery) ||
@@ -274,7 +376,7 @@ export function TrackersDashboardClient({
       }
       return true;
     });
-  }, [filter, initialItems, query]);
+  }, [filter, items, query]);
 
   const resetModal = () => {
     setModalStep(1);
@@ -303,15 +405,17 @@ export function TrackersDashboardClient({
   };
 
   const runItemAction = (itemId: string, action: "pause" | "resume" | "delete") => {
-    if (isActionPending || isRefreshPending) {
+    if (isMutating) {
       return;
     }
 
     setBusyItemId(itemId);
     setActionError(null);
     setIsActionPending(true);
+    const itemAction: ItemOptimisticAction = { type: action, itemId };
 
-    void (async () => {
+    startActionTransition(async () => {
+      applyOptimisticItemAction(itemAction);
       try {
         if (action === "pause") {
           await pauseTrackedItemAction(itemId);
@@ -320,14 +424,18 @@ export function TrackersDashboardClient({
         } else {
           await deleteTrackedItemAction(itemId);
         }
-        router.refresh();
+
+        setItemsState((current) => applyItemAction(current, itemAction));
       } catch (error) {
         setActionError(mapError(error));
+        startRefreshTransition(() => {
+          router.refresh();
+        });
       } finally {
         setBusyItemId(null);
         setIsActionPending(false);
       }
-    })();
+    });
   };
 
   const fetchProductPreview = () => {
@@ -369,21 +477,45 @@ export function TrackersDashboardClient({
     }
 
     setModalError(null);
+    setActionError(null);
+    closeModal();
 
     startSaveTransition(async () => {
+      const optimisticItem: TrackedItemSummary = {
+        item_id: `optimistic-${crypto.randomUUID()}`,
+        source_url: preview.url,
+        product_name: preview.product_name ?? preview.url,
+        status: "active",
+        tracking_mode: trackingMode,
+        check_interval_minutes: parsedInterval,
+        target_amount: trackingMode === "alert" ? targetAmount.trim() : null,
+        last_amount: preview.amount,
+        currency: preview.currency,
+        next_check_at: null,
+        updated_at: new Date().toISOString(),
+      };
+
+      applyOptimisticItemAction({
+        type: "add",
+        item: optimisticItem,
+      });
+
       try {
-        await createTrackedItemAction({
+        const response = (await createTrackedItemAction({
           url: preview.url,
           sites: preview.site_key ? [preview.site_key] : undefined,
           fetch_mode: "auto",
           check_interval_minutes: parsedInterval,
           target_amount: trackingMode === "alert" ? targetAmount.trim() : null,
-        });
+        })) as { item?: unknown };
 
-        closeModal();
-        router.refresh();
+        const committedItem = toTrackedItemSummary(response.item, optimisticItem);
+        setItemsState((current) => [committedItem, ...current]);
       } catch (error) {
-        setModalError(mapError(error));
+        setActionError(mapError(error));
+        startRefreshTransition(() => {
+          router.refresh();
+        });
       }
     });
   };
@@ -413,7 +545,7 @@ export function TrackersDashboardClient({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button type="button" size="sm" variant="outline" onClick={refresh} disabled={isRefreshPending || isActionPending}>
+          <Button type="button" size="sm" variant="outline" onClick={refresh} disabled={isMutating}>
             {isRefreshPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
             Refresh
           </Button>
@@ -427,6 +559,7 @@ export function TrackersDashboardClient({
       {telegramConnected === false ? (
         <Link
           href="/settings"
+          prefetch={false}
           className="group block rounded-2xl border border-border/80 bg-card/80 px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
         >
           <div className="flex items-center justify-between gap-3">
@@ -628,7 +761,7 @@ export function TrackersDashboardClient({
                         type="button"
                         size="icon-sm"
                         variant="outline"
-                        disabled={busy || isRefreshPending}
+                        disabled={busy || isMutating}
                         onClick={() => runItemAction(item.item_id, "pause")}
                       >
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Pause className="size-3.5" />}
@@ -638,7 +771,7 @@ export function TrackersDashboardClient({
                         type="button"
                         size="icon-sm"
                         variant="outline"
-                        disabled={busy || isRefreshPending}
+                        disabled={busy || isMutating}
                         onClick={() => runItemAction(item.item_id, "resume")}
                       >
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
@@ -649,7 +782,7 @@ export function TrackersDashboardClient({
                       type="button"
                       size="icon-sm"
                       variant="outline"
-                      disabled={busy || isRefreshPending}
+                      disabled={busy || isMutating}
                       onClick={() => runItemAction(item.item_id, "delete")}
                     >
                       <Trash2 className="size-3.5" />
@@ -663,7 +796,7 @@ export function TrackersDashboardClient({
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        {initialItems.length} / {maxTrackers} trackers used on {me?.entitlement.plan_key ?? "current"} plan
+        {items.length} / {maxTrackers} trackers used on {me?.entitlement.plan_key ?? "current"} plan
       </p>
 
       {isModalOpen ? (
