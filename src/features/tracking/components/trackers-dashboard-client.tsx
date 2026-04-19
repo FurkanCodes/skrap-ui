@@ -251,6 +251,10 @@ function toTrackedItemSummary(
       record.product_name === null
         ? null
         : (toOptionalString(record.product_name) ?? fallback.product_name),
+    image_url:
+      record.image_url === null
+        ? null
+        : (toOptionalString(record.image_url) ?? fallback.image_url),
     status,
     tracking_mode: trackingMode,
     check_interval_minutes: interval,
@@ -485,6 +489,7 @@ export function TrackersDashboardClient({
         item_id: `optimistic-${crypto.randomUUID()}`,
         source_url: preview.url,
         product_name: preview.product_name ?? preview.url,
+        image_url: preview.image_url,
         status: "active",
         tracking_mode: trackingMode,
         check_interval_minutes: parsedInterval,
@@ -668,6 +673,11 @@ export function TrackersDashboardClient({
             const domain = getDomainLabel(item.source_url);
             const productName = item.product_name ?? item.source_url;
             const imageFallbackText = productName.slice(0, 1).toUpperCase() || "P";
+            const productImageUrl =
+              typeof item.image_url === "string" && item.image_url.trim().length > 0
+                ? item.image_url
+                : null;
+            const faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(item.source_url)}`;
 
             return (
               <article
@@ -676,19 +686,24 @@ export function TrackersDashboardClient({
               >
                 <div className="flex gap-3">
                   <div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border/70 bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
-                    {item.item_id && item.item_id.length % 2 === 0 ? (
-                      <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 via-zinc-100 to-zinc-50 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950" />
-                    ) : null}
-                    {item.item_id && item.item_id.length % 2 === 1 ? (
+                    {productImageUrl ? (
                       <Image
-                        src={`https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(item.source_url)}`}
+                        src={productImageUrl}
+                        alt={productName}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={faviconUrl}
                         alt="Store"
                         fill
                         unoptimized
                         className="object-cover p-5 opacity-70"
                       />
-                    ) : null}
-                    <span className="relative z-10">{imageFallbackText}</span>
+                    )}
+                    {!productImageUrl ? <span className="relative z-10">{imageFallbackText}</span> : null}
                   </div>
 
                   <div className="min-w-0 flex-1 space-y-2">

@@ -29,6 +29,7 @@ export interface TrackedItemSummary {
   item_id: string;
   source_url: string;
   product_name: string | null;
+  image_url: string | null;
   status: TrackingStatus;
   tracking_mode: "monitor" | "alert";
   check_interval_minutes: number;
