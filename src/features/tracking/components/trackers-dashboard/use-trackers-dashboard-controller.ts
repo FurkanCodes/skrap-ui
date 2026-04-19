@@ -62,6 +62,8 @@ export function useTrackersDashboardController({
 
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
+  const [pendingDeleteItemId, setPendingDeleteItemId] = useState<string | null>(null);
+  const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshPending, startRefreshTransition] = useTransition();
   const [isActionTransitionPending, startActionTransition] = useTransition();
@@ -233,6 +235,11 @@ export function useTrackersDashboardController({
     });
   }, [filter, items, query]);
 
+  const deleteConfirmItem = useMemo(
+    () => items.find((item) => item.item_id === deleteConfirmItemId) ?? null,
+    [items, deleteConfirmItemId]
+  );
+
   const resetModal = useCallback(() => {
     setModalStep(1);
     setUrlInput("");
@@ -268,6 +275,7 @@ export function useTrackersDashboardController({
       setBusyItemId(itemId);
       setActionError(null);
       setIsActionPending(true);
+      setPendingDeleteItemId(action === "delete" ? itemId : null);
       const itemAction: ItemMutationAction = { type: action, itemId };
 
       if (action === "resume") {
@@ -370,6 +378,7 @@ export function useTrackersDashboardController({
         } finally {
           setBusyItemId(null);
           setIsActionPending(false);
+          setPendingDeleteItemId(null);
         }
       });
     },
@@ -386,6 +395,35 @@ export function useTrackersDashboardController({
       startRefreshTransition,
     ]
   );
+
+  const requestDeleteAction = useCallback(
+    (itemId: string) => {
+      if (isMutating) {
+        return;
+      }
+
+      setActionError(null);
+      setDeleteConfirmItemId(itemId);
+    },
+    [isMutating]
+  );
+
+  const cancelDeleteAction = useCallback(() => {
+    if (isActionPending) {
+      return;
+    }
+    setDeleteConfirmItemId(null);
+  }, [isActionPending]);
+
+  const confirmDeleteAction = useCallback(() => {
+    if (!deleteConfirmItemId) {
+      return;
+    }
+
+    const itemId = deleteConfirmItemId;
+    setDeleteConfirmItemId(null);
+    runItemAction(itemId, "delete");
+  }, [deleteConfirmItemId, runItemAction]);
 
   const fetchProductPreview = useCallback(() => {
     setModalError(null);
@@ -518,6 +556,9 @@ export function useTrackersDashboardController({
     modalError,
     modalStep,
     pauseFeedbackByItemId,
+    pendingDeleteItemId,
+    deleteConfirmItem,
+    isDeleteConfirmOpen: deleteConfirmItemId !== null,
     preview,
     query,
     resumeFeedbackByItemId,
@@ -526,10 +567,13 @@ export function useTrackersDashboardController({
     telegramConnected,
     trackingMode,
     urlInput,
+    cancelDeleteAction,
     closeModal,
+    confirmDeleteAction,
     fetchProductPreview,
     openModal,
     refresh,
+    requestDeleteAction,
     runItemAction,
     saveTracker,
     setFilter,

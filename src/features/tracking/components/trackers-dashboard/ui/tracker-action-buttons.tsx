@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
@@ -15,7 +15,9 @@ interface TrackerActionButtonsProps {
   isMutating: boolean;
   pauseFeedbackState: ActionFeedbackState;
   resumeFeedbackState: ActionFeedbackState;
+  isDeletePending: boolean;
   runItemAction: (itemId: string, action: ItemAction) => void;
+  requestDeleteAction: (itemId: string) => void;
 }
 
 export function TrackerActionButtons({
@@ -24,7 +26,9 @@ export function TrackerActionButtons({
   isMutating,
   pauseFeedbackState,
   resumeFeedbackState,
+  isDeletePending,
   runItemAction,
+  requestDeleteAction,
 }: TrackerActionButtonsProps) {
   return (
     <div className="flex items-center justify-end gap-1.5 md:flex-col md:items-end md:justify-center">
@@ -109,9 +113,14 @@ export function TrackerActionButtons({
         size="icon-sm"
         variant="outline"
         disabled={busy || isMutating}
-        onClick={() => runItemAction(item.item_id, "delete")}
+        aria-busy={isDeletePending ? true : undefined}
+        onClick={() => requestDeleteAction(item.item_id)}
       >
-        <Trash2 className="size-3.5" />
+        {isDeletePending ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="size-3.5" />
+        )}
       </Button>
     </div>
   );

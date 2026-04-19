@@ -14,9 +14,11 @@ interface TrackerRowProps {
   isActionPending: boolean;
   isMutating: boolean;
   busyItemId: string | null;
+  pendingDeleteItemId: string | null;
   pauseFeedbackState: ActionFeedbackState;
   resumeFeedbackState: ActionFeedbackState;
   runItemAction: (itemId: string, action: ItemAction) => void;
+  requestDeleteAction: (itemId: string) => void;
 }
 
 export const TrackerRow = memo(function TrackerRow({
@@ -24,9 +26,11 @@ export const TrackerRow = memo(function TrackerRow({
   isActionPending,
   isMutating,
   busyItemId,
+  pendingDeleteItemId,
   pauseFeedbackState,
   resumeFeedbackState,
   runItemAction,
+  requestDeleteAction,
 }: TrackerRowProps) {
   const pauseFeedbackActive = pauseFeedbackState !== "idle";
   const resumeFeedbackActive = resumeFeedbackState !== "idle";
@@ -34,6 +38,8 @@ export const TrackerRow = memo(function TrackerRow({
     (isActionPending && busyItemId === item.item_id) ||
     pauseFeedbackActive ||
     resumeFeedbackActive;
+  const isDeletePending =
+    isActionPending && pendingDeleteItemId === item.item_id;
   const progress = getProgress(item);
   const domain = getDomainLabel(item.source_url);
   const productName = item.product_name ?? item.source_url;
@@ -134,7 +140,9 @@ export const TrackerRow = memo(function TrackerRow({
         isMutating={isMutating}
         pauseFeedbackState={pauseFeedbackState}
         resumeFeedbackState={resumeFeedbackState}
+        isDeletePending={isDeletePending}
         runItemAction={runItemAction}
+        requestDeleteAction={requestDeleteAction}
       />
     </article>
   );

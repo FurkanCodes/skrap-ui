@@ -8,6 +8,7 @@ import { TelegramConnectionBanner } from "@/features/tracking/components/tracker
 import { TrackersList } from "@/features/tracking/components/trackers-dashboard/ui/trackers-list";
 import { TrackersDashboardUnauthenticated } from "@/features/tracking/components/trackers-dashboard/ui/unauthenticated-card";
 import type { TrackersDashboardController } from "@/features/tracking/components/trackers-dashboard/use-trackers-dashboard-controller";
+import { ActionConfirmAlert } from "@/components/ui/action-confirm-alert";
 
 export { TrackersDashboardUnauthenticated };
 
@@ -54,9 +55,11 @@ export function TrackersDashboardAuthenticatedView({
         isActionPending={controller.isActionPending}
         isMutating={controller.isMutating}
         busyItemId={controller.busyItemId}
+        pendingDeleteItemId={controller.pendingDeleteItemId}
         pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
         resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
         runItemAction={controller.runItemAction}
+        requestDeleteAction={controller.requestDeleteAction}
       />
 
       <p className="text-center text-xs text-muted-foreground">
@@ -85,6 +88,23 @@ export function TrackersDashboardAuthenticatedView({
         telegramConnected={controller.telegramConnected}
         modalError={controller.modalError}
         saveTracker={controller.saveTracker}
+      />
+
+      <ActionConfirmAlert
+        open={controller.isDeleteConfirmOpen}
+        title="Delete tracker?"
+        description={`This action cannot be undone.${
+          controller.deleteConfirmItem
+            ? ` "${controller.deleteConfirmItem.product_name ?? controller.deleteConfirmItem.source_url}" will be permanently removed.`
+            : ""
+        }`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isConfirmPending={
+          controller.isActionPending && controller.pendingDeleteItemId !== null
+        }
+        onConfirm={controller.confirmDeleteAction}
+        onCancel={controller.cancelDeleteAction}
       />
     </section>
   );

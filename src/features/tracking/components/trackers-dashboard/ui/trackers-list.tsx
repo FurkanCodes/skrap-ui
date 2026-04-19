@@ -10,9 +10,11 @@ interface TrackersListProps {
   isActionPending: boolean;
   isMutating: boolean;
   busyItemId: string | null;
+  pendingDeleteItemId: string | null;
   pauseFeedbackByItemId: Record<string, ActionFeedbackState>;
   resumeFeedbackByItemId: Record<string, ActionFeedbackState>;
   runItemAction: (itemId: string, action: ItemAction) => void;
+  requestDeleteAction: (itemId: string) => void;
 }
 
 export function TrackersList({
@@ -20,9 +22,11 @@ export function TrackersList({
   isActionPending,
   isMutating,
   busyItemId,
+  pendingDeleteItemId,
   pauseFeedbackByItemId,
   resumeFeedbackByItemId,
   runItemAction,
+  requestDeleteAction,
 }: TrackersListProps) {
   if (filteredItems.length === 0) {
     return (
@@ -43,9 +47,11 @@ export function TrackersList({
           isActionPending={isActionPending}
           isMutating={isMutating}
           busyItemId={busyItemId}
+          pendingDeleteItemId={pendingDeleteItemId}
           pauseFeedbackState={pauseFeedbackByItemId[item.item_id] ?? "idle"}
           resumeFeedbackState={resumeFeedbackByItemId[item.item_id] ?? "idle"}
           runItemAction={runItemAction}
+          requestDeleteAction={requestDeleteAction}
         />
       ))}
     </div>
