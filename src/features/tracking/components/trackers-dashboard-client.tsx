@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Bell,
   CheckCircle2,
@@ -31,6 +32,7 @@ import {
 } from "@/features/tracking/server/actions";
 import type { TrackedItemPreview, TrackedItemSummary } from "@/features/tracking/types";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { cn } from "@/lib/utils";
 
 interface TrackersDashboardClientProps {
   isAuthenticated: boolean;
@@ -52,6 +54,7 @@ type ItemOptimisticAction =
 
 type FilterKey = "all" | "active" | "paused" | "alert" | "monitor";
 type TrackingMode = "alert" | "monitor";
+type ActionFeedbackState = "idle" | "loading" | "success" | "error";
 
 interface FilterOption {
   key: FilterKey;
@@ -76,6 +79,10 @@ const INTERVAL_OPTIONS: Array<{ label: string; value: number }> = [
   { label: "12 hours", value: 720 },
   { label: "24 hours", value: 1440 },
 ];
+
+const ACTION_LOADING_MIN_DURATION_MS = 350;
+const ACTION_SUCCESS_DURATION_MS = 2200;
+const ACTION_ERROR_DURATION_MS = 1200;
 
 function mapError(error: unknown): string {
   if (typeof error === "string" && error.trim()) {
@@ -267,6 +274,220 @@ function applyItemAction(
   );
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function reconcileItemsPreservingOrder(
+  current: TrackedItemSummary[],
+  incoming: TrackedItemSummary[]
+): TrackedItemSummary[] {
+  const incomingById = new Map(incoming.map((item) => [item.item_id, item]));
+  const next: TrackedItemSummary[] = [];
+
+  for (const existing of current) {
+    const replacement = incomingById.get(existing.item_id);
+    if (replacement) {
+      next.push(replacement);
+      incomingById.delete(existing.item_id);
+      continue;
+    }
+
+    if (existing.item_id.startsWith("optimistic-")) {
+      next.push(existing);
+    }
+  }
+
+  for (const incomingItem of incoming) {
+    if (incomingById.has(incomingItem.item_id)) {
+      next.push(incomingItem);
+      incomingById.delete(incomingItem.item_id);
+    }
+  }
+
+  return next;
+}
+
+function ResumeActionIcon({ state }: { state: ActionFeedbackState }) {
+  return (
+    <span className="relative grid size-3.5 place-items-center">
+      <AnimatePresence mode="wait" initial={false}>
+        {state === "loading" ? (
+          <motion.span
+            key="loading"
+            initial={{ opacity: 0, scale: 0.86 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.86 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="grid place-items-center"
+          >
+            <Loader2 className="size-3.5 animate-spin" />
+          </motion.span>
+        ) : null}
+
+        {state === "idle" ? (
+          <motion.span
+            key="idle"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="grid place-items-center"
+          >
+            <Play className="size-3.5" />
+          </motion.span>
+        ) : null}
+
+        {state === "success" ? (
+          <motion.svg
+            key="success"
+            viewBox="0 0 18 18"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ opacity: 0, scale: 0.82 }}
+            animate={{ opacity: 1, scale: [0.82, 1.08, 1] }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.26, ease: "easeOut" }}
+          >
+            <motion.path
+              d="M4.5 9.2L7.4 12.1L13.4 6.2"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.24, ease: "easeOut", delay: 0.05 }}
+            />
+          </motion.svg>
+        ) : null}
+
+        {state === "error" ? (
+          <motion.svg
+            key="error"
+            viewBox="0 0 18 18"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ opacity: 0, scale: 0.82 }}
+            animate={{ opacity: 1, scale: [0.82, 1.06, 1] }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+          >
+            <motion.path
+              d="M5.3 5.3L12.7 12.7"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut", delay: 0.02 }}
+            />
+            <motion.path
+              d="M12.7 5.3L5.3 12.7"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut", delay: 0.08 }}
+            />
+          </motion.svg>
+        ) : null}
+      </AnimatePresence>
+    </span>
+  );
+}
+
+function PauseActionIcon({ state }: { state: ActionFeedbackState }) {
+  return (
+    <span className="relative grid size-3.5 place-items-center">
+      <AnimatePresence mode="wait" initial={false}>
+        {state === "loading" ? (
+          <motion.span
+            key="loading"
+            initial={{ opacity: 0, scale: 0.86 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.86 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="grid place-items-center"
+          >
+            <Loader2 className="size-3.5 animate-spin" />
+          </motion.span>
+        ) : null}
+
+        {state === "idle" ? (
+          <motion.span
+            key="idle"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="grid place-items-center"
+          >
+            <Pause className="size-3.5" />
+          </motion.span>
+        ) : null}
+
+        {state === "success" ? (
+          <motion.svg
+            key="success"
+            viewBox="0 0 18 18"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ opacity: 0, scale: 0.82 }}
+            animate={{ opacity: 1, scale: [0.82, 1.08, 1] }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.26, ease: "easeOut" }}
+          >
+            <motion.path
+              d="M4.5 9.2L7.4 12.1L13.4 6.2"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.24, ease: "easeOut", delay: 0.05 }}
+            />
+          </motion.svg>
+        ) : null}
+
+        {state === "error" ? (
+          <motion.svg
+            key="error"
+            viewBox="0 0 18 18"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ opacity: 0, scale: 0.82 }}
+            animate={{ opacity: 1, scale: [0.82, 1.06, 1] }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+          >
+            <motion.path
+              d="M5.3 5.3L12.7 12.7"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut", delay: 0.02 }}
+            />
+            <motion.path
+              d="M12.7 5.3L5.3 12.7"
+              strokeWidth="2.3"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut", delay: 0.08 }}
+            />
+          </motion.svg>
+        ) : null}
+      </AnimatePresence>
+    </span>
+  );
+}
+
 export function TrackersDashboardClient({
   isAuthenticated,
   initialItems,
@@ -277,10 +498,14 @@ export function TrackersDashboardClient({
   const router = useRouter();
   const { me } = useViewer();
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
+  const mergedItems = useMemo(
+    () => reconcileItemsPreservingOrder(itemsState, initialItems),
+    [itemsState, initialItems]
+  );
   const [items, applyOptimisticItemAction] = useOptimistic<
     TrackedItemSummary[],
     ItemOptimisticAction
-  >(itemsState, applyItemAction);
+  >(mergedItems, applyItemAction);
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -290,6 +515,18 @@ export function TrackersDashboardClient({
   const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshPending, startRefreshTransition] = useTransition();
   const [isActionTransitionPending, startActionTransition] = useTransition();
+  const [resumeFeedbackByItemId, setResumeFeedbackByItemId] = useState<
+    Record<string, ActionFeedbackState>
+  >({});
+  const [pauseFeedbackByItemId, setPauseFeedbackByItemId] = useState<
+    Record<string, ActionFeedbackState>
+  >({});
+  const resumeFeedbackTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
+  const pauseFeedbackTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<1 | 2>(1);
@@ -307,6 +544,101 @@ export function TrackersDashboardClient({
   const displayError = actionError ?? initialError;
   const botUsername = normalizeBotUsername(telegramBotUsername);
   const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
+
+  const clearResumeFeedbackTimer = (itemId: string) => {
+    const activeTimer = resumeFeedbackTimersRef.current.get(itemId);
+    if (activeTimer) {
+      clearTimeout(activeTimer);
+      resumeFeedbackTimersRef.current.delete(itemId);
+    }
+  };
+
+  const clearPauseFeedbackTimer = (itemId: string) => {
+    const activeTimer = pauseFeedbackTimersRef.current.get(itemId);
+    if (activeTimer) {
+      clearTimeout(activeTimer);
+      pauseFeedbackTimersRef.current.delete(itemId);
+    }
+  };
+
+  const setResumeFeedbackState = (itemId: string, state: ActionFeedbackState) => {
+    setResumeFeedbackByItemId((current) => {
+      if (state === "idle") {
+        if (!(itemId in current)) {
+          return current;
+        }
+        const next = { ...current };
+        delete next[itemId];
+        return next;
+      }
+
+      if (current[itemId] === state) {
+        return current;
+      }
+
+      return { ...current, [itemId]: state };
+    });
+  };
+
+  const setPauseFeedbackState = (itemId: string, state: ActionFeedbackState) => {
+    setPauseFeedbackByItemId((current) => {
+      if (state === "idle") {
+        if (!(itemId in current)) {
+          return current;
+        }
+        const next = { ...current };
+        delete next[itemId];
+        return next;
+      }
+
+      if (current[itemId] === state) {
+        return current;
+      }
+
+      return { ...current, [itemId]: state };
+    });
+  };
+
+  const scheduleResumeFeedback = (
+    itemId: string,
+    callback: () => void,
+    durationMs: number
+  ) => {
+    clearResumeFeedbackTimer(itemId);
+
+    const timer = setTimeout(() => {
+      resumeFeedbackTimersRef.current.delete(itemId);
+      callback();
+    }, durationMs);
+
+    resumeFeedbackTimersRef.current.set(itemId, timer);
+  };
+
+  const schedulePauseFeedback = (
+    itemId: string,
+    callback: () => void,
+    durationMs: number
+  ) => {
+    clearPauseFeedbackTimer(itemId);
+
+    const timer = setTimeout(() => {
+      pauseFeedbackTimersRef.current.delete(itemId);
+      callback();
+    }, durationMs);
+
+    pauseFeedbackTimersRef.current.set(itemId, timer);
+  };
+
+  useEffect(() => {
+    const resumeTimers = resumeFeedbackTimersRef.current;
+    const pauseTimers = pauseFeedbackTimersRef.current;
+    return () => {
+      resumeTimers.forEach((timer) => clearTimeout(timer));
+      pauseTimers.forEach((timer) => clearTimeout(timer));
+      resumeTimers.clear();
+      pauseTimers.clear();
+    };
+  }, []);
 
   const summary = useMemo(() => {
     const active = items.filter((item) => item.status === "active").length;
@@ -389,16 +721,89 @@ export function TrackersDashboardClient({
     setIsActionPending(true);
     const itemAction: ItemOptimisticAction = { type: action, itemId };
 
-    startActionTransition(async () => {
-      applyOptimisticItemAction(itemAction);
-      try {
-        if (action === "pause") {
-          await pauseTrackedItemAction(itemId);
-        } else if (action === "resume") {
+    if (action === "resume") {
+      clearResumeFeedbackTimer(itemId);
+      setResumeFeedbackState(itemId, "loading");
+
+      void (async () => {
+        const resumeActionStartedAt = Date.now();
+        try {
           await resumeTrackedItemAction(itemId);
-        } else {
-          await deleteTrackedItemAction(itemId);
+          const elapsed = Date.now() - resumeActionStartedAt;
+          if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
+            await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
+          }
+
+          setResumeFeedbackState(itemId, "success");
+
+          scheduleResumeFeedback(itemId, () => {
+            setItemsState((current) => applyItemAction(current, itemAction));
+            setResumeFeedbackState(itemId, "idle");
+          }, ACTION_SUCCESS_DURATION_MS);
+        } catch (error) {
+          setActionError(mapError(error));
+          const elapsed = Date.now() - resumeActionStartedAt;
+          if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
+            await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
+          }
+
+          setResumeFeedbackState(itemId, "error");
+          scheduleResumeFeedback(itemId, () => {
+            setResumeFeedbackState(itemId, "idle");
+          }, ACTION_ERROR_DURATION_MS);
+        } finally {
+          setBusyItemId(null);
+          setIsActionPending(false);
         }
+      })();
+
+      return;
+    }
+
+    if (action === "pause") {
+      clearPauseFeedbackTimer(itemId);
+      setPauseFeedbackState(itemId, "loading");
+
+      void (async () => {
+        const pauseActionStartedAt = Date.now();
+        try {
+          await pauseTrackedItemAction(itemId);
+          const elapsed = Date.now() - pauseActionStartedAt;
+          if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
+            await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
+          }
+
+          setPauseFeedbackState(itemId, "success");
+
+          schedulePauseFeedback(itemId, () => {
+            setItemsState((current) => applyItemAction(current, itemAction));
+            setPauseFeedbackState(itemId, "idle");
+          }, ACTION_SUCCESS_DURATION_MS);
+        } catch (error) {
+          setActionError(mapError(error));
+          const elapsed = Date.now() - pauseActionStartedAt;
+          if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
+            await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
+          }
+
+          setPauseFeedbackState(itemId, "error");
+          schedulePauseFeedback(itemId, () => {
+            setPauseFeedbackState(itemId, "idle");
+          }, ACTION_ERROR_DURATION_MS);
+        } finally {
+          setBusyItemId(null);
+          setIsActionPending(false);
+        }
+      })();
+
+      return;
+    }
+
+    startActionTransition(async () => {
+      try {
+        applyOptimisticItemAction(itemAction);
+
+        await deleteTrackedItemAction(itemId);
 
         setItemsState((current) => applyItemAction(current, itemAction));
       } catch (error) {
@@ -614,7 +1019,14 @@ export function TrackersDashboardClient({
           </Card>
         ) : (
           filteredItems.map((item) => {
-            const busy = isActionPending && busyItemId === item.item_id;
+            const pauseFeedbackState = pauseFeedbackByItemId[item.item_id] ?? "idle";
+            const pauseFeedbackActive = pauseFeedbackState !== "idle";
+            const resumeFeedbackState = resumeFeedbackByItemId[item.item_id] ?? "idle";
+            const resumeFeedbackActive = resumeFeedbackState !== "idle";
+            const busy =
+              (isActionPending && busyItemId === item.item_id) ||
+              pauseFeedbackActive ||
+              resumeFeedbackActive;
             const progress = getProgress(item);
             const domain = getDomainLabel(item.source_url);
             const productName = item.product_name ?? item.source_url;
@@ -705,27 +1117,81 @@ export function TrackersDashboardClient({
                 </div>
 
                 <div className="flex items-center justify-end gap-1.5 md:flex-col md:items-end md:justify-center">
-                  {item.status === "active" ? (
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="outline"
-                      disabled={busy || isMutating}
-                      onClick={() => runItemAction(item.item_id, "pause")}
-                    >
-                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Pause className="size-3.5" />}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="outline"
-                      disabled={busy || isMutating}
-                      onClick={() => runItemAction(item.item_id, "resume")}
-                    >
-                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
-                    </Button>
-                  )}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {item.status === "active" ? (
+                      <motion.div
+                        key={`${item.item_id}-pause`}
+                        initial={{ opacity: 0, scale: 0.88 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.88 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                      >
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="outline"
+                          disabled={busy || isMutating}
+                          aria-busy={pauseFeedbackState === "loading" ? true : undefined}
+                          aria-label={
+                            pauseFeedbackState === "loading"
+                              ? "Pausing tracker"
+                              : pauseFeedbackState === "success"
+                                ? "Tracker paused successfully"
+                                : pauseFeedbackState === "error"
+                                  ? "Failed to pause tracker"
+                                  : "Pause tracker"
+                          }
+                          className={cn(
+                            "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
+                            pauseFeedbackState === "loading" && "bg-muted text-foreground",
+                            pauseFeedbackState === "success" &&
+                              "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
+                            pauseFeedbackState === "error" &&
+                              "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
+                          )}
+                          onClick={() => runItemAction(item.item_id, "pause")}
+                        >
+                          <PauseActionIcon state={pauseFeedbackState} />
+                        </Button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key={`${item.item_id}-resume`}
+                        initial={{ opacity: 0, scale: 0.88 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                      >
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="outline"
+                          disabled={busy || isMutating}
+                          aria-busy={resumeFeedbackState === "loading" ? true : undefined}
+                          aria-label={
+                            resumeFeedbackState === "loading"
+                              ? "Resuming tracker"
+                              : resumeFeedbackState === "success"
+                                ? "Tracker resumed successfully"
+                                : resumeFeedbackState === "error"
+                                  ? "Failed to resume tracker"
+                                  : "Resume tracker"
+                          }
+                          className={cn(
+                            "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
+                            resumeFeedbackState === "loading" && "bg-muted text-foreground",
+                            resumeFeedbackState === "success" &&
+                              "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
+                            resumeFeedbackState === "error" &&
+                              "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
+                          )}
+                          onClick={() => runItemAction(item.item_id, "resume")}
+                        >
+                          <ResumeActionIcon state={resumeFeedbackState} />
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   <Button
                     type="button"
