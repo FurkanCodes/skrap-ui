@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import Logo from "@/assets/logo/logo";
 import AuthControls from "@/components/layout/auth-controls";
+import ThemeToggle from "@/components/theme/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -79,6 +80,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
         <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-background px-6 py-3">
           <SidebarTrigger className="-ml-1 h-8 w-8" />
           <p className="text-sm font-medium text-muted-foreground">PriceSniper Workspace</p>
+          <ThemeToggle />
           <AuthControls />
         </header>
         <main className="flex-1">{children}</main>

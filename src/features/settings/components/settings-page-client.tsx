@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Bell, Clock3, VolumeX } from "lucide-react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
@@ -31,9 +32,15 @@ export function SettingsPageClient({
   trackedCount,
 }: SettingsPageClientProps) {
   const { isAuthenticated, me } = useViewer();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Number(me?.entitlement.min_check_interval_minutes) || 1;
@@ -51,6 +58,61 @@ export function SettingsPageClient({
         <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage integrations and notifications.</p>
       </header>
+
+      <Card className="rounded-lg border-border bg-card">
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+          <CardDescription>Choose how the interface looks across the app.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2 sm:grid-cols-3">
+            <button
+              type="button"
+              disabled={!mounted}
+              onClick={() => setTheme("light")}
+              className={
+                theme === "light"
+                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
+                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
+              }
+            >
+              <Sun className="size-4" />
+              Light
+            </button>
+            <button
+              type="button"
+              disabled={!mounted}
+              onClick={() => setTheme("dark")}
+              className={
+                theme === "dark"
+                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
+                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
+              }
+            >
+              <Moon className="size-4" />
+              Dark
+            </button>
+            <button
+              type="button"
+              disabled={!mounted}
+              onClick={() => setTheme("system")}
+              className={
+                theme === "system"
+                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
+                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
+              }
+            >
+              <Laptop className="size-4" />
+              System
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {mounted
+              ? `Active: ${resolvedTheme === "dark" ? "Dark" : "Light"} (${theme ?? "system"} mode)`
+              : "Loading theme preference..."}
+          </p>
+        </CardContent>
+      </Card>
 
       <TelegramLinkCard
         isAuthenticated={isAuthenticated}
