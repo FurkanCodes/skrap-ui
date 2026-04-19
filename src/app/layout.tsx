@@ -11,8 +11,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Skrap UI",
-  description: "Frontend for scraping and discovery endpoints",
+  title: "Dealvinci",
+  description: "Credit-powered price intelligence and tracker operations workspace.",
 };
 
 export default function RootLayout({

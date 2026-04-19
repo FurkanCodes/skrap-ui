@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import Logo from "@/assets/marketing/logo";
 import AuthControls from "@/components/layout/auth-controls";
 import ThemeToggle from "@/components/theme/theme-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -171,7 +172,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
               <SidebarTrigger className="-ml-1 h-8 w-8 shrink-0" />
               <div className="h-5 w-px bg-border" aria-hidden="true" />
               <p className="truncate text-sm font-medium text-muted-foreground">
-                PriceSniper Workspace
+                Dealvinci Workspace
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -187,25 +188,34 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 function SidebarLogo() {
+  const logoStyle = {
+    "--brand-logo-accent": "var(--sidebar-foreground)",
+    "--brand-logo-wordmark": "var(--sidebar-foreground)",
+    "--brand-logo-cutout": "var(--sidebar)",
+  } as CSSProperties;
+
   return (
-    <div className="relative z-20 flex items-center gap-3 py-1 text-sm font-normal text-sidebar-foreground">
-      <div className="h-5 w-5 shrink-0 rounded-xl bg-sidebar-foreground" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        className="font-medium whitespace-pre text-sidebar-foreground"
-      >
-        Skrap
-      </motion.span>
-    </div>
+    <motion.div
+      className="relative z-20 flex items-center py-1 text-sm font-normal text-sidebar-foreground"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
+      <Logo className="gap-2.5" style={logoStyle} />
+    </motion.div>
   );
 }
 
 function SidebarLogoIcon() {
+  const logoStyle = {
+    "--brand-logo-accent": "var(--sidebar-foreground)",
+    "--brand-logo-wordmark": "var(--sidebar-foreground)",
+    "--brand-logo-cutout": "var(--sidebar)",
+  } as CSSProperties;
+
   return (
-    <div className="relative z-20 flex items-center gap-3 py-1 text-sm font-normal text-sidebar-foreground">
-      <div className="h-5 w-5 shrink-0 rounded-xl bg-sidebar-foreground" />
+    <div className="relative z-20 flex items-center py-1 text-sm font-normal text-sidebar-foreground">
+      <Logo iconOnly style={logoStyle} />
     </div>
   );
 }

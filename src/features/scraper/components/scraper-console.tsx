@@ -41,12 +41,12 @@ const JOB_TYPES: Array<{
   {
     value: "discover",
     title: "Discover then scrape",
-    description: "Use start URLs and let Skrap crawl to find matching pages.",
+    description: "Use start URLs and let Dealvinci crawl to find matching pages.",
   },
 ];
 
 const FETCH_MODE_HELPERS: Record<FetchMode, string> = {
-  auto: "Skrap picks the best mode per URL.",
+  auto: "Dealvinci picks the best mode per URL.",
   http: "Fastest path for static HTML pages.",
   dynamic: "Use browser rendering for JavaScript-heavy pages.",
   stealth: "Extra anti-bot evasion when sites are aggressive.",

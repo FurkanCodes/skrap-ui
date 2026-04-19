@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AuthForm } from "@/features/auth/components/auth-form";
 
 export const metadata: Metadata = {
-  title: "Sign Up | Skrap UI",
+  title: "Sign Up | Dealvinci",
   description: "Create an account for tracker ownership and notifications.",
 };
 
