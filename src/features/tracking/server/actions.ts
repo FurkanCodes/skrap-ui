@@ -7,8 +7,15 @@ import {
   patchBackendJson,
   postBackendJson,
 } from "@/features/scraper/server/backend-client";
+import { METADATA_KEYS } from "@/features/scraper/constants";
+import type { ScrapesRequest, ScrapesResponse } from "@/features/scraper/types";
+import { pickImageUrl, pickStringValue } from "@/features/scraper/utils";
 import { getTrackedItemsTag } from "@/features/tracking/server/cache-tags";
-import type { TrackedItemRequest, TrackedItemUpdateRequest } from "@/features/tracking/types";
+import type {
+  TrackedItemPreview,
+  TrackedItemRequest,
+  TrackedItemUpdateRequest,
+} from "@/features/tracking/types";
 import { requireSession } from "@/lib/server-auth";
 
 function getSessionUserId(session: unknown): string | null {
@@ -42,6 +49,71 @@ function revalidateTrackedItems(tag: string | null): void {
     revalidateTag(tag, "max");
   }
   revalidatePath("/", "page");
+}
+
+function normalizeProductUrl(rawUrl: string): string {
+  const nextValue = rawUrl.trim();
+  if (!nextValue) {
+    throw new Error("Product URL is required.");
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(nextValue);
+  } catch {
+    throw new Error("Enter a valid product URL.");
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Only http/https URLs are supported.");
+  }
+
+  return parsed.toString();
+}
+
+function deriveProductName(url: string, fallback: string | null): string {
+  if (fallback && fallback.trim().length > 0) {
+    return fallback.trim();
+  }
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+    return host || "Tracked product";
+  } catch {
+    return "Tracked product";
+  }
+}
+
+export async function previewTrackedItemAction(rawUrl: string): Promise<TrackedItemPreview> {
+  await requireSession();
+  const normalizedUrl = normalizeProductUrl(rawUrl);
+
+  const payload: ScrapesRequest = {
+    urls: [normalizedUrl],
+    fetch_mode: "auto",
+  };
+  const response = await postBackendJson<ScrapesResponse, ScrapesRequest>("/api/v1/scrapes", payload, {
+    auth: true,
+  });
+  const firstResult = response.results[0];
+
+  if (!firstResult) {
+    throw new Error("No product result returned. Try a different URL.");
+  }
+
+  if (!firstResult.success) {
+    throw new Error(firstResult.error ?? "Could not fetch product info. Try another URL.");
+  }
+
+  return {
+    url: normalizedUrl,
+    site_key: firstResult.site_key ?? firstResult.adapter_key ?? null,
+    product_name: deriveProductName(normalizedUrl, pickStringValue(firstResult, METADATA_KEYS)),
+    amount: firstResult.amount,
+    currency: firstResult.currency,
+    image_url: pickImageUrl(firstResult),
+  };
 }
 
 export async function createTrackedItemAction(payload: TrackedItemRequest) {

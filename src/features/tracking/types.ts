@@ -16,6 +16,15 @@ export interface TrackedItemUpdateRequest {
   target_amount?: string | null;
 }
 
+export interface TrackedItemPreview {
+  url: string;
+  site_key: string | null;
+  product_name: string;
+  amount: string | null;
+  currency: string | null;
+  image_url: string | null;
+}
+
 export interface TrackedItemSummary {
   item_id: string;
   source_url: string;
