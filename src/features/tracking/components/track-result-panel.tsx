@@ -136,7 +136,7 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
       {!isAuthenticated ? (
         <p className="text-xs text-muted-foreground">
           Sign in to start tracking this product.{" "}
-          <Link href="/auth/sign-in?next=/" className="underline underline-offset-4">
+          <Link href="/auth/sign-in?next=/dashboard" className="underline underline-offset-4">
             Go to sign in
           </Link>
           .

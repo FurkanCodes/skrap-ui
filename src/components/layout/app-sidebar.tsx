@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   {
     title: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -87,7 +87,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
       >
         <SidebarHeader className="px-2.5 py-3">
           <Link
-            href="/"
+            href="/dashboard"
             prefetch={false}
             className="flex h-10 w-full items-center justify-start overflow-hidden rounded-xl px-[11px] transition-colors hover:bg-sidebar-accent/60"
             aria-label="Go to dashboard"

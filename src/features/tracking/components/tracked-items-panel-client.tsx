@@ -140,7 +140,7 @@ export function TrackedItemsPanelClient({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/auth/sign-in?next=/" className={buttonVariants({ size: "sm" })}>
+          <Link href="/auth/sign-in?next=/dashboard" className={buttonVariants({ size: "sm" })}>
             Sign in to manage tracking
           </Link>
         </CardContent>

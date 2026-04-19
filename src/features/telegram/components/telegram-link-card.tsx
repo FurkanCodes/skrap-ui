@@ -270,7 +270,7 @@ export function TelegramLinkCard({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/auth/sign-in?next=/" className={buttonVariants({ size: "sm" })}>
+          <Link href="/auth/sign-in?next=/dashboard" className={buttonVariants({ size: "sm" })}>
             Sign in to link Telegram
           </Link>
         </CardContent>

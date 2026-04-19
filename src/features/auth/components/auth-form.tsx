@@ -43,8 +43,8 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const redirectTo = useMemo(() => {
     const value = params.get("next")?.trim();
-    if (!value) return "/";
-    return value.startsWith("/") ? value : "/";
+    if (!value) return "/dashboard";
+    return value.startsWith("/") ? value : "/dashboard";
   }, [params]);
 
   const isSignUp = mode === "sign-up";
