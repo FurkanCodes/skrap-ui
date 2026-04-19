@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FETCH_MODES } from "@/features/scraper/constants";
 import { ScraperConsole } from "@/features/scraper/components/scraper-console";
+import { TelegramLinkPanel } from "@/features/telegram/components/telegram-link-panel";
 import { TrackedItemsPanel } from "@/features/tracking/components/tracked-items-panel";
 import { getMeQuery } from "@/features/tracking/server/queries";
 import type { MeResponse } from "@/features/tracking/types";
@@ -86,6 +87,7 @@ export default async function HomePage() {
   const auth = getAuth();
   const incomingHeaders = await headers();
   const session = await auth.api.getSession({ headers: incomingHeaders });
+
   const sessionUserKey = getSessionUserKey(session);
   const meCacheKey = getSessionMeCacheKey(session, sessionUserKey);
 
@@ -123,6 +125,7 @@ export default async function HomePage() {
 
           <ScraperConsole />
           <TrackedItemsPanel />
+          <TelegramLinkPanel />
 
           <section className="grid gap-3 md:grid-cols-3">
             {dashboardStats.map((stat) => (
