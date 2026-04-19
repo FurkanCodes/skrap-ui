@@ -30,9 +30,10 @@ export const TrackerRow = memo(function TrackerRow({
   runItemAction,
   requestDeleteAction,
 }: TrackerRowProps) {
-  const pauseFeedbackActive = pauseFeedbackState !== "idle";
-  const resumeFeedbackActive = resumeFeedbackState !== "idle";
-  const busy = isItemActionPending || pauseFeedbackActive || resumeFeedbackActive;
+  const visibleActionFeedbackState =
+    item.status === "active" ? pauseFeedbackState : resumeFeedbackState;
+  const visibleActionFeedbackActive = visibleActionFeedbackState !== "idle";
+  const busy = isItemActionPending || visibleActionFeedbackActive;
   const progress = getProgress(item);
   const domain = getDomainLabel(item.source_url);
   const productName = item.product_name ?? item.source_url;
