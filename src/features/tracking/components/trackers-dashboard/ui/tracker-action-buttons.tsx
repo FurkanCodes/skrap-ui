@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 interface TrackerActionButtonsProps {
   item: TrackedItemSummary;
   busy: boolean;
-  isMutating: boolean;
+  isRefreshPending: boolean;
   pauseFeedbackState: ActionFeedbackState;
   resumeFeedbackState: ActionFeedbackState;
   isDeletePending: boolean;
@@ -23,7 +23,7 @@ interface TrackerActionButtonsProps {
 export function TrackerActionButtons({
   item,
   busy,
-  isMutating,
+  isRefreshPending,
   pauseFeedbackState,
   resumeFeedbackState,
   isDeletePending,
@@ -45,7 +45,7 @@ export function TrackerActionButtons({
               type="button"
               size="icon-sm"
               variant="outline"
-              disabled={busy || isMutating}
+              disabled={busy || isRefreshPending}
               aria-busy={pauseFeedbackState === "loading" ? true : undefined}
               aria-label={
                 pauseFeedbackState === "loading"
@@ -81,7 +81,7 @@ export function TrackerActionButtons({
               type="button"
               size="icon-sm"
               variant="outline"
-              disabled={busy || isMutating}
+              disabled={busy || isRefreshPending}
               aria-busy={resumeFeedbackState === "loading" ? true : undefined}
               aria-label={
                 resumeFeedbackState === "loading"
@@ -112,7 +112,7 @@ export function TrackerActionButtons({
         type="button"
         size="icon-sm"
         variant="outline"
-        disabled={busy || isMutating}
+        disabled={busy || isRefreshPending}
         aria-busy={isDeletePending ? true : undefined}
         onClick={() => requestDeleteAction(item.item_id)}
       >

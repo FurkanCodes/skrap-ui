@@ -52,10 +52,9 @@ export function TrackersDashboardAuthenticatedView({
 
       <TrackersList
         filteredItems={controller.filteredItems}
-        isActionPending={controller.isActionPending}
-        isMutating={controller.isMutating}
-        busyItemId={controller.busyItemId}
-        pendingDeleteItemId={controller.pendingDeleteItemId}
+        isRefreshPending={controller.isRefreshPending}
+        pendingActionItemIds={controller.pendingActionItemIds}
+        pendingDeleteItemIds={controller.pendingDeleteItemIds}
         pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
         resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
         runItemAction={controller.runItemAction}
@@ -100,9 +99,10 @@ export function TrackersDashboardAuthenticatedView({
         }`}
         confirmLabel="Delete"
         cancelLabel="Cancel"
-        isConfirmPending={
-          controller.isActionPending && controller.pendingDeleteItemId !== null
-        }
+        isConfirmPending={Boolean(
+          controller.deleteConfirmItem &&
+            controller.pendingDeleteItemIds.has(controller.deleteConfirmItem.item_id)
+        )}
         onConfirm={controller.confirmDeleteAction}
         onCancel={controller.cancelDeleteAction}
       />

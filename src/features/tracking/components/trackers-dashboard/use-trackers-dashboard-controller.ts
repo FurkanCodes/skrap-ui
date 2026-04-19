@@ -61,10 +61,13 @@ export function useTrackersDashboardController({
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const [actionError, setActionError] = useState<string | null>(null);
-  const [busyItemId, setBusyItemId] = useState<string | null>(null);
-  const [pendingDeleteItemId, setPendingDeleteItemId] = useState<string | null>(null);
+  const [pendingActionItemIds, setPendingActionItemIds] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [pendingDeleteItemIds, setPendingDeleteItemIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
-  const [isActionPending, setIsActionPending] = useState(false);
   const [isRefreshPending, startRefreshTransition] = useTransition();
   const [isActionTransitionPending, startActionTransition] = useTransition();
   const [resumeFeedbackByItemId, setResumeFeedbackByItemId] = useState<
@@ -95,6 +98,7 @@ export function useTrackersDashboardController({
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
   const displayError = actionError ?? initialError;
   const botUsername = normalizeBotUsername(telegramBotUsername);
+  const isActionPending = pendingActionItemIds.size > 0;
   const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
 
   const clearResumeFeedbackTimer = useCallback((itemId: string) => {
@@ -178,6 +182,40 @@ export function useTrackersDashboardController({
     },
     [clearPauseFeedbackTimer]
   );
+
+  const setItemActionPending = useCallback((itemId: string, pending: boolean) => {
+    setPendingActionItemIds((current) => {
+      const hasItem = current.has(itemId);
+      if (pending === hasItem) {
+        return current;
+      }
+
+      const next = new Set(current);
+      if (pending) {
+        next.add(itemId);
+      } else {
+        next.delete(itemId);
+      }
+      return next;
+    });
+  }, []);
+
+  const setDeletePending = useCallback((itemId: string, pending: boolean) => {
+    setPendingDeleteItemIds((current) => {
+      const hasItem = current.has(itemId);
+      if (pending === hasItem) {
+        return current;
+      }
+
+      const next = new Set(current);
+      if (pending) {
+        next.add(itemId);
+      } else {
+        next.delete(itemId);
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const resumeTimers = resumeFeedbackTimersRef.current;
@@ -268,14 +306,15 @@ export function useTrackersDashboardController({
 
   const runItemAction = useCallback(
     (itemId: string, action: ItemAction) => {
-      if (isMutating) {
+      if (isRefreshPending || pendingActionItemIds.has(itemId)) {
         return;
       }
 
-      setBusyItemId(itemId);
       setActionError(null);
-      setIsActionPending(true);
-      setPendingDeleteItemId(action === "delete" ? itemId : null);
+      setItemActionPending(itemId, true);
+      if (action === "delete") {
+        setDeletePending(itemId, true);
+      }
       const itemAction: ItemMutationAction = { type: action, itemId };
 
       if (action === "resume") {
@@ -311,8 +350,7 @@ export function useTrackersDashboardController({
               setResumeFeedbackState(itemId, "idle");
             }, ACTION_ERROR_DURATION_MS);
           } finally {
-            setBusyItemId(null);
-            setIsActionPending(false);
+            setItemActionPending(itemId, false);
           }
         })();
 
@@ -352,8 +390,7 @@ export function useTrackersDashboardController({
               setPauseFeedbackState(itemId, "idle");
             }, ACTION_ERROR_DURATION_MS);
           } finally {
-            setBusyItemId(null);
-            setIsActionPending(false);
+            setItemActionPending(itemId, false);
           }
         })();
 
@@ -376,19 +413,21 @@ export function useTrackersDashboardController({
             router.refresh();
           });
         } finally {
-          setBusyItemId(null);
-          setIsActionPending(false);
-          setPendingDeleteItemId(null);
+          setItemActionPending(itemId, false);
+          setDeletePending(itemId, false);
         }
       });
     },
     [
       clearPauseFeedbackTimer,
       clearResumeFeedbackTimer,
-      isMutating,
+      isRefreshPending,
+      pendingActionItemIds,
       router,
       schedulePauseFeedback,
       scheduleResumeFeedback,
+      setDeletePending,
+      setItemActionPending,
       setPauseFeedbackState,
       setResumeFeedbackState,
       startActionTransition,
@@ -398,22 +437,19 @@ export function useTrackersDashboardController({
 
   const requestDeleteAction = useCallback(
     (itemId: string) => {
-      if (isMutating) {
+      if (isRefreshPending || pendingActionItemIds.has(itemId)) {
         return;
       }
 
       setActionError(null);
       setDeleteConfirmItemId(itemId);
     },
-    [isMutating]
+    [isRefreshPending, pendingActionItemIds]
   );
 
   const cancelDeleteAction = useCallback(() => {
-    if (isActionPending) {
-      return;
-    }
     setDeleteConfirmItemId(null);
-  }, [isActionPending]);
+  }, []);
 
   const confirmDeleteAction = useCallback(() => {
     if (!deleteConfirmItemId) {
@@ -538,7 +574,6 @@ export function useTrackersDashboardController({
 
   return {
     botUsername,
-    busyItemId,
     displayError,
     filter,
     filteredItems,
@@ -555,8 +590,9 @@ export function useTrackersDashboardController({
     minInterval,
     modalError,
     modalStep,
+    pendingActionItemIds,
+    pendingDeleteItemIds,
     pauseFeedbackByItemId,
-    pendingDeleteItemId,
     deleteConfirmItem,
     isDeleteConfirmOpen: deleteConfirmItemId !== null,
     preview,

@@ -7,10 +7,9 @@ import type { TrackedItemSummary } from "@/features/tracking/types";
 
 interface TrackersListProps {
   filteredItems: TrackedItemSummary[];
-  isActionPending: boolean;
-  isMutating: boolean;
-  busyItemId: string | null;
-  pendingDeleteItemId: string | null;
+  isRefreshPending: boolean;
+  pendingActionItemIds: Set<string>;
+  pendingDeleteItemIds: Set<string>;
   pauseFeedbackByItemId: Record<string, ActionFeedbackState>;
   resumeFeedbackByItemId: Record<string, ActionFeedbackState>;
   runItemAction: (itemId: string, action: ItemAction) => void;
@@ -19,10 +18,9 @@ interface TrackersListProps {
 
 export function TrackersList({
   filteredItems,
-  isActionPending,
-  isMutating,
-  busyItemId,
-  pendingDeleteItemId,
+  isRefreshPending,
+  pendingActionItemIds,
+  pendingDeleteItemIds,
   pauseFeedbackByItemId,
   resumeFeedbackByItemId,
   runItemAction,
@@ -44,10 +42,9 @@ export function TrackersList({
         <TrackerRow
           key={item.item_id}
           item={item}
-          isActionPending={isActionPending}
-          isMutating={isMutating}
-          busyItemId={busyItemId}
-          pendingDeleteItemId={pendingDeleteItemId}
+          isRefreshPending={isRefreshPending}
+          isItemActionPending={pendingActionItemIds.has(item.item_id)}
+          isDeletePending={pendingDeleteItemIds.has(item.item_id)}
           pauseFeedbackState={pauseFeedbackByItemId[item.item_id] ?? "idle"}
           resumeFeedbackState={resumeFeedbackByItemId[item.item_id] ?? "idle"}
           runItemAction={runItemAction}

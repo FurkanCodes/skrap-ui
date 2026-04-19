@@ -11,10 +11,9 @@ import { TrackerActionButtons } from "@/features/tracking/components/trackers-da
 
 interface TrackerRowProps {
   item: TrackedItemSummary;
-  isActionPending: boolean;
-  isMutating: boolean;
-  busyItemId: string | null;
-  pendingDeleteItemId: string | null;
+  isRefreshPending: boolean;
+  isItemActionPending: boolean;
+  isDeletePending: boolean;
   pauseFeedbackState: ActionFeedbackState;
   resumeFeedbackState: ActionFeedbackState;
   runItemAction: (itemId: string, action: ItemAction) => void;
@@ -23,10 +22,9 @@ interface TrackerRowProps {
 
 export const TrackerRow = memo(function TrackerRow({
   item,
-  isActionPending,
-  isMutating,
-  busyItemId,
-  pendingDeleteItemId,
+  isRefreshPending,
+  isItemActionPending,
+  isDeletePending,
   pauseFeedbackState,
   resumeFeedbackState,
   runItemAction,
@@ -34,12 +32,7 @@ export const TrackerRow = memo(function TrackerRow({
 }: TrackerRowProps) {
   const pauseFeedbackActive = pauseFeedbackState !== "idle";
   const resumeFeedbackActive = resumeFeedbackState !== "idle";
-  const busy =
-    (isActionPending && busyItemId === item.item_id) ||
-    pauseFeedbackActive ||
-    resumeFeedbackActive;
-  const isDeletePending =
-    isActionPending && pendingDeleteItemId === item.item_id;
+  const busy = isItemActionPending || pauseFeedbackActive || resumeFeedbackActive;
   const progress = getProgress(item);
   const domain = getDomainLabel(item.source_url);
   const productName = item.product_name ?? item.source_url;
@@ -137,7 +130,7 @@ export const TrackerRow = memo(function TrackerRow({
       <TrackerActionButtons
         item={item}
         busy={busy}
-        isMutating={isMutating}
+        isRefreshPending={isRefreshPending}
         pauseFeedbackState={pauseFeedbackState}
         resumeFeedbackState={resumeFeedbackState}
         isDeletePending={isDeletePending}
