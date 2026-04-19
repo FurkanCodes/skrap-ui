@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 import {
   deleteBackend,
@@ -25,7 +25,7 @@ async function getTrackedItemsTagForCurrentSession(): Promise<string | null> {
 
 function revalidateTrackedItems(tag: string | null): void {
   if (tag) {
-    revalidateTag(tag, "max");
+    updateTag(tag);
   }
 }
 
