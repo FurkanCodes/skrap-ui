@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -280,24 +280,67 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
+function getUpdatedAtMs(item: TrackedItemSummary): number {
+  const parsed = Date.parse(item.updated_at);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function extractTrackedItemPayload(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") {
+    return raw;
+  }
+  const record = raw as Record<string, unknown>;
+  return record.item ?? raw;
+}
+
+function mergePatchedItem(
+  current: TrackedItemSummary[],
+  itemId: string,
+  patchResult: unknown,
+  fallbackStatus: "active" | "paused"
+): TrackedItemSummary[] {
+  return current.map((item) => {
+    if (item.item_id !== itemId) {
+      return item;
+    }
+
+    const fallbackItem: TrackedItemSummary = {
+      ...item,
+      status: fallbackStatus,
+      updated_at: new Date().toISOString(),
+    };
+
+    return toTrackedItemSummary(extractTrackedItemPayload(patchResult), fallbackItem);
+  });
+}
+
 function reconcileItemsPreservingOrder(
   current: TrackedItemSummary[],
-  incoming: TrackedItemSummary[]
+  incoming: TrackedItemSummary[],
+  locallyDeletedItemIds: ReadonlySet<string>
 ): TrackedItemSummary[] {
-  const incomingById = new Map(incoming.map((item) => [item.item_id, item]));
+  const incomingById = new Map(
+    incoming
+      .filter((item) => !locallyDeletedItemIds.has(item.item_id))
+      .map((item) => [item.item_id, item])
+  );
   const next: TrackedItemSummary[] = [];
 
   for (const existing of current) {
+    if (locallyDeletedItemIds.has(existing.item_id)) {
+      continue;
+    }
+
     const replacement = incomingById.get(existing.item_id);
     if (replacement) {
-      next.push(replacement);
+      const nextItem =
+        getUpdatedAtMs(replacement) > getUpdatedAtMs(existing) ? replacement : existing;
+      next.push(nextItem);
       incomingById.delete(existing.item_id);
       continue;
     }
 
-    if (existing.item_id.startsWith("optimistic-")) {
-      next.push(existing);
-    }
+    next.push(existing);
   }
 
   for (const incomingItem of incoming) {
@@ -498,14 +541,14 @@ export function TrackersDashboardClient({
   const router = useRouter();
   const { me } = useViewer();
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
-  const mergedItems = useMemo(
-    () => reconcileItemsPreservingOrder(itemsState, initialItems),
-    [itemsState, initialItems]
+  const [locallyDeletedItemIds, setLocallyDeletedItemIds] = useState<Set<string>>(
+    () => new Set()
   );
-  const [items, applyOptimisticItemAction] = useOptimistic<
-    TrackedItemSummary[],
-    ItemOptimisticAction
-  >(mergedItems, applyItemAction);
+  const mergedItems = useMemo(
+    () => reconcileItemsPreservingOrder(itemsState, initialItems, locallyDeletedItemIds),
+    [itemsState, initialItems, locallyDeletedItemIds]
+  );
+  const items = mergedItems;
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -728,7 +771,7 @@ export function TrackersDashboardClient({
       void (async () => {
         const resumeActionStartedAt = Date.now();
         try {
-          await resumeTrackedItemAction(itemId);
+          const patchResult = await resumeTrackedItemAction(itemId);
           const elapsed = Date.now() - resumeActionStartedAt;
           if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
             await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -737,7 +780,9 @@ export function TrackersDashboardClient({
           setResumeFeedbackState(itemId, "success");
 
           scheduleResumeFeedback(itemId, () => {
-            setItemsState((current) => applyItemAction(current, itemAction));
+            setItemsState((current) =>
+              mergePatchedItem(current, itemId, patchResult, "active")
+            );
             setResumeFeedbackState(itemId, "idle");
           }, ACTION_SUCCESS_DURATION_MS);
         } catch (error) {
@@ -767,7 +812,7 @@ export function TrackersDashboardClient({
       void (async () => {
         const pauseActionStartedAt = Date.now();
         try {
-          await pauseTrackedItemAction(itemId);
+          const patchResult = await pauseTrackedItemAction(itemId);
           const elapsed = Date.now() - pauseActionStartedAt;
           if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
             await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -776,7 +821,9 @@ export function TrackersDashboardClient({
           setPauseFeedbackState(itemId, "success");
 
           schedulePauseFeedback(itemId, () => {
-            setItemsState((current) => applyItemAction(current, itemAction));
+            setItemsState((current) =>
+              mergePatchedItem(current, itemId, patchResult, "paused")
+            );
             setPauseFeedbackState(itemId, "idle");
           }, ACTION_SUCCESS_DURATION_MS);
         } catch (error) {
@@ -801,11 +848,14 @@ export function TrackersDashboardClient({
 
     startActionTransition(async () => {
       try {
-        applyOptimisticItemAction(itemAction);
-
         await deleteTrackedItemAction(itemId);
 
         setItemsState((current) => applyItemAction(current, itemAction));
+        setLocallyDeletedItemIds((current) => {
+          const next = new Set(current);
+          next.add(itemId);
+          return next;
+        });
       } catch (error) {
         setActionError(mapError(error));
         startRefreshTransition(() => {
@@ -876,10 +926,12 @@ export function TrackersDashboardClient({
         updated_at: new Date().toISOString(),
       };
 
-      applyOptimisticItemAction({
-        type: "add",
-        item: optimisticItem,
-      });
+      setItemsState((current) =>
+        applyItemAction(current, {
+          type: "add",
+          item: optimisticItem,
+        })
+      );
 
       try {
         const response = (await createTrackedItemAction({
