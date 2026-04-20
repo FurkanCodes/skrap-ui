@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import {
   deleteTrackedItemAction,
   pauseTrackedItemAction,
@@ -15,6 +15,7 @@ import {
 } from "@/features/tracking/server/actions";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 interface TrackedItemsPanelClientProps {
   isAuthenticated: boolean;
@@ -41,8 +42,7 @@ function mapError(error: unknown): string {
 }
 
 function formatAmount(item: TrackedItemSummary): string {
-  if (!item.last_amount) return "-";
-  return `${item.last_amount} ${item.currency ?? ""}`.trim();
+  return formatCurrencyAmount(item.last_amount, item.currency, { fallback: "-" });
 }
 
 function formatInterval(value: number): string {
@@ -206,10 +206,10 @@ export function TrackedItemsPanelClient({
                   <p className="line-clamp-1 text-sm font-medium">{item.product_name ?? item.source_url}</p>
                   <p className="line-clamp-1 text-xs text-muted-foreground">{item.source_url}</p>
                   <div className="flex flex-wrap gap-1">
-                    <Badge variant={item.status === "active" ? "secondary" : "outline"}>{item.status}</Badge>
-                    <Badge variant="outline">{item.tracking_mode}</Badge>
-                    <Badge variant="outline">Every {formatInterval(item.check_interval_minutes)}</Badge>
-                    <Badge variant="outline">{formatAmount(item)}</Badge>
+                    <Chip tone={item.status === "active" ? "success" : "muted"}>{item.status}</Chip>
+                    <Chip tone="muted">{item.tracking_mode}</Chip>
+                    <Chip tone="muted">Every {formatInterval(item.check_interval_minutes)}</Chip>
+                    <Chip tone="muted">{formatAmount(item)}</Chip>
                   </div>
                 </div>
 

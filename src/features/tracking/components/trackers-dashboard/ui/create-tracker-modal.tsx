@@ -5,7 +5,9 @@ import { Loader2 } from "lucide-react";
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
 import type { TrackedItemPreview } from "@/features/tracking/types";
+import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PreviewCard } from "@/features/tracking/components/trackers-dashboard/ui/preview-card";
@@ -60,9 +62,16 @@ export function CreateTrackerModal({
     return null;
   }
 
+  const intervalOptions = INTERVAL_OPTIONS.filter((option) => option.value >= minInterval).map(
+    (option) => ({
+      value: String(option.value),
+      label: option.label,
+    })
+  );
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/45 px-4">
-      <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+      <div className="w-full max-w-[460px] rounded-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
             <p className="text-base font-bold text-foreground">
@@ -123,8 +132,9 @@ export function CreateTrackerModal({
                   <Label htmlFor="target-price" className="text-xs font-semibold text-foreground">
                     Target price
                   </Label>
-                  <Input
+                  <CurrencyInput
                     id="target-price"
+                    currency={preview?.currency}
                     value={targetAmount}
                     onChange={(event) => setTargetAmount(event.target.value)}
                     placeholder="84.99"
@@ -137,19 +147,13 @@ export function CreateTrackerModal({
                   <Label htmlFor="check-every" className="text-xs font-semibold text-foreground">
                     Check every
                   </Label>
-                  <select
+                  <AnimatedDropdown
                     id="check-every"
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+                    options={intervalOptions}
                     value={interval}
-                    onChange={(event) => setInterval(event.target.value)}
+                    onValueChange={setInterval}
                     disabled={isSavePending}
-                  >
-                    {INTERVAL_OPTIONS.filter((option) => option.value >= minInterval).map((option) => (
-                      <option key={`${option.label}-${option.value}`} value={String(option.value)}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
 

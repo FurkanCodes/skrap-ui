@@ -82,11 +82,55 @@ export function ViewerProvider({
   const eventSourceRef = useRef<EventSource | null>(null);
   const fallbackRefreshTimerRef = useRef<number | null>(null);
   const wasHiddenRef = useRef(false);
+  const hasMountedRef = useRef(false);
   const viewerRecord = useSyncExternalStore(
     subscribeViewerCache,
     readViewerCache,
     () => null
   );
+
+  useEffect(() => {
+    hasMountedRef.current = true;
+    return () => {
+      hasMountedRef.current = false;
+    };
+  }, []);
+
+  const refreshRouterSafely = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const runRefresh = () => {
+      if (!hasMountedRef.current) {
+        return;
+      }
+
+      try {
+        router.refresh();
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("Router action dispatched before initialization")
+        ) {
+          window.setTimeout(() => {
+            if (!hasMountedRef.current) {
+              return;
+            }
+            try {
+              router.refresh();
+            } catch {
+              // Ignore dev-only router bootstrap races.
+            }
+          }, 0);
+          return;
+        }
+        throw error;
+      }
+    };
+
+    window.requestAnimationFrame(runRefresh);
+  }, [router]);
 
   useEffect(() => {
     if (initialMe && initialUserKey) {
@@ -117,9 +161,9 @@ export function ViewerProvider({
     }
     fallbackRefreshTimerRef.current = window.setInterval(() => {
       clearViewerCacheStore();
-      router.refresh();
+      refreshRouterSafely();
     }, FALLBACK_REFRESH_INTERVAL_MS);
-  }, [router]);
+  }, [refreshRouterSafely]);
 
   const applyUsageUpdate = useCallback(
     (usage: MeResponse["usage"]) => {
@@ -238,7 +282,7 @@ export function ViewerProvider({
       if (wasHiddenRef.current) {
         wasHiddenRef.current = false;
         clearViewerCacheStore();
-        router.refresh();
+        refreshRouterSafely();
       }
       connectUsageStream();
     };
@@ -252,7 +296,7 @@ export function ViewerProvider({
     closeUsageStream,
     connectUsageStream,
     initialUserKey,
-    router,
+    refreshRouterSafely,
   ]);
 
   const clearViewerCache = useCallback(() => {
@@ -261,8 +305,8 @@ export function ViewerProvider({
 
   const refreshViewer = useCallback(() => {
     clearViewerCacheStore();
-    router.refresh();
-  }, [router]);
+    refreshRouterSafely();
+  }, [refreshRouterSafely]);
 
   const fallbackMe = useMemo(() => {
     if (!initialMe || !initialUserKey) {

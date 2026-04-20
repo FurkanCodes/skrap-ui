@@ -2,24 +2,41 @@
 
 import { Search } from "lucide-react";
 
-import { FILTERS } from "@/features/tracking/components/trackers-dashboard/constants";
-import type { FilterKey } from "@/features/tracking/components/trackers-dashboard/types";
-import { Button } from "@/components/ui/button";
+import { MODE_FILTERS, STATUS_FILTERS } from "@/features/tracking/components/trackers-dashboard/constants";
+import type {
+  ModeFilterKey,
+  StatusFilterKey,
+} from "@/features/tracking/components/trackers-dashboard/types";
+import { Chip } from "@/components/ui/chip";
+import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
 import { Input } from "@/components/ui/input";
 
 interface SearchFilterBarProps {
   query: string;
   setQuery: (query: string) => void;
-  filter: FilterKey;
-  setFilter: (filter: FilterKey) => void;
+  statusFilter: StatusFilterKey;
+  setStatusFilter: (filter: StatusFilterKey) => void;
+  modeFilter: ModeFilterKey;
+  setModeFilter: (filter: ModeFilterKey) => void;
 }
 
 export function SearchFilterBar({
   query,
   setQuery,
-  filter,
-  setFilter,
+  statusFilter,
+  setStatusFilter,
+  modeFilter,
+  setModeFilter,
 }: SearchFilterBarProps) {
+  const statusOptions = STATUS_FILTERS.map((option) => ({
+    value: option.key,
+    label: option.label,
+  }));
+  const modeOptions = MODE_FILTERS.map((option) => ({
+    value: option.key,
+    label: option.label,
+  }));
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="relative min-w-[240px] flex-1">
@@ -32,19 +49,32 @@ export function SearchFilterBar({
         />
       </div>
 
-      <div className="inline-flex items-center gap-1 rounded-md border border-border bg-card p-1">
-        {FILTERS.map((option) => (
-          <Button
-            key={option.key}
-            type="button"
-            size="xs"
-            variant={filter === option.key ? "default" : "ghost"}
-            className="px-3"
-            onClick={() => setFilter(option.key)}
-          >
-            {option.label}
-          </Button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-1 rounded-md bg-card/80 p-1">
+          <Chip tone="subtle" className="uppercase tracking-wide">
+            Status
+          </Chip>
+          <SegmentedSwitch
+            options={statusOptions}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            ariaLabel="Status filter"
+            className="border-0 bg-transparent p-0"
+          />
+        </div>
+
+        <div className="inline-flex items-center gap-1 rounded-md bg-card/80 p-1">
+          <Chip tone="subtle" className="uppercase tracking-wide">
+            Mode
+          </Chip>
+          <SegmentedSwitch
+            options={modeOptions}
+            value={modeFilter}
+            onChange={setModeFilter}
+            ariaLabel="Mode filter"
+            className="border-0 bg-transparent p-0"
+          />
+        </div>
       </div>
     </div>
   );

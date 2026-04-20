@@ -1,6 +1,7 @@
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import type { ItemMutationAction } from "@/features/tracking/components/trackers-dashboard/types";
 import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 const OPTIMISTIC_ITEM_ID_PREFIX = "optimistic-";
 
@@ -55,10 +56,21 @@ export function formatPrice(value: string | null, currency: string | null): stri
   if (!value) {
     return "Price unavailable";
   }
-  if (!currency) {
-    return value;
+  return formatCurrencyAmount(value, currency, { fallback: "Price unavailable" });
+}
+
+export function formatTargetAmount(value: string | null, currency: string | null): string | null {
+  if (!value) {
+    return null;
   }
-  return `${value} ${currency}`;
+  return formatCurrencyAmount(value, currency, { fallback: value });
+}
+
+function formatDeltaAmount(value: number, currency: string | null): string {
+  return formatCurrencyAmount(value, currency, {
+    fallback: "0",
+    maximumFractionDigits: 2,
+  });
 }
 
 export function getDomainLabel(url: string): string {
@@ -93,21 +105,33 @@ export function getRelativeCheckedLabel(updatedAt: string): string {
 
 export function getProgress(
   item: TrackedItemSummary
-): { percent: number | null; label: string } {
+): { percent: number | null; label: string; compactLabel: string } {
   const current = parseNumberish(item.last_amount);
   const target = parseNumberish(item.target_amount);
 
-  if (!current || !target || target <= 0) {
+  if (current === null || target === null || target <= 0) {
     return {
       percent: null,
       label: formatInterval(item.check_interval_minutes),
+      compactLabel: formatInterval(item.check_interval_minutes),
     };
   }
 
-  const percent = Math.max(0, Math.min(100, (target / current) * 100));
+  if (current <= target) {
+    const gap = target - current;
+    return {
+      percent: 100,
+      label: gap < 0.01 ? "At target" : `${formatDeltaAmount(gap, item.currency)} below target`,
+      compactLabel: gap < 0.01 ? "At target" : "Below target",
+    };
+  }
+
+  const gap = current - target;
+  const percent = Math.max(4, Math.min(100, (target / current) * 100));
   return {
     percent,
-    label: `${Math.round(percent)}% to target`,
+    label: `${formatDeltaAmount(gap, item.currency)} above target`,
+    compactLabel: "Above target",
   };
 }
 

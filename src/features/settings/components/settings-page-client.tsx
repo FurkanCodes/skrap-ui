@@ -4,6 +4,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
 import { useTheme } from "next-themes";
 
+import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
@@ -53,6 +54,12 @@ export function SettingsPageClient({
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
+  const minimumDropOptions = [
+    { value: "1", label: "1%" },
+    { value: "3", label: "3%" },
+    { value: "5", label: "5%" },
+    { value: "10", label: "10%" },
+  ];
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -205,16 +212,12 @@ export function SettingsPageClient({
                 <p className="text-xs text-muted-foreground">Only notify when price drops at least this much.</p>
               </div>
             </div>
-            <select
+            <AnimatedDropdown
               value={minimumDrop}
-              onChange={(event) => setMinimumDrop(event.target.value)}
-              className="h-9 rounded-md border border-border bg-background px-3 text-sm"
-            >
-              <option value="1">1%</option>
-              <option value="3">3%</option>
-              <option value="5">5%</option>
-              <option value="10">10%</option>
-            </select>
+              onValueChange={setMinimumDrop}
+              options={minimumDropOptions}
+              className="w-28"
+            />
           </div>
         </CardContent>
       </Card>

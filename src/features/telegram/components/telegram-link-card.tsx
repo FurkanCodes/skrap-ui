@@ -6,9 +6,9 @@ import Link from "next/link";
 import { ExternalLink, Link2, Loader2, RefreshCw } from "lucide-react";
 import QRCode from "qrcode";
 
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import {
   checkTelegramConnectStatusAction,
   refreshTelegramStatusAction,
@@ -311,16 +311,16 @@ export function TelegramLinkCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={isConnected ? "secondary" : "outline"}>
+          <Chip tone={isConnected ? "success" : "muted"}>
             {isConnected ? "Connected" : "Not linked"}
-          </Badge>
-          {status?.active_chat_id ? <Badge variant="outline">Chat {status.active_chat_id}</Badge> : null}
-          {botUsername ? <Badge variant="outline">@{botUsername}</Badge> : null}
+          </Chip>
+          {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
+          {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
           {isPolling ? (
-            <Badge variant="outline" className="gap-1">
+            <Chip tone="muted" className="gap-1">
               <Loader2 className="size-3 animate-spin" />
               Waiting for Telegram start
-            </Badge>
+            </Chip>
           ) : null}
         </div>
 

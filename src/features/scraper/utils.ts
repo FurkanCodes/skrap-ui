@@ -1,4 +1,5 @@
 import type { DiscoverResponse, PriceResultResponse, ScrapesResponse } from "@/features/scraper/types";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 const IMAGE_CANDIDATE_KEYS = [
   "image",
@@ -69,15 +70,9 @@ export function pickStringValue(
 }
 
 export function formatPrice(result: PriceResultResponse): string {
-  if (result.amount && result.currency) {
-    return `${result.amount} ${result.currency}`;
-  }
-
-  if (result.amount) {
-    return result.amount;
-  }
-
-  return "Price unavailable";
+  return formatCurrencyAmount(result.amount, result.currency, {
+    fallback: "Price unavailable",
+  });
 }
 
 function isHttpUrl(value: string): boolean {

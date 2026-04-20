@@ -3,15 +3,35 @@
 import Link from "next/link";
 import { Bell, CheckCircle2, ExternalLink } from "lucide-react";
 
+import { Chip } from "@/components/ui/chip";
+
 interface TelegramConnectionBannerProps {
   telegramConnected: boolean | null;
-  botUsername: string;
 }
 
-export function TelegramConnectionBanner({
+interface TelegramConnectionStatusChipProps {
+  telegramConnected: boolean | null;
+}
+
+export function TelegramConnectionStatusChip({
   telegramConnected,
-  botUsername,
-}: TelegramConnectionBannerProps) {
+}: TelegramConnectionStatusChipProps) {
+  if (telegramConnected !== true) {
+    return null;
+  }
+
+  return (
+    <Chip
+      tone="success"
+      className="rounded-full bg-emerald-500/14 text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-500/22 dark:text-emerald-200 dark:ring-emerald-400/30"
+    >
+      <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-300" />
+      <span>Telegram connected</span>
+    </Chip>
+  );
+}
+
+export function TelegramConnectionBanner({ telegramConnected }: TelegramConnectionBannerProps) {
   if (telegramConnected === false) {
     return (
       <Link
@@ -39,16 +59,5 @@ export function TelegramConnectionBanner({
     );
   }
 
-  return (
-    <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/30 dark:text-emerald-200">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <CheckCircle2 className="size-4" /> Telegram connected
-        {botUsername ? (
-          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
-            @{botUsername}
-          </span>
-        ) : null}
-      </div>
-    </div>
-  );
+  return null;
 }

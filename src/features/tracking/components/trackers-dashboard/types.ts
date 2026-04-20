@@ -20,11 +20,17 @@ export type ItemMutationAction =
       item: TrackedItemSummary;
     };
 
-export type FilterKey = "all" | "active" | "paused" | "alert" | "monitor";
+export type StatusFilterKey = "all" | "active" | "paused";
+export type ModeFilterKey = "all" | "alert" | "monitor";
 export type TrackingMode = "alert" | "monitor";
 export type ActionFeedbackState = "idle" | "loading" | "success" | "error";
 
-export interface FilterOption {
-  key: FilterKey;
+export interface StatusFilterOption {
+  key: StatusFilterKey;
+  label: string;
+}
+
+export interface ModeFilterOption {
+  key: ModeFilterKey;
   label: string;
 }

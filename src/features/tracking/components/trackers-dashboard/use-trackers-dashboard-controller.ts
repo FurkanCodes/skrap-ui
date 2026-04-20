@@ -11,9 +11,10 @@ import {
 } from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
   ActionFeedbackState,
-  FilterKey,
+  ModeFilterKey,
   ItemAction,
   ItemMutationAction,
+  StatusFilterKey,
   TrackingMode,
 } from "@/features/tracking/components/trackers-dashboard/types";
 import {
@@ -47,6 +48,16 @@ interface UseTrackersDashboardControllerParams {
 const ROW_ACTION_ERROR_DURATION_MS = 4000;
 const DELETE_ROW_EXIT_DURATION_MS = 240;
 
+function normalizePositiveTargetAmount(value: string): string | null {
+  const parsed = parseNumberish(value.trim());
+  if (parsed === null || parsed <= 0) {
+    return null;
+  }
+
+  const normalized = Number(parsed.toFixed(2));
+  return String(normalized);
+}
+
 export function useTrackersDashboardController({
   initialItems,
   initialError,
@@ -67,7 +78,8 @@ export function useTrackersDashboardController({
   const items = mergedItems;
 
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("all");
+  const [modeFilter, setModeFilter] = useState<ModeFilterKey>("all");
 
   const [pageError, setPageError] = useState<string | null>(null);
   const [rowActionErrorByItemId, setRowActionErrorByItemId] = useState<
@@ -360,20 +372,30 @@ export function useTrackersDashboardController({
   const summary = useMemo(() => {
     const active = items.filter((item) => item.status === "active").length;
     const alerts = items.filter((item) => item.tracking_mode === "alert").length;
-
-    const saved = items.reduce((sum, item) => {
+    const savedByCurrency = new Map<string, number>();
+    for (const item of items) {
       const current = parseNumberish(item.last_amount);
       const target = parseNumberish(item.target_amount);
-      if (!current || !target) {
-        return sum;
+      if (current === null || target === null) {
+        continue;
       }
-      return sum + Math.max(current - target, 0);
-    }, 0);
+      const diff = Math.max(current - target, 0);
+      if (diff <= 0) {
+        continue;
+      }
+
+      const currency = (item.currency ?? "N/A").trim().toUpperCase() || "N/A";
+      savedByCurrency.set(currency, (savedByCurrency.get(currency) ?? 0) + diff);
+    }
+
+    const savedBreakdown = Array.from(savedByCurrency.entries())
+      .map(([currency, amount]) => ({ currency, amount }))
+      .sort((left, right) => right.amount - left.amount);
 
     return {
       active,
       alerts,
-      saved,
+      savedBreakdown,
       consumedCredits,
       remainingCredits,
       monthlyCredits,
@@ -392,18 +414,17 @@ export function useTrackersDashboardController({
         return false;
       }
 
-      if (filter === "all") {
-        return true;
+      if (statusFilter !== "all" && item.status !== statusFilter) {
+        return false;
       }
-      if (filter === "active" || filter === "paused") {
-        return item.status === filter;
+
+      if (modeFilter !== "all" && item.tracking_mode !== modeFilter) {
+        return false;
       }
-      if (filter === "alert" || filter === "monitor") {
-        return item.tracking_mode === filter;
-      }
+
       return true;
     });
-  }, [filter, items, query]);
+  }, [items, modeFilter, query, statusFilter]);
   const editingItem = useMemo(
     () =>
       editingItemId
@@ -451,6 +472,12 @@ export function useTrackersDashboardController({
       router.refresh();
     });
   }, [router, startRefreshTransition]);
+
+  const clearFilters = useCallback(() => {
+    setQuery("");
+    setStatusFilter("all");
+    setModeFilter("all");
+  }, []);
 
   const runItemAction = useCallback(
     (itemId: string, action: ItemAction) => {
@@ -665,9 +692,11 @@ export function useTrackersDashboardController({
     }
 
     const normalizedTargetAmount =
-      editTrackingMode === "alert" ? editTargetAmount.trim() : null;
-    if (editTrackingMode === "alert" && !normalizedTargetAmount) {
-      setEditModalError("Target price is required in Price Alert mode.");
+      editTrackingMode === "alert"
+        ? normalizePositiveTargetAmount(editTargetAmount)
+        : null;
+    if (editTrackingMode === "alert" && normalizedTargetAmount === null) {
+      setEditModalError("Target price must be a positive number.");
       return;
     }
 
@@ -755,8 +784,10 @@ export function useTrackersDashboardController({
       return;
     }
 
-    if (trackingMode === "alert" && !targetAmount.trim()) {
-      setModalError("Target price is required in Price Alert mode.");
+    const normalizedTargetAmount =
+      trackingMode === "alert" ? normalizePositiveTargetAmount(targetAmount) : null;
+    if (trackingMode === "alert" && normalizedTargetAmount === null) {
+      setModalError("Target price must be a positive number.");
       return;
     }
 
@@ -772,7 +803,7 @@ export function useTrackersDashboardController({
       status: "active",
       tracking_mode: trackingMode,
       check_interval_minutes: parsedInterval,
-      target_amount: trackingMode === "alert" ? targetAmount.trim() : null,
+      target_amount: normalizedTargetAmount,
       last_amount: preview.amount,
       currency: preview.currency,
       next_check_at: null,
@@ -792,7 +823,7 @@ export function useTrackersDashboardController({
           sites: preview.site_key ? [preview.site_key] : undefined,
           fetch_mode: "auto",
           check_interval_minutes: parsedInterval,
-          target_amount: trackingMode === "alert" ? targetAmount.trim() : null,
+          target_amount: normalizedTargetAmount,
         })) as { item?: unknown };
 
         const committedItem = toTrackedItemSummary(response.item, fallbackCommittedItem);
@@ -825,7 +856,8 @@ export function useTrackersDashboardController({
   return {
     botUsername,
     displayError,
-    filter,
+    statusFilter,
+    modeFilter,
     filteredItems,
     interval,
     isActionPending,
@@ -883,10 +915,12 @@ export function useTrackersDashboardController({
     setEditInterval,
     setEditTargetAmount,
     setEditTrackingMode: setEditTrackingModeWithNormalization,
-    setFilter,
+    clearFilters,
     setInterval,
+    setModeFilter,
     setModalStep,
     setQuery,
+    setStatusFilter,
     setTargetAmount,
     setTrackingMode,
     setUrlInput,

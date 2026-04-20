@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { cn } from "@/lib/utils";
+import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import {
   Card,
   CardContent,
@@ -13,13 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_FORM_VALUES, FETCH_MODES, INITIAL_SCRAPER_STATE } from "@/features/scraper/constants";
 import { ScraperResults } from "@/features/scraper/components/scraper-results";
@@ -179,21 +173,17 @@ export function ScraperConsole() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="fetch-mode">Fetch strategy</Label>
-                  <Select
+                  <AnimatedDropdown
+                    id="fetch-mode"
+                    options={FETCH_MODES.map((mode) => ({
+                      value: mode,
+                      label: mode,
+                      keywords: FETCH_MODE_HELPERS[mode],
+                    }))}
                     value={fetchMode}
                     onValueChange={(value) => setFetchMode(value as FetchMode)}
-                  >
-                    <SelectTrigger id="fetch-mode" className="w-full">
-                      <SelectValue placeholder="Choose strategy" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FETCH_MODES.map((mode) => (
-                        <SelectItem key={mode} value={mode}>
-                          {mode}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Choose strategy"
+                  />
                   <p className="text-xs text-muted-foreground">{FETCH_MODE_HELPERS[fetchMode]}</p>
                 </div>
 

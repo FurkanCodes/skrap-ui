@@ -6,8 +6,9 @@ import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashbo
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
 import { TrackingModePicker } from "@/features/tracking/components/trackers-dashboard/ui/tracking-mode-picker";
 import type { TrackedItemSummary } from "@/features/tracking/types";
+import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 
 interface EditTrackerModalProps {
@@ -46,10 +47,16 @@ export function EditTrackerModal({
   }
 
   const title = item.product_name ?? item.source_url;
+  const intervalOptions = INTERVAL_OPTIONS.filter((option) => option.value >= minInterval).map(
+    (option) => ({
+      value: String(option.value),
+      label: option.label,
+    })
+  );
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/45 px-4">
-      <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+      <div className="w-full max-w-[460px] rounded-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
             <p className="text-base font-bold text-foreground">Edit Tracker</p>
@@ -66,19 +73,20 @@ export function EditTrackerModal({
           </Button>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="space-y-4 p-5">
           <TrackingModePicker
             trackingMode={trackingMode}
             setTrackingMode={setTrackingMode}
           />
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-3">
             <div className="space-y-2">
               <Label htmlFor="edit-target-price" className="text-xs font-semibold text-foreground">
-                Target price
+                Target
               </Label>
-              <Input
+              <CurrencyInput
                 id="edit-target-price"
+                currency={item.currency}
                 value={targetAmount}
                 onChange={(event) => setTargetAmount(event.target.value)}
                 placeholder="84.99"
@@ -89,21 +97,15 @@ export function EditTrackerModal({
 
             <div className="space-y-2">
               <Label htmlFor="edit-check-every" className="text-xs font-semibold text-foreground">
-                Check every
+                Interval
               </Label>
-              <select
+              <AnimatedDropdown
                 id="edit-check-every"
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none ring-ring/40 transition focus:ring-2"
+                options={intervalOptions}
                 value={interval}
-                onChange={(event) => setInterval(event.target.value)}
+                onValueChange={setInterval}
                 disabled={isSavePending}
-              >
-                {INTERVAL_OPTIONS.filter((option) => option.value >= minInterval).map((option) => (
-                  <option key={`${option.label}-${option.value}`} value={String(option.value)}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
@@ -114,7 +116,7 @@ export function EditTrackerModal({
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border bg-muted/20 px-5 py-4">
+        <div className="flex items-center justify-between border-t border-border px-5 py-4">
           <Button
             type="button"
             variant="ghost"
@@ -132,7 +134,7 @@ export function EditTrackerModal({
             disabled={isSavePending}
           >
             {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            Save Changes
+            Save
           </Button>
         </div>
       </div>

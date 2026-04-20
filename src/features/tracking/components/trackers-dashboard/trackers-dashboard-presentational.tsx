@@ -34,36 +34,44 @@ export function TrackersDashboardAuthenticatedView({
   controller: TrackersDashboardController;
 }) {
   const resetDateLabel = formatResetDate(controller.creditsResetAt);
+  const hasActiveFilters =
+    controller.query.trim().length > 0 ||
+    controller.statusFilter !== "all" ||
+    controller.modeFilter !== "all";
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4 md:space-y-5">
       <DashboardHeader
         canCreateTracker={controller.canCreateTracker}
         isMutating={controller.isMutating}
         isRefreshPending={controller.isRefreshPending}
+        telegramConnected={controller.telegramConnected}
         onRefresh={controller.refresh}
         onOpenModal={controller.openModal}
       />
 
-      <TelegramConnectionBanner
-        telegramConnected={controller.telegramConnected}
-        botUsername={controller.botUsername}
-      />
+      <TelegramConnectionBanner telegramConnected={controller.telegramConnected} />
 
       <SummaryBar
         active={controller.summary.active}
         alerts={controller.summary.alerts}
-        saved={controller.summary.saved}
+        savedBreakdown={controller.summary.savedBreakdown}
         consumedCredits={controller.summary.consumedCredits}
         remainingCredits={controller.summary.remainingCredits}
         monthlyCredits={controller.summary.monthlyCredits}
+        trackersUsed={controller.items.length}
+        maxTrackers={controller.maxTrackers}
+        planKey={controller.me?.entitlement.plan_key ?? "current"}
+        resetDateLabel={resetDateLabel}
       />
 
       <SearchFilterBar
-        filter={controller.filter}
+        statusFilter={controller.statusFilter}
+        modeFilter={controller.modeFilter}
         query={controller.query}
-        setFilter={controller.setFilter}
+        setModeFilter={controller.setModeFilter}
         setQuery={controller.setQuery}
+        setStatusFilter={controller.setStatusFilter}
       />
 
       {controller.displayError ? (
@@ -88,15 +96,12 @@ export function TrackersDashboardAuthenticatedView({
         openEditModal={controller.openEditModal}
         runItemAction={controller.runItemAction}
         requestDeleteAction={controller.requestDeleteAction}
+        hasAnyItems={controller.items.length > 0}
+        hasActiveFilters={hasActiveFilters}
+        canCreateTracker={controller.canCreateTracker}
+        onClearFilters={controller.clearFilters}
+        onOpenModal={controller.openModal}
       />
-
-      <p className="text-center text-xs text-muted-foreground">
-        {controller.items.length} / {controller.maxTrackers} trackers used on{" "}
-        {controller.me?.entitlement.plan_key ?? "current"} plan ·{" "}
-        {controller.remainingCredits.toLocaleString()} / {controller.monthlyCredits.toLocaleString()}{" "}
-        credits left
-        {resetDateLabel ? ` (resets ${resetDateLabel})` : ""}
-      </p>
 
       {controller.creditsExhausted ? (
         <p className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">

@@ -1,42 +1,113 @@
 "use client";
 
+import { LiveNumberTicker } from "@/components/ui/live-number-ticker";
+import { formatCurrencyAmount } from "@/lib/currency";
+
 interface SummaryBarProps {
   active: number;
   alerts: number;
-  saved: number;
+  savedBreakdown: Array<{ currency: string; amount: number }>;
   consumedCredits: number;
   remainingCredits: number;
   monthlyCredits: number;
+  trackersUsed: number;
+  maxTrackers: number;
+  planKey: string;
+  resetDateLabel: string | null;
+}
+
+function formatSavedLabel(savedBreakdown: Array<{ currency: string; amount: number }>): string {
+  if (savedBreakdown.length === 0) {
+    return "—";
+  }
+
+  if (savedBreakdown.length === 1) {
+    const [entry] = savedBreakdown;
+    return formatCurrencyAmount(entry.amount, entry.currency, { fallback: "—" });
+  }
+
+  const [first] = savedBreakdown;
+  return `${formatCurrencyAmount(first.amount, first.currency, { fallback: "—" })} (+${savedBreakdown.length - 1} more)`;
+}
+
+interface SummaryMetricProps {
+  label: string;
+  value: string;
+  title?: string;
+}
+
+function SummaryMetric({ label, value, title }: SummaryMetricProps) {
+  return (
+    <div className="min-w-[132px]" title={title}>
+      <dt className="text-[11px] text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-semibold text-foreground">{value}</dd>
+    </div>
+  );
 }
 
 export function SummaryBar({
   active,
   alerts,
-  saved,
+  savedBreakdown,
   consumedCredits,
   remainingCredits,
   monthlyCredits,
+  trackersUsed,
+  maxTrackers,
+  planKey,
+  resetDateLabel,
 }: SummaryBarProps) {
+  const savedLabel = formatSavedLabel(savedBreakdown);
+  const activeAlertsLabel = `${active.toLocaleString()} / ${alerts.toLocaleString()}`;
+  const planLabel = `${planKey.toUpperCase()} plan`;
+  const hasLiveTracking = active > 0;
+
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 text-sm">
-      <span className="text-muted-foreground">
-        Active <strong className="text-foreground">{active}</strong>
-      </span>
-      <span className="text-muted-foreground">
-        Alerts <strong className="text-foreground">{alerts}</strong>
-      </span>
-      <span className="text-muted-foreground">
-        Saved <strong className="text-foreground">${Math.round(saved)}</strong>
-      </span>
-      <span className="text-muted-foreground">
-        Credits{" "}
-        <strong className="text-foreground">
-          {remainingCredits.toLocaleString()} / {monthlyCredits.toLocaleString()}
-        </strong>
-      </span>
-      <span className="text-muted-foreground">
-        Used <strong className="text-foreground">{consumedCredits.toLocaleString()}</strong>
-      </span>
+    <div className="rounded-lg border border-border bg-card px-4 py-3">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold text-muted-foreground">Checks left this cycle</p>
+          <p className="flex items-end gap-1 text-2xl font-semibold leading-none text-foreground">
+            {hasLiveTracking ? (
+              <LiveNumberTicker
+                value={remainingCredits}
+                live
+                className="text-foreground"
+              />
+            ) : (
+              <span className="tabular-nums">{remainingCredits.toLocaleString()}</span>
+            )}
+            <span className="text-sm font-medium text-muted-foreground">
+              / {monthlyCredits.toLocaleString()}
+            </span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {consumedCredits.toLocaleString()} consumed so far
+          </p>
+        </div>
+
+        <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 md:grid-cols-3">
+          <SummaryMetric
+            label="Active / alerts"
+            value={activeAlertsLabel}
+            title="Active trackers / alert-mode trackers"
+          />
+          <SummaryMetric
+            label="Trackers used"
+            value={`${trackersUsed.toLocaleString()} / ${maxTrackers.toLocaleString()}`}
+          />
+          <SummaryMetric
+            label="Estimated savings"
+            value={savedLabel}
+            title="Estimated from current price minus target across trackers with valid targets."
+          />
+        </dl>
+      </div>
+
+      <div className="mt-2 text-[11px] text-muted-foreground">
+        <span>{planLabel}</span>
+        {resetDateLabel ? <span> · resets {resetDateLabel}</span> : null}
+      </div>
     </div>
   );
 }

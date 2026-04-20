@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { TrackerRow } from "@/features/tracking/components/trackers-dashboard/ui/tracker-row";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import type { TrackedItemSummary } from "@/features/tracking/types";
@@ -25,6 +26,11 @@ interface TrackersListProps {
   openEditModal: (itemId: string) => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
+  hasAnyItems: boolean;
+  hasActiveFilters: boolean;
+  canCreateTracker: boolean;
+  onClearFilters: () => void;
+  onOpenModal: () => void;
 }
 
 export function TrackersList({
@@ -43,6 +49,11 @@ export function TrackersList({
   openEditModal,
   runItemAction,
   requestDeleteAction,
+  hasAnyItems,
+  hasActiveFilters,
+  canCreateTracker,
+  onClearFilters,
+  onOpenModal,
 }: TrackersListProps) {
   const shouldReduceMotion = useReducedMotion();
   const rowTransition = shouldReduceMotion
@@ -61,7 +72,28 @@ export function TrackersList({
           className="space-y-3"
         >
           <Card className="rounded-lg border-border bg-card p-6 text-center text-sm text-muted-foreground">
-            No trackers match this view yet.
+            <div className="space-y-3">
+              <p>
+                {hasAnyItems
+                  ? "No trackers match this search or filter."
+                  : "No trackers yet. Add your first tracker to start monitoring prices."}
+              </p>
+              {hasAnyItems && hasActiveFilters ? (
+                <Button type="button" size="sm" variant="outline" onClick={onClearFilters}>
+                  Clear filters
+                </Button>
+              ) : null}
+              {!hasAnyItems ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onOpenModal}
+                  disabled={!canCreateTracker}
+                >
+                  New Tracker
+                </Button>
+              ) : null}
+            </div>
           </Card>
         </motion.div>
       </AnimatePresence>

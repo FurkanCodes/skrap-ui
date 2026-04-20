@@ -2,6 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
+import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
 
 interface TrackingModePickerProps {
   trackingMode: TrackingMode;
@@ -12,35 +13,39 @@ export function TrackingModePicker({
   trackingMode,
   setTrackingMode,
 }: TrackingModePickerProps) {
+  const options: Array<{
+    value: TrackingMode;
+    label: string;
+    tooltip: { title: string; description: string };
+  }> = [
+    {
+      value: "alert",
+      label: "Price Alert",
+      tooltip: {
+        title: "Price Alert",
+        description: "Sends one notification when price reaches your target.",
+      },
+    },
+    {
+      value: "monitor",
+      label: "Monitor",
+      tooltip: {
+        title: "Monitor",
+        description: "Sends recurring updates at your selected interval.",
+      },
+    },
+  ];
+
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-semibold text-foreground">Tracking mode</Label>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => setTrackingMode("alert")}
-          className={
-            trackingMode === "alert"
-              ? "rounded-md border-2 border-foreground bg-background p-3 text-left"
-              : "rounded-md border border-border bg-background p-3 text-left"
-          }
-        >
-          <p className="text-sm font-semibold text-foreground">Price Alert</p>
-          <p className="mt-1 text-xs text-muted-foreground">Notify once target is reached.</p>
-        </button>
-        <button
-          type="button"
-          onClick={() => setTrackingMode("monitor")}
-          className={
-            trackingMode === "monitor"
-              ? "rounded-md border-2 border-foreground bg-background p-3 text-left"
-              : "rounded-md border border-border bg-background p-3 text-left"
-          }
-        >
-          <p className="text-sm font-semibold text-foreground">Periodic Monitor</p>
-          <p className="mt-1 text-xs text-muted-foreground">Send recurring updates.</p>
-        </button>
-      </div>
+      <Label className="text-xs font-semibold text-foreground">Mode</Label>
+      <SegmentedSwitch
+        options={options}
+        value={trackingMode}
+        onChange={setTrackingMode}
+        ariaLabel="Tracking mode"
+        fullWidth
+      />
     </div>
   );
 }

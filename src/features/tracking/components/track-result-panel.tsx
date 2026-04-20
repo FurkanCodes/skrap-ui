@@ -4,10 +4,12 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
 import { createTrackedItemAction } from "@/features/tracking/server/actions";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 
@@ -15,6 +17,8 @@ interface TrackResultPanelProps {
   url: string;
   siteKey: string | null;
   amount: string | null;
+  currency: string | null;
+  primarySeller?: string | null;
 }
 
 type TrackingMode = "monitor" | "alert";
@@ -36,7 +40,13 @@ function mapActionError(error: unknown): string {
   return "Unable to create tracker. Please try again.";
 }
 
-export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps) {
+export function TrackResultPanel({
+  url,
+  siteKey,
+  amount,
+  currency,
+  primarySeller = null,
+}: TrackResultPanelProps) {
   const { isAuthenticated, me } = useViewer();
   const [isPending, startTransition] = useTransition();
 
@@ -45,6 +55,10 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
   const [interval, setInterval] = useState(DEFAULT_TRACK_INTERVAL_VALUE);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const modeOptions: Array<{ value: TrackingMode; label: string }> = [
+    { value: "monitor", label: "Monitor" },
+    { value: "alert", label: "Price Alert" },
+  ];
 
   const minInterval = useMemo(() => {
     const entitlementMin = Number(me?.entitlement?.min_check_interval_minutes);
@@ -111,27 +125,17 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
     <div className="grid gap-2 rounded-md border bg-muted/20 p-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-medium text-foreground">Tracking</p>
-        <div className="flex gap-1">
-          <Button
-            type="button"
-            size="xs"
-            variant={mode === "monitor" ? "secondary" : "outline"}
-            onClick={() => setMode("monitor")}
-            disabled={isPending}
-          >
-            Monitor
-          </Button>
-          <Button
-            type="button"
-            size="xs"
-            variant={mode === "alert" ? "secondary" : "outline"}
-            onClick={() => setMode("alert")}
-            disabled={isPending}
-          >
-            Alert
-          </Button>
-        </div>
+        <SegmentedSwitch
+          options={modeOptions}
+          value={mode}
+          onChange={setMode}
+          ariaLabel="Tracking mode"
+          disabled={isPending}
+        />
       </div>
+      <p className="text-[11px] text-muted-foreground">
+        Using primary offer for tracking{primarySeller ? ` (${primarySeller})` : ""}.
+      </p>
 
       {!isAuthenticated ? (
         <p className="text-xs text-muted-foreground">
@@ -148,8 +152,9 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
               <Label htmlFor={`target-${url}`} className="text-[11px] text-muted-foreground">
                 Target amount
               </Label>
-              <Input
+              <CurrencyInput
                 id={`target-${url}`}
+                currency={currency}
                 value={targetAmount}
                 onChange={(event) => setTargetAmount(event.target.value)}
                 placeholder="45000.00"
@@ -159,9 +164,9 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
           ) : (
             <div className="grid gap-1">
               <Label className="text-[11px] text-muted-foreground">Mode</Label>
-              <div className="inline-flex h-8 items-center rounded-md border px-2 text-xs text-muted-foreground">
+              <Chip tone="subtle" className="w-fit">
                 No target needed
-              </div>
+              </Chip>
             </div>
           )}
 
@@ -191,9 +196,9 @@ export function TrackResultPanel({ url, siteKey, amount }: TrackResultPanelProps
         <p className="text-xs text-destructive">{error}</p>
       ) : null}
       {message ? (
-        <Badge variant="secondary" className="w-fit">
+        <Chip tone="success" className="w-fit">
           {message}
-        </Badge>
+        </Chip>
       ) : null}
     </div>
   );

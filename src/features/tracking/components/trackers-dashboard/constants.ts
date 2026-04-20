@@ -1,11 +1,18 @@
-import type { FilterOption } from "@/features/tracking/components/trackers-dashboard/types";
+import type {
+  ModeFilterOption,
+  StatusFilterOption,
+} from "@/features/tracking/components/trackers-dashboard/types";
 
 export const TEST_INTERVAL_15_SECONDS_VALUE = 10_079;
 
-export const FILTERS: FilterOption[] = [
+export const STATUS_FILTERS: StatusFilterOption[] = [
   { key: "all", label: "All" },
   { key: "active", label: "Active" },
   { key: "paused", label: "Paused" },
+];
+
+export const MODE_FILTERS: ModeFilterOption[] = [
+  { key: "all", label: "All" },
   { key: "alert", label: "Price Alert" },
   { key: "monitor", label: "Monitor" },
 ];

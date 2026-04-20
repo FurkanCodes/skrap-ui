@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -6,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import { Separator } from "@/components/ui/separator";
 import { METADATA_KEYS } from "@/features/scraper/constants";
 import type { DiscoverResponse, ScrapesResponse } from "@/features/scraper/types";
@@ -16,6 +16,7 @@ import {
   pickImageUrl,
   pickStringValue,
 } from "@/features/scraper/utils";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 interface ScraperResultsProps {
   response: ScrapesResponse | DiscoverResponse;
@@ -47,11 +48,13 @@ export function ScraperResults({ response }: ScraperResultsProps) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">Total: {response.total_urls}</Badge>
-          <Badge variant="secondary">Success: {response.success_count}</Badge>
-          <Badge variant="secondary">Failure: {response.failure_count}</Badge>
+          <Chip tone="muted">Total: {response.total_urls}</Chip>
+          <Chip tone="success">Success: {response.success_count}</Chip>
+          <Chip tone={response.failure_count > 0 ? "danger" : "muted"}>
+            Failure: {response.failure_count}
+          </Chip>
           {isDiscoverResponse(response) ? (
-            <Badge variant="outline">Discovered: {response.discovered_url_count}</Badge>
+            <Chip tone="muted">Discovered: {response.discovered_url_count}</Chip>
           ) : null}
         </div>
 
@@ -79,6 +82,10 @@ export function ScraperResults({ response }: ScraperResultsProps) {
           {response.results.map((result) => {
             const title = pickStringValue(result, METADATA_KEYS) ?? result.url;
             const imageUrl = pickImageUrl(result);
+            const primaryListing = result.listings[0] ?? null;
+            const primaryPriceLabel = primaryListing
+              ? formatCurrencyAmount(primaryListing.amount, primaryListing.currency, { fallback: "-" })
+              : formatPrice(result);
 
             return (
               <Card key={`${result.url}-${result.product_id ?? "unknown"}`} size="sm">
@@ -106,13 +113,13 @@ export function ScraperResults({ response }: ScraperResultsProps) {
                 </CardHeader>
                 <CardContent className="grid gap-2 pb-3 text-xs text-muted-foreground">
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant={result.success ? "secondary" : "destructive"}>
+                    <Chip tone={result.success ? "success" : "danger"}>
                       {result.success ? "success" : "failed"}
-                    </Badge>
-                    <Badge variant="outline">{formatPrice(result)}</Badge>
-                    <Badge variant="outline">Listings: {result.listing_count}</Badge>
+                    </Chip>
+                    <Chip tone="muted">Primary offer: {primaryPriceLabel}</Chip>
+                    <Chip tone="muted">Listings: {result.listing_count}</Chip>
                     {result.adapter_key ? (
-                      <Badge variant="outline">Adapter: {result.adapter_key}</Badge>
+                      <Chip tone="muted">Adapter: {result.adapter_key}</Chip>
                     ) : null}
                   </div>
 
@@ -120,20 +127,33 @@ export function ScraperResults({ response }: ScraperResultsProps) {
 
                   {result.listings.length > 0 ? (
                     <ul className="grid gap-1">
-                      {result.listings.map((listing) => (
+                      {result.listings.map((listing, index) => (
                         <li
                           key={listing.item_id}
-                          className="rounded-md border bg-background px-2 py-1 break-words"
+                          className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-2 py-1 break-words"
                         >
-                          {listing.amount ?? "-"} {listing.currency ?? ""}
-                          {listing.seller ? ` • ${listing.seller}` : ""}
+                          <span className="break-words">
+                            {formatCurrencyAmount(listing.amount, listing.currency, { fallback: "-" })}
+                            {listing.seller ? ` • ${listing.seller}` : ""}
+                          </span>
+                          {index === 0 ? (
+                            <Chip tone="success" className="text-[10px]">
+                              Primary
+                            </Chip>
+                          ) : null}
                         </li>
                       ))}
                     </ul>
                   ) : null}
 
                   {result.success ? (
-                    <TrackResultPanel url={result.url} siteKey={result.site_key} amount={result.amount} />
+                    <TrackResultPanel
+                      url={result.url}
+                      siteKey={result.site_key}
+                      amount={result.amount}
+                      currency={result.currency}
+                      primarySeller={primaryListing?.seller ?? null}
+                    />
                   ) : null}
                 </CardContent>
               </Card>
