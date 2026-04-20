@@ -9,9 +9,9 @@ export const FILTERS: FilterOption[] = [
 ];
 
 export const INTERVAL_OPTIONS: Array<{ label: string; value: number }> = [
-  { label: "15 sec", value: 15 },
-  { label: "30 sec", value: 30 },
-  { label: "45 sec", value: 45 },
+  { label: "15 min", value: 15 },
+  { label: "30 min", value: 30 },
+  { label: "45 min", value: 45 },
   { label: "1 hour", value: 60 },
   { label: "3 hours", value: 180 },
   { label: "6 hours", value: 360 },

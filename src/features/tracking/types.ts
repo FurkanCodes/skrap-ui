@@ -65,4 +65,12 @@ export interface MeResponse {
     created_at: string;
     updated_at: string;
   };
+  usage: {
+    user_id: string;
+    period_start: string;
+    period_end: string;
+    monthly_check_units: number;
+    consumed_check_units: number;
+    remaining_check_units: number;
+  };
 }

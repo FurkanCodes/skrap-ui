@@ -3,13 +3,17 @@ import "server-only";
 import type { MeResponse } from "@/features/tracking/types";
 
 interface CachedMeRecord {
+  version: number;
   data: MeResponse;
   expiresAt: number;
   updatedAt: number;
 }
 
-const ME_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
-const ME_CACHE_SKEW_MS = 30_000;
+const ME_CACHE_VERSION = 2;
+// `/me` includes rapidly changing usage counters; keep cache short so
+// credits reflect scheduler checks almost immediately in UI.
+const ME_CACHE_TTL_MS = 15_000;
+const ME_CACHE_SKEW_MS = 2_000;
 const ME_CACHE_LIMIT = 512;
 
 const meCache = new Map<string, CachedMeRecord>();
@@ -45,6 +49,11 @@ export function readCachedMe(cacheKey: string, now = Date.now()): MeResponse | n
     return null;
   }
 
+  if (cached.version !== ME_CACHE_VERSION) {
+    meCache.delete(cacheKey);
+    return null;
+  }
+
   if (cached.expiresAt <= now + ME_CACHE_SKEW_MS) {
     meCache.delete(cacheKey);
     return null;
@@ -56,10 +65,10 @@ export function readCachedMe(cacheKey: string, now = Date.now()): MeResponse | n
 
 export function writeCachedMe(cacheKey: string, data: MeResponse, now = Date.now()): void {
   meCache.set(cacheKey, {
+    version: ME_CACHE_VERSION,
     data,
     expiresAt: now + ME_CACHE_TTL_MS,
     updatedAt: now,
   });
   pruneMeCache(now);
 }
-

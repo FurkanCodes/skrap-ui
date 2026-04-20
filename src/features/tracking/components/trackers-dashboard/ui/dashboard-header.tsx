@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 interface DashboardHeaderProps {
   isMutating: boolean;
   isRefreshPending: boolean;
+  canCreateTracker: boolean;
   onRefresh: () => void;
   onOpenModal: () => void;
 }
@@ -14,6 +15,7 @@ interface DashboardHeaderProps {
 export function DashboardHeader({
   isMutating,
   isRefreshPending,
+  canCreateTracker,
   onRefresh,
   onOpenModal,
 }: DashboardHeaderProps) {
@@ -29,7 +31,13 @@ export function DashboardHeader({
           {isRefreshPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
           Refresh
         </Button>
-        <Button type="button" size="sm" className="px-4" onClick={onOpenModal}>
+        <Button
+          type="button"
+          size="sm"
+          className="px-4"
+          onClick={onOpenModal}
+          disabled={!canCreateTracker}
+        >
           <Plus className="size-3.5" />
           New Tracker
         </Button>

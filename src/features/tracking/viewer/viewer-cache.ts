@@ -1,8 +1,10 @@
 import type { MeResponse } from "@/features/tracking/types";
 
 const VIEWER_CACHE_KEY = "skrap.viewer-cache.v1";
-const VIEWER_CACHE_VERSION = 1 as const;
-export const VIEWER_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
+const VIEWER_CACHE_VERSION = 2 as const;
+// Keep this short because `/me` now includes credit usage that changes
+// as background scheduler checks run.
+export const VIEWER_CACHE_TTL_MS = 15_000;
 
 export interface ViewerCacheRecord {
   version: typeof VIEWER_CACHE_VERSION;

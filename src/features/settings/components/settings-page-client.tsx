@@ -17,13 +17,30 @@ interface SettingsPageClientProps {
 
 function formatMinimumInterval(value: number): string {
   if (value < 60) {
-    return `${value}s`;
+    return `${value}m`;
   }
   if (value % 60 === 0) {
     const hours = value / 60;
     return `${hours}h`;
   }
   return `${value}m`;
+}
+
+function formatPeriodEnd(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }
 
 export function SettingsPageClient({
@@ -44,13 +61,29 @@ export function SettingsPageClient({
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Number(me?.entitlement.min_check_interval_minutes) || 1;
+  const monthlyCredits = Math.max(
+    0,
+    Number(me?.usage?.monthly_check_units ?? me?.entitlement.monthly_check_units) || 0
+  );
+  const consumedCredits = Math.max(0, Number(me?.usage?.consumed_check_units) || 0);
+  const remainingCredits = Math.max(
+    0,
+    Number(me?.usage?.remaining_check_units ?? monthlyCredits - consumedCredits) || 0
+  );
+  const cycleResetLabel = formatPeriodEnd(me?.usage?.period_end ?? null);
   const planKey = me?.entitlement.plan_key ?? "free";
-  const usagePercent = useMemo(() => {
+  const trackerUsagePercent = useMemo(() => {
     if (maxTrackers <= 0) {
       return 0;
     }
     return Math.max(0, Math.min(100, (trackedCount / maxTrackers) * 100));
   }, [maxTrackers, trackedCount]);
+  const creditUsagePercent = useMemo(() => {
+    if (monthlyCredits <= 0) {
+      return 0;
+    }
+    return Math.max(0, Math.min(100, (consumedCredits / monthlyCredits) * 100));
+  }, [consumedCredits, monthlyCredits]);
 
   return (
     <div className="space-y-5">
@@ -191,9 +224,10 @@ export function SettingsPageClient({
           <CardTitle>Plan</CardTitle>
           <CardDescription>
             {planKey.toUpperCase()} plan · minimum interval {formatMinimumInterval(minInterval)}
+            {cycleResetLabel ? ` · credits reset ${cycleResetLabel}` : ""}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Trackers used</span>
             <span className="font-semibold text-foreground">
@@ -201,7 +235,23 @@ export function SettingsPageClient({
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full rounded-full bg-zinc-900 transition-all duration-300 dark:bg-zinc-100" style={{ width: `${usagePercent}%` }} />
+            <div
+              className="h-full rounded-full bg-zinc-900 transition-all duration-300 dark:bg-zinc-100"
+              style={{ width: `${trackerUsagePercent}%` }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Monthly credits</span>
+            <span className="font-semibold text-foreground">
+              {remainingCredits.toLocaleString()} / {monthlyCredits.toLocaleString()}
+            </span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+            <div
+              className="h-full rounded-full bg-zinc-900 transition-all duration-300 dark:bg-zinc-100"
+              style={{ width: `${creditUsagePercent}%` }}
+            />
           </div>
         </CardContent>
       </Card>

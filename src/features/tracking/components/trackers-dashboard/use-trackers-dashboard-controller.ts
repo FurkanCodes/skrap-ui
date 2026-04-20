@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { ACTION_ERROR_DURATION_MS, ACTION_LOADING_MIN_DURATION_MS, ACTION_SUCCESS_DURATION_MS } from "@/features/tracking/components/trackers-dashboard/constants";
+import {
+  ACTION_ERROR_DURATION_MS,
+  ACTION_LOADING_MIN_DURATION_MS,
+  ACTION_SUCCESS_DURATION_MS,
+  INTERVAL_OPTIONS,
+} from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
   ActionFeedbackState,
   FilterKey,
@@ -111,10 +116,27 @@ export function useTrackersDashboardController({
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
+  const monthlyCredits = Math.max(
+    0,
+    Number(me?.usage?.monthly_check_units ?? me?.entitlement.monthly_check_units) || 0
+  );
+  const consumedCredits = Math.max(0, Number(me?.usage?.consumed_check_units) || 0);
+  const remainingCredits = Math.max(
+    0,
+    Number(me?.usage?.remaining_check_units ?? monthlyCredits - consumedCredits) || 0
+  );
+  const trackersLimitReached = items.length >= maxTrackers;
+  const canCreateTracker = !trackersLimitReached;
+  const creditsExhausted = monthlyCredits > 0 && remainingCredits <= 0;
+  const creditsResetAt = me?.usage?.period_end ?? null;
   const displayError = pageError ?? initialError;
   const botUsername = normalizeBotUsername(telegramBotUsername);
   const isActionPending = pendingActionItemIds.size > 0;
   const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
+  const defaultInterval = useMemo(() => {
+    const matched = INTERVAL_OPTIONS.find((option) => option.value >= minInterval);
+    return String(matched?.value ?? minInterval);
+  }, [minInterval]);
 
   const clearResumeFeedbackTimer = useCallback((itemId: string) => {
     const activeTimer = resumeFeedbackTimersRef.current.get(itemId);
@@ -344,8 +366,11 @@ export function useTrackersDashboardController({
       active,
       alerts,
       saved,
+      consumedCredits,
+      remainingCredits,
+      monthlyCredits,
     };
-  }, [items]);
+  }, [consumedCredits, items, monthlyCredits, remainingCredits]);
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -378,14 +403,22 @@ export function useTrackersDashboardController({
     setPreview(null);
     setTrackingMode("alert");
     setTargetAmount("");
-    setInterval("60");
+    setInterval(defaultInterval);
     setModalError(null);
-  }, []);
+  }, [defaultInterval]);
 
   const openModal = useCallback(() => {
+    if (trackersLimitReached) {
+      setPageError(
+        `Tracker limit reached (${maxTrackers}) for ${(me?.entitlement.plan_key ?? "current").toUpperCase()} plan.`
+      );
+      return;
+    }
+
+    setPageError(null);
     resetModal();
     setIsModalOpen(true);
-  }, [resetModal]);
+  }, [maxTrackers, me?.entitlement.plan_key, resetModal, trackersLimitReached]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -588,6 +621,13 @@ export function useTrackersDashboardController({
       return;
     }
 
+    if (items.length >= maxTrackers) {
+      setModalError(
+        `Tracker limit reached (${maxTrackers}) for ${(me?.entitlement.plan_key ?? "current").toUpperCase()} plan.`
+      );
+      return;
+    }
+
     const parsedInterval = Number(interval);
     if (
       !Number.isInteger(parsedInterval) ||
@@ -656,6 +696,9 @@ export function useTrackersDashboardController({
     closeModal,
     interval,
     isSavePending,
+    items.length,
+    maxTrackers,
+    me?.entitlement.plan_key,
     minInterval,
     preview,
     targetAmount,
@@ -675,8 +718,12 @@ export function useTrackersDashboardController({
     isRefreshPending,
     isSavePending,
     items,
+    canCreateTracker,
+    creditsExhausted,
+    creditsResetAt,
     maxTrackers,
     me,
+    monthlyCredits,
     minInterval,
     modalError,
     modalStep,
@@ -689,12 +736,14 @@ export function useTrackersDashboardController({
     rowActionErrorByItemId,
     preview,
     query,
+    remainingCredits,
     resumeFeedbackByItemId,
     summary,
     targetAmount,
     telegramConnected,
     trackingMode,
     urlInput,
+    consumedCredits,
     cancelDeleteAction,
     closeModal,
     confirmDeleteAction,
