@@ -1,5 +1,6 @@
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import type { ItemMutationAction } from "@/features/tracking/components/trackers-dashboard/types";
+import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
 
 const OPTIMISTIC_ITEM_ID_PREFIX = "optimistic-";
 
@@ -21,8 +22,12 @@ export function normalizeBotUsername(value: string | null | undefined): string {
 }
 
 export function formatInterval(value: number): string {
+  if (value === TEST_INTERVAL_15_SECONDS_VALUE) {
+    return "every 15s";
+  }
+
   if (value < 60) {
-    return `every ${value}s`;
+    return `every ${value}m`;
   }
 
   const hours = value / 60;

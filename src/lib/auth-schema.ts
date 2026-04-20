@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
-export const user = pgTable("user", {
+export const user = pgTable("auth_users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -15,7 +15,7 @@ export const user = pgTable("user", {
 });
 
 export const session = pgTable(
-  "session",
+  "auth_sessions",
   {
     id: text("id").primaryKey(),
     expiresAt: timestamp("expires_at").notNull(),
@@ -30,11 +30,11 @@ export const session = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => [index("session_userId_idx").on(table.userId)],
+  (table) => [index("auth_sessions_user_id_idx").on(table.userId)],
 );
 
 export const account = pgTable(
-  "account",
+  "auth_accounts",
   {
     id: text("id").primaryKey(),
     accountId: text("account_id").notNull(),
@@ -54,11 +54,11 @@ export const account = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("account_userId_idx").on(table.userId)],
+  (table) => [index("auth_accounts_user_id_idx").on(table.userId)],
 );
 
 export const verification = pgTable(
-  "verification",
+  "auth_verifications",
   {
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
@@ -70,10 +70,10 @@ export const verification = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("verification_identifier_idx").on(table.identifier)],
+  (table) => [index("auth_verifications_identifier_idx").on(table.identifier)],
 );
 
-export const jwks = pgTable("jwks", {
+export const jwks = pgTable("auth_jwks", {
   id: text("id").primaryKey(),
   publicKey: text("public_key").notNull(),
   privateKey: text("private_key").notNull(),

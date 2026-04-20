@@ -16,6 +16,7 @@ import {
   clearViewerCache as clearViewerCacheStore,
   getViewerCacheSnapshot,
   isViewerCacheFresh,
+  mergeViewerUsageCache,
   readViewerCache,
   subscribeViewerCache,
   writeViewerCache,
@@ -42,6 +43,34 @@ interface ViewerContextValue {
 }
 
 const ViewerContext = createContext<ViewerContextValue | null>(null);
+const USAGE_STREAM_PATH = "/api/tracking/me/usage/stream";
+const FALLBACK_REFRESH_INTERVAL_MS = 60_000;
+
+function isUsagePayload(value: unknown): value is MeResponse["usage"] {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const maybe = value as {
+    user_id?: unknown;
+    period_start?: unknown;
+    period_end?: unknown;
+    monthly_check_units?: unknown;
+    consumed_check_units?: unknown;
+    remaining_check_units?: unknown;
+    updated_at?: unknown;
+  };
+
+  return (
+    typeof maybe.user_id === "string" &&
+    typeof maybe.period_start === "string" &&
+    typeof maybe.period_end === "string" &&
+    typeof maybe.monthly_check_units === "number" &&
+    typeof maybe.consumed_check_units === "number" &&
+    typeof maybe.remaining_check_units === "number" &&
+    typeof maybe.updated_at === "string"
+  );
+}
 
 export function ViewerProvider({
   children,
@@ -50,14 +79,14 @@ export function ViewerProvider({
   initialSessionUser,
 }: ViewerProviderProps) {
   const router = useRouter();
-  const didRefreshForExpiry = useRef(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const fallbackRefreshTimerRef = useRef<number | null>(null);
+  const wasHiddenRef = useRef(false);
   const viewerRecord = useSyncExternalStore(
     subscribeViewerCache,
     readViewerCache,
     () => null
   );
-  const viewerUserKey = viewerRecord?.userKey ?? null;
-  const viewerExpiresAt = viewerRecord?.expiresAt ?? null;
 
   useEffect(() => {
     if (initialMe && initialUserKey) {
@@ -68,81 +97,162 @@ export function ViewerProvider({
     readViewerCache();
   }, [initialMe, initialUserKey]);
 
+  const closeUsageStream = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, []);
+
+  const clearFallbackRefreshLoop = useCallback(() => {
+    if (fallbackRefreshTimerRef.current) {
+      clearInterval(fallbackRefreshTimerRef.current);
+      fallbackRefreshTimerRef.current = null;
+    }
+  }, []);
+
+  const startFallbackRefreshLoop = useCallback(() => {
+    if (fallbackRefreshTimerRef.current) {
+      return;
+    }
+    fallbackRefreshTimerRef.current = window.setInterval(() => {
+      clearViewerCacheStore();
+      router.refresh();
+    }, FALLBACK_REFRESH_INTERVAL_MS);
+  }, [router]);
+
+  const applyUsageUpdate = useCallback(
+    (usage: MeResponse["usage"]) => {
+      if (!initialUserKey) {
+        return;
+      }
+
+      const snapshot = getViewerCacheSnapshot();
+      if (
+        snapshot &&
+        snapshot.userKey === initialUserKey &&
+        snapshot.data.usage.updated_at >= usage.updated_at
+      ) {
+        return;
+      }
+
+      if (!mergeViewerUsageCache(usage, initialUserKey) && initialMe) {
+        writeViewerCache(
+          {
+            ...initialMe,
+            usage,
+          },
+          initialUserKey
+        );
+      }
+    },
+    [initialMe, initialUserKey]
+  );
+
+  const connectUsageStream = useCallback(() => {
+    if (!initialUserKey || eventSourceRef.current) {
+      return;
+    }
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (window.document.visibilityState !== "visible") {
+      return;
+    }
+    if (typeof window.EventSource === "undefined") {
+      startFallbackRefreshLoop();
+      return;
+    }
+
+    const stream = new EventSource(USAGE_STREAM_PATH);
+    eventSourceRef.current = stream;
+
+    stream.addEventListener("usage", (event) => {
+      clearFallbackRefreshLoop();
+      try {
+        const parsed = JSON.parse(event.data);
+        if (!isUsagePayload(parsed)) {
+          return;
+        }
+        applyUsageUpdate(parsed);
+      } catch {
+        // Ignore malformed stream payloads and wait for next event.
+      }
+    });
+
+    stream.onopen = () => {
+      clearFallbackRefreshLoop();
+    };
+
+    stream.onerror = () => {
+      startFallbackRefreshLoop();
+    };
+  }, [
+    applyUsageUpdate,
+    clearFallbackRefreshLoop,
+    initialUserKey,
+    startFallbackRefreshLoop,
+  ]);
+
   useEffect(() => {
     if (!initialUserKey) {
+      closeUsageStream();
+      clearFallbackRefreshLoop();
       clearViewerCacheStore();
-      didRefreshForExpiry.current = false;
+      wasHiddenRef.current = false;
       return;
     }
 
     const snapshot = getViewerCacheSnapshot();
-    if (!snapshot) {
-      return;
-    }
-
-    if (snapshot.userKey !== initialUserKey) {
+    if (snapshot && snapshot.userKey !== initialUserKey) {
       clearViewerCacheStore();
-      return;
     }
 
-    if (!isViewerCacheFresh(snapshot)) {
-      clearViewerCacheStore();
-      if (!didRefreshForExpiry.current) {
-        didRefreshForExpiry.current = true;
-        router.refresh();
-      }
-      return;
-    }
+    connectUsageStream();
 
-    didRefreshForExpiry.current = false;
-  }, [initialUserKey, router, viewerRecord?.expiresAt, viewerRecord?.userKey]);
+    return () => {
+      closeUsageStream();
+      clearFallbackRefreshLoop();
+    };
+  }, [
+    clearFallbackRefreshLoop,
+    closeUsageStream,
+    connectUsageStream,
+    initialUserKey,
+  ]);
 
   useEffect(() => {
-    if (!initialUserKey || !viewerUserKey || !viewerExpiresAt) {
+    if (!initialUserKey) {
       return;
     }
 
-    if (viewerUserKey !== initialUserKey) {
-      clearViewerCacheStore();
-      return;
-    }
-
-    const expiresInMs = viewerExpiresAt - Date.now();
-    if (expiresInMs <= 0) {
-      clearViewerCacheStore();
-      if (!didRefreshForExpiry.current) {
-        didRefreshForExpiry.current = true;
-        router.refresh();
-      }
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      const snapshot = getViewerCacheSnapshot();
-      if (!snapshot) {
+    const onVisibilityChange = () => {
+      const hidden = window.document.visibilityState !== "visible";
+      if (hidden) {
+        wasHiddenRef.current = true;
+        closeUsageStream();
+        clearFallbackRefreshLoop();
         return;
       }
-      if (snapshot.userKey !== initialUserKey) {
+
+      if (wasHiddenRef.current) {
+        wasHiddenRef.current = false;
         clearViewerCacheStore();
-        return;
-      }
-      if (isViewerCacheFresh(snapshot)) {
-        return;
-      }
-
-      clearViewerCacheStore();
-      if (!didRefreshForExpiry.current) {
-        didRefreshForExpiry.current = true;
         router.refresh();
       }
-    }, expiresInMs);
+      connectUsageStream();
+    };
 
-    return () => window.clearTimeout(timer);
+    window.document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [
+    clearFallbackRefreshLoop,
+    closeUsageStream,
+    connectUsageStream,
     initialUserKey,
     router,
-    viewerExpiresAt,
-    viewerUserKey,
   ]);
 
   const clearViewerCache = useCallback(() => {

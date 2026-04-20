@@ -1,5 +1,7 @@
 import type { FilterOption } from "@/features/tracking/components/trackers-dashboard/types";
 
+export const TEST_INTERVAL_15_SECONDS_VALUE = 10_079;
+
 export const FILTERS: FilterOption[] = [
   { key: "all", label: "All" },
   { key: "active", label: "Active" },
@@ -17,6 +19,7 @@ export const INTERVAL_OPTIONS: Array<{ label: string; value: number }> = [
   { label: "6 hours", value: 360 },
   { label: "12 hours", value: 720 },
   { label: "24 hours", value: 1440 },
+  { label: "15 sec (test)", value: TEST_INTERVAL_15_SECONDS_VALUE },
 ];
 
 export const ACTION_LOADING_MIN_DURATION_MS = 350;

@@ -72,5 +72,6 @@ export interface MeResponse {
     monthly_check_units: number;
     consumed_check_units: number;
     remaining_check_units: number;
+    updated_at: string;
   };
 }

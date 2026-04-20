@@ -14,6 +14,7 @@ import {
   resumeTrackedItemAction,
 } from "@/features/tracking/server/actions";
 import type { TrackedItemSummary } from "@/features/tracking/types";
+import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
 
 interface TrackedItemsPanelClientProps {
   isAuthenticated: boolean;
@@ -45,8 +46,17 @@ function formatAmount(item: TrackedItemSummary): string {
 }
 
 function formatInterval(value: number): string {
+  if (value === TEST_INTERVAL_15_SECONDS_VALUE) {
+    return "15s";
+  }
   if (value < 60) {
-    return `${value}s`;
+    return `${value}m`;
+  }
+  if (value % 1440 === 0) {
+    return `${value / 1440}d`;
+  }
+  if (value % 60 === 0) {
+    return `${value / 60}h`;
   }
   return `${value}m`;
 }

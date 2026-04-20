@@ -2,9 +2,8 @@ import type { MeResponse } from "@/features/tracking/types";
 
 const VIEWER_CACHE_KEY = "skrap.viewer-cache.v1";
 const VIEWER_CACHE_VERSION = 2 as const;
-// Keep this short because `/me` now includes credit usage that changes
-// as background scheduler checks run.
-export const VIEWER_CACHE_TTL_MS = 15_000;
+// Short-lived client cache; SSE keeps usage counters fresh between refreshes.
+export const VIEWER_CACHE_TTL_MS = 60_000;
 
 export interface ViewerCacheRecord {
   version: typeof VIEWER_CACHE_VERSION;
@@ -129,7 +128,7 @@ export function readViewerCache(now = Date.now()): ViewerCacheRecord | null {
     return snapshot;
   }
 
-  clearViewerCache();
+  clearViewerCache({ emitChange: false });
   return null;
 }
 
@@ -145,7 +144,28 @@ export function writeViewerCache(
   return record;
 }
 
-export function clearViewerCache(): void {
+export function mergeViewerUsageCache(
+  usage: MeResponse["usage"],
+  userKey: string,
+  now = Date.now()
+): ViewerCacheRecord | null {
+  const current = getViewerCacheSnapshot();
+  if (!current || current.userKey !== userKey) {
+    return null;
+  }
+
+  return writeViewerCache(
+    {
+      ...current.data,
+      usage,
+    },
+    userKey,
+    now
+  );
+}
+
+export function clearViewerCache(options?: { emitChange?: boolean }): void {
+  const emitChange = options?.emitChange ?? true;
   memoryCache = null;
 
   if (hasWindow()) {
@@ -156,7 +176,9 @@ export function clearViewerCache(): void {
     }
   }
 
-  emit();
+  if (emitChange) {
+    emit();
+  }
 }
 
 export function subscribeViewerCache(listener: () => void): () => void {

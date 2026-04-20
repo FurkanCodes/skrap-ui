@@ -160,9 +160,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           </SidebarGroup>
         </SidebarContent>
 
-        <div className="mt-auto border-t border-sidebar-border/80 px-4 py-3 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-          Telegram can be configured in Settings.
-        </div>
+      
       </Sidebar>
 
       <SidebarInset className="overflow-hidden border border-border/70 bg-background md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0">

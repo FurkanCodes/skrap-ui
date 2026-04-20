@@ -10,9 +10,9 @@ interface CachedMeRecord {
 }
 
 const ME_CACHE_VERSION = 2;
-// `/me` includes rapidly changing usage counters; keep cache short so
-// credits reflect scheduler checks almost immediately in UI.
-const ME_CACHE_TTL_MS = 15_000;
+// Keep this short-lived to preserve fresh bootstrap data while reducing
+// repeated backend reads across navigations.
+const ME_CACHE_TTL_MS = 60_000;
 const ME_CACHE_SKEW_MS = 2_000;
 const ME_CACHE_LIMIT = 512;
 
