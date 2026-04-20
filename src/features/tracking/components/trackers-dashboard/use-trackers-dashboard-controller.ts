@@ -29,6 +29,7 @@ import {
 import {
   createTrackedItemAction,
   deleteTrackedItemAction,
+  patchTrackedItemAction,
   pauseTrackedItemAction,
   previewTrackedItemAction,
   resumeTrackedItemAction,
@@ -113,6 +114,13 @@ export function useTrackersDashboardController({
   const [modalError, setModalError] = useState<string | null>(null);
   const [isPreviewPending, startPreviewTransition] = useTransition();
   const [isSavePending, setIsSavePending] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editTrackingMode, setEditTrackingMode] = useState<TrackingMode>("alert");
+  const [editTargetAmount, setEditTargetAmount] = useState("");
+  const [editInterval, setEditInterval] = useState("60");
+  const [editModalError, setEditModalError] = useState<string | null>(null);
+  const [isEditSavePending, setIsEditSavePending] = useState(false);
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
@@ -396,6 +404,13 @@ export function useTrackersDashboardController({
       return true;
     });
   }, [filter, items, query]);
+  const editingItem = useMemo(
+    () =>
+      editingItemId
+        ? (items.find((item) => item.item_id === editingItemId) ?? null)
+        : null,
+    [editingItemId, items]
+  );
 
   const resetModal = useCallback(() => {
     setModalStep(1);
@@ -422,6 +437,12 @@ export function useTrackersDashboardController({
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
+  }, []);
+
+  const closeEditModal = useCallback(() => {
+    setIsEditModalOpen(false);
+    setEditingItemId(null);
+    setEditModalError(null);
   }, []);
 
   const refresh = useCallback(() => {
@@ -594,6 +615,102 @@ export function useTrackersDashboardController({
     runItemAction(itemId, "delete");
   }, [deleteConfirmItemId, runItemAction]);
 
+  const setEditTrackingModeWithNormalization = useCallback((value: TrackingMode) => {
+    setEditTrackingMode(value);
+    if (value === "monitor") {
+      setEditTargetAmount("");
+    }
+  }, []);
+
+  const openEditModal = useCallback(
+    (itemId: string) => {
+      const item = items.find((entry) => entry.item_id === itemId);
+      if (!item) {
+        setPageError("Tracker not found.");
+        return;
+      }
+
+      setDeleteConfirmItemId(null);
+      setPageError(null);
+      setRowActionError(itemId, null);
+      setEditModalError(null);
+      setEditingItemId(item.item_id);
+      setEditTrackingMode(item.tracking_mode);
+      setEditTargetAmount(item.target_amount ?? "");
+      setEditInterval(String(item.check_interval_minutes));
+      setIsEditModalOpen(true);
+    },
+    [items, setRowActionError]
+  );
+
+  const saveEditedTracker = useCallback(() => {
+    if (!editingItemId || isEditSavePending) {
+      return;
+    }
+
+    const currentItem = items.find((item) => item.item_id === editingItemId);
+    if (!currentItem) {
+      setEditModalError("Tracker not found.");
+      return;
+    }
+
+    const parsedInterval = Number(editInterval);
+    if (
+      !Number.isInteger(parsedInterval) ||
+      parsedInterval < minInterval ||
+      parsedInterval > 10080
+    ) {
+      setEditModalError(`Interval must be between ${minInterval} and 10080.`);
+      return;
+    }
+
+    const normalizedTargetAmount =
+      editTrackingMode === "alert" ? editTargetAmount.trim() : null;
+    if (editTrackingMode === "alert" && !normalizedTargetAmount) {
+      setEditModalError("Target price is required in Price Alert mode.");
+      return;
+    }
+
+    setEditModalError(null);
+    setIsEditSavePending(true);
+    setItemActionPending(editingItemId, true);
+
+    const itemId = editingItemId;
+    void (async () => {
+      try {
+        const patchResult = await patchTrackedItemAction(itemId, {
+          check_interval_minutes: parsedInterval,
+          target_amount: normalizedTargetAmount,
+        });
+        setItemsState((current) => {
+          const latest = current.find((item) => item.item_id === itemId);
+          return mergePatchedItem(
+            current,
+            itemId,
+            patchResult,
+            latest?.status ?? currentItem.status
+          );
+        });
+        closeEditModal();
+      } catch (error) {
+        setEditModalError(mapError(error));
+      } finally {
+        setIsEditSavePending(false);
+        setItemActionPending(itemId, false);
+      }
+    })();
+  }, [
+    closeEditModal,
+    editInterval,
+    editTargetAmount,
+    editTrackingMode,
+    editingItemId,
+    isEditSavePending,
+    items,
+    minInterval,
+    setItemActionPending,
+  ]);
+
   const fetchProductPreview = useCallback(() => {
     setModalError(null);
 
@@ -717,6 +834,8 @@ export function useTrackersDashboardController({
     isPreviewPending,
     isRefreshPending,
     isSavePending,
+    isEditModalOpen,
+    isEditSavePending,
     items,
     canCreateTracker,
     creditsExhausted,
@@ -726,7 +845,12 @@ export function useTrackersDashboardController({
     monthlyCredits,
     minInterval,
     modalError,
+    editModalError,
     modalStep,
+    editingItem,
+    editInterval,
+    editTargetAmount,
+    editTrackingMode,
     deleteConfirmItemId,
     dismissRowActionError,
     pendingActionItemIds,
@@ -746,13 +870,19 @@ export function useTrackersDashboardController({
     consumedCredits,
     cancelDeleteAction,
     closeModal,
+    closeEditModal,
     confirmDeleteAction,
     fetchProductPreview,
     openModal,
+    openEditModal,
     refresh,
     requestDeleteAction,
     runItemAction,
     saveTracker,
+    saveEditedTracker,
+    setEditInterval,
+    setEditTargetAmount,
+    setEditTrackingMode: setEditTrackingModeWithNormalization,
     setFilter,
     setInterval,
     setModalStep,

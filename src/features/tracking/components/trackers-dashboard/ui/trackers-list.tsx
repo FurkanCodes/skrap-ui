@@ -22,6 +22,7 @@ interface TrackersListProps {
   resumeFeedbackByItemId: Record<string, ActionFeedbackState>;
   cancelDeleteAction: () => void;
   confirmDeleteAction: () => void;
+  openEditModal: (itemId: string) => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
 }
@@ -39,6 +40,7 @@ export function TrackersList({
   resumeFeedbackByItemId,
   cancelDeleteAction,
   confirmDeleteAction,
+  openEditModal,
   runItemAction,
   requestDeleteAction,
 }: TrackersListProps) {
@@ -104,6 +106,7 @@ export function TrackersList({
               cancelDeleteAction={cancelDeleteAction}
               confirmDeleteAction={confirmDeleteAction}
               dismissRowActionError={dismissRowActionError}
+              openEditModal={openEditModal}
               runItemAction={runItemAction}
               requestDeleteAction={requestDeleteAction}
             />

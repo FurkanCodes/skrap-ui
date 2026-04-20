@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Loader2, Pencil, Trash2, X } from "lucide-react";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
@@ -20,6 +20,7 @@ interface TrackerActionButtonsProps {
   cancelDeleteAction: () => void;
   confirmDeleteAction: () => void;
   dismissRowActionError: (itemId: string) => void;
+  openEditModal: (itemId: string) => void;
   isDeletePending: boolean;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
@@ -36,6 +37,7 @@ export function TrackerActionButtons({
   cancelDeleteAction,
   confirmDeleteAction,
   dismissRowActionError,
+  openEditModal,
   isDeletePending,
   runItemAction,
   requestDeleteAction,
@@ -53,6 +55,17 @@ export function TrackerActionButtons({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-end gap-1.5 md:w-full">
+        <Button
+          type="button"
+          size="icon-sm"
+          variant="outline"
+          disabled={controlsDisabled}
+          aria-label="Edit tracker"
+          onClick={() => openEditModal(item.item_id)}
+        >
+          <Pencil className="size-3.5" />
+        </Button>
+
         <AnimatePresence mode="wait" initial={false}>
           {item.status === "active" ? (
             <motion.div

@@ -2,6 +2,7 @@
 
 import { CreateTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/create-tracker-modal";
 import { DashboardHeader } from "@/features/tracking/components/trackers-dashboard/ui/dashboard-header";
+import { EditTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/edit-tracker-modal";
 import { SearchFilterBar } from "@/features/tracking/components/trackers-dashboard/ui/search-filter-bar";
 import { SummaryBar } from "@/features/tracking/components/trackers-dashboard/ui/summary-bar";
 import { TelegramConnectionBanner } from "@/features/tracking/components/trackers-dashboard/ui/telegram-connection-banner";
@@ -84,6 +85,7 @@ export function TrackersDashboardAuthenticatedView({
         resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
         cancelDeleteAction={controller.cancelDeleteAction}
         confirmDeleteAction={controller.confirmDeleteAction}
+        openEditModal={controller.openEditModal}
         runItemAction={controller.runItemAction}
         requestDeleteAction={controller.requestDeleteAction}
       />
@@ -123,6 +125,22 @@ export function TrackersDashboardAuthenticatedView({
         telegramConnected={controller.telegramConnected}
         modalError={controller.modalError}
         saveTracker={controller.saveTracker}
+      />
+
+      <EditTrackerModal
+        isOpen={controller.isEditModalOpen}
+        item={controller.editingItem}
+        trackingMode={controller.editTrackingMode}
+        setTrackingMode={controller.setEditTrackingMode}
+        targetAmount={controller.editTargetAmount}
+        setTargetAmount={controller.setEditTargetAmount}
+        interval={controller.editInterval}
+        setInterval={controller.setEditInterval}
+        minInterval={controller.minInterval}
+        error={controller.editModalError}
+        isSavePending={controller.isEditSavePending}
+        onClose={controller.closeEditModal}
+        onSave={controller.saveEditedTracker}
       />
     </section>
   );

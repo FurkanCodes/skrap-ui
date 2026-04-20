@@ -61,7 +61,7 @@ export function CreateTrackerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 px-4">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/45 px-4">
       <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>

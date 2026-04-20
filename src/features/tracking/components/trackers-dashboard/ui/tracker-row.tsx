@@ -22,6 +22,7 @@ interface TrackerRowProps {
   cancelDeleteAction: () => void;
   confirmDeleteAction: () => void;
   dismissRowActionError: (itemId: string) => void;
+  openEditModal: (itemId: string) => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
 }
@@ -39,6 +40,7 @@ export const TrackerRow = memo(function TrackerRow({
   cancelDeleteAction,
   confirmDeleteAction,
   dismissRowActionError,
+  openEditModal,
   runItemAction,
   requestDeleteAction,
 }: TrackerRowProps) {
@@ -151,6 +153,7 @@ export const TrackerRow = memo(function TrackerRow({
         cancelDeleteAction={cancelDeleteAction}
         confirmDeleteAction={confirmDeleteAction}
         dismissRowActionError={dismissRowActionError}
+        openEditModal={openEditModal}
         isDeletePending={isDeletePending}
         runItemAction={runItemAction}
         requestDeleteAction={requestDeleteAction}
