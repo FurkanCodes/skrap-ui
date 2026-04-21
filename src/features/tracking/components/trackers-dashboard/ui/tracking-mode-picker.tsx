@@ -45,6 +45,7 @@ export function TrackingModePicker({
         onChange={setTrackingMode}
         ariaLabel="Tracking mode"
         fullWidth
+        className="rounded-lg border border-border/60 bg-muted/35 p-1"
       />
     </div>
   );

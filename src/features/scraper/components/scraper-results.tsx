@@ -119,7 +119,7 @@ export function ScraperResults({ response }: ScraperResultsProps) {
                     <Chip tone="muted">Primary offer: {primaryPriceLabel}</Chip>
                     <Chip tone="muted">Listings: {result.listing_count}</Chip>
                     {result.adapter_key ? (
-                      <Chip tone="muted">Adapter: {result.adapter_key}</Chip>
+                      <Chip tone="muted">Parsed by: {result.adapter_key}</Chip>
                     ) : null}
                   </div>
 

@@ -16,7 +16,7 @@ import type {
   ScrapesRequest,
   ScrapesResponse,
 } from "@/features/scraper/types";
-import { splitByWhitespace } from "@/features/scraper/utils";
+import { extractUrls, splitByWhitespace } from "@/features/scraper/utils";
 
 const formSchema = z.object({
   endpointMode: z.enum(["scrapes", "discover"]),
@@ -117,7 +117,7 @@ export async function runScraperAction(
   }
 
   const values = parsed.data;
-  const urls = splitByWhitespace(values.urls);
+  const urls = extractUrls(values.urls);
 
   if (urls.length === 0) {
     return {

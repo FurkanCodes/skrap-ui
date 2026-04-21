@@ -85,6 +85,7 @@ export function CreateTrackerModal({
             variant="ghost"
             onClick={closeModal}
             disabled={isPreviewPending || isSavePending}
+            aria-label="Close add tracker modal"
           >
             ×
           </Button>
@@ -141,6 +142,15 @@ export function CreateTrackerModal({
                     disabled={trackingMode === "monitor" || isSavePending}
                     className="h-10 border-border"
                   />
+                  {trackingMode === "monitor" ? (
+                    <p className="text-[11px] text-muted-foreground">
+                      Monitor mode ignores target price and sends interval-based updates.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">
+                      We notify once the price drops to this amount or lower.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">

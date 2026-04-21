@@ -68,6 +68,7 @@ export function EditTrackerModal({
             variant="ghost"
             onClick={onClose}
             disabled={isSavePending}
+            aria-label="Close edit tracker modal"
           >
             ×
           </Button>
@@ -82,7 +83,7 @@ export function EditTrackerModal({
           <div className="space-y-3">
             <div className="space-y-2">
               <Label htmlFor="edit-target-price" className="text-xs font-semibold text-foreground">
-                Target
+                Target price
               </Label>
               <CurrencyInput
                 id="edit-target-price"
@@ -93,6 +94,15 @@ export function EditTrackerModal({
                 disabled={trackingMode === "monitor" || isSavePending}
                 className="h-10 border-border"
               />
+              {trackingMode === "monitor" ? (
+                <p className="text-[11px] text-muted-foreground">
+                  Monitor mode ignores target price and sends interval-based updates.
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  We notify once the price drops to this amount or lower.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

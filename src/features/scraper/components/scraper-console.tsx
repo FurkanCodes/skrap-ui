@@ -20,7 +20,7 @@ import { ScraperResults } from "@/features/scraper/components/scraper-results";
 import { SubmitButton } from "@/features/scraper/components/submit-button";
 import { runScraperAction } from "@/features/scraper/server/actions";
 import type { EndpointMode, FetchMode } from "@/features/scraper/types";
-import { splitByWhitespace } from "@/features/scraper/utils";
+import { extractUrls } from "@/features/scraper/utils";
 
 const JOB_TYPES: Array<{
   value: EndpointMode;
@@ -81,7 +81,7 @@ export function ScraperConsole() {
   const [maxPages, setMaxPages] = useState(DEFAULT_FORM_VALUES.maxPages);
   const [maxDepth, setMaxDepth] = useState(DEFAULT_FORM_VALUES.maxDepth);
 
-  const parsedUrlCount = useMemo(() => splitByWhitespace(urls).length, [urls]);
+  const parsedUrlCount = useMemo(() => extractUrls(urls).length, [urls]);
   const currentJobLabel = endpointLabel(endpointMode);
   const isUrlError = state.error?.toLowerCase().includes("url") ?? false;
 
