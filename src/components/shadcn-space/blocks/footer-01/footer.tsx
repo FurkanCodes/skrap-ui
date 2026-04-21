@@ -71,12 +71,12 @@ const footerSections: FooterData[] = [
         href: "/auth/sign-up?next=/dashboard",
       },
       {
-        title: "Terms",
-        href: "#",
+        title: "Contact",
+        href: "mailto:hello@dealvinci.com",
       },
       {
-        title: "Privacy",
-        href: "#",
+        title: "Support FAQ",
+        href: "#faq",
       },
     ],
   },
@@ -101,19 +101,22 @@ const Footer = () => {
 
                 <div className="flex items-center gap-4">
                   <a
-                    href="#"
+                    href="#pricing"
+                    aria-label="Jump to pricing"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <TwitterIcon />
                   </a>
                   <a
-                    href="#"
+                    href="#faq"
+                    aria-label="Jump to FAQ"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <LinkedinIcon />
                   </a>
                   <a
-                    href="#"
+                    href="mailto:hello@dealvinci.com"
+                    aria-label="Email Dealvinci"
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <TelegramIcon />

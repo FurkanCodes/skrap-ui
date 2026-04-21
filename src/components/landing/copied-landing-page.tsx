@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 
 import Faq from "@/components/shadcn-space/blocks/faq-01/faq";
 import Feature01 from "@/components/shadcn-space/blocks/feature-01";
@@ -6,14 +6,14 @@ import Footer from "@/components/shadcn-space/blocks/footer-01/footer";
 import AgencyHeroSection from "@/components/shadcn-space/blocks/hero-01";
 import Pricing from "@/components/shadcn-space/blocks/pricing-01/pricing";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
 });
 
 export default function CopiedLandingPage() {
   return (
-    <main className={inter.className}>
+    <main className={manrope.className}>
       <section id="home">
         <AgencyHeroSection />
       </section>

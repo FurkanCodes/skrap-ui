@@ -5,36 +5,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { MARKETING_PRICING_FAQ } from "@/components/shadcn-space/blocks/pricing-content";
 import { PlusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const FAQ_DATA = [
-  {
-    question: "How do credits work in Dealvinci?",
-    answer:
-      "Each check run consumes credits based on fetch complexity and volume. Your monthly plan includes a credit allowance, and usage resets each billing cycle.",
-  },
-  {
-    question: "What happens when I run out of credits?",
-    answer:
-      "Trackers pause when available credits are exhausted. You can either top up credits or upgrade your tier to keep monitoring active.",
-  },
-  {
-    question: "Can I switch tiers anytime?",
-    answer:
-      "Yes. You can move between Starter, Growth, and Scale at any time. Upgrades apply immediately, and downgrades apply on the next billing cycle.",
-  },
-  {
-    question: "Do all plans include Telegram alerts?",
-    answer:
-      "Growth and Scale include full Telegram alert delivery and summaries. Starter gives basic monitoring so you can validate workflows before scaling.",
-  },
-  {
-    question: "Who is Dealvinci best for?",
-    answer:
-      "Dealvinci is built for deal hunters, sourcing operators, and ecommerce teams who need dependable price monitoring without manual tab checking.",
-  },
-];
 
 export default function Faq() {
   return (
@@ -53,7 +26,7 @@ export default function Faq() {
         </div>
         <div>
           <Accordion className="w-full flex flex-col gap-6">
-            {FAQ_DATA.map((faq, index) => (
+            {MARKETING_PRICING_FAQ.map((faq, index) => (
               <AccordionItem
                 key={`item-${index}`}
                 value={`item-${index}`}

@@ -7,16 +7,20 @@ import type { AvatarList } from "@/components/shadcn-space/blocks/hero-01/hero";
 export default function AgencyHeroSection() {
   const avatarList: AvatarList[] = [
     {
-      image: "https://images.shadcnspace.com/assets/profiles/user-1.jpg",
+      name: "Sourcing lead",
+      initials: "SL",
     },
     {
-      image: "https://images.shadcnspace.com/assets/profiles/user-2.jpg",
+      name: "Marketplace operator",
+      initials: "MO",
     },
     {
-      image: "https://images.shadcnspace.com/assets/profiles/user-3.jpg",
+      name: "Deal analyst",
+      initials: "DA",
     },
     {
-      image: "https://images.shadcnspace.com/assets/profiles/user-5.jpg",
+      name: "Pricing manager",
+      initials: "PM",
     },
   ];
 
@@ -42,29 +46,24 @@ export default function AgencyHeroSection() {
 
   const brandList: BrandList[] = [
     {
-      image: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-1.svg",
-      lightimg: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-light-1.svg",
-      name: "Brand 1",
+      label: "Price alerts routed to Telegram",
+      context: "Core workflow reliability",
     },
     {
-      image: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-2.svg",
-      lightimg: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-light-2.svg",
-      name: "Brand 2",
+      label: "Trackers with explicit credit limits",
+      context: "Transparent monthly usage",
     },
     {
-      image: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-3.svg",
-      lightimg: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-light-3.svg",
-      name: "Brand 3",
+      label: "Built for rapid deal decisions",
+      context: "Operator-first product direction",
     },
     {
-      image: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-4.svg",
-      lightimg: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-light-4.svg",
-      name: "Brand 4",
+      label: "No spreadsheet-heavy tracking loops",
+      context: "Cleaner monitoring workflow",
     },
     {
-      image: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-5.svg",
-      lightimg: "https://images.shadcnspace.com/assets/brand-logo/logoipsum-light-5.svg",
-      name: "Brand 5",
+      label: "Faster reactions to price movement",
+      context: "High-signal notifications",
     },
   ];
 

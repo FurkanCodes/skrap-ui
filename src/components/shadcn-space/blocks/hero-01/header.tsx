@@ -20,7 +20,7 @@ import { Icon } from "@iconify/react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import Logo from "@/assets/marketing/logo";
 import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 export type NavigationSection = {
   title: string;
@@ -48,7 +48,7 @@ const StartButton = ({
       "cursor-pointer",
     )}
   >
-    <span className="relative z-10 transition-all duration-500">Start tracking</span>
+    <span className="relative z-10 transition-all duration-500">Start free</span>
     <span className="absolute right-1 w-8 h-8 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
       <ArrowUpRight size={16} />
     </span>
@@ -59,6 +59,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
 
   const handleScroll = useCallback(() => {
     setSticky(window.scrollY >= 50);
@@ -84,10 +85,14 @@ const Header = ({ navigationData, className }: HeaderProps) => {
 
   return (
     <motion.header
-      initial={{ opacity: 0, y: -32 }}
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.7, ease: "easeInOut" }}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : { duration: 0.7, ease: "easeInOut" }
+      }
       className={cn(
         "inset-x-0 z-50 px-4 flex items-center justify-center sticky top-0 h-20",
         className,
@@ -167,6 +172,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                           <NavigationMenuItem key={item.title}>
                             <NavigationMenuLink
                               href={item.href}
+                              onClick={() => setIsOpen(false)}
                               className={cn(
                                 "group/nav flex items-center text-2xl font-semibold tracking-tight transition-all p-0 hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent",
                                 item.isActive
@@ -190,24 +196,29 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                     </NavigationMenu>
 
                     <div className="w-fit">
-                      <StartButton onClick={handleStart} />
+                      <StartButton
+                        onClick={() => {
+                          setIsOpen(false);
+                          handleStart();
+                        }}
+                      />
                     </div>
                   </div>
 
                   <div className="mt-auto flex flex-col gap-4">
                     <div className="flex gap-3">
                       {[
-                        "lucide:twitter",
-                        "lucide:linkedin",
-                        "lucide:instagram",
-                        "lucide:send",
-                      ].map((icon) => (
+                        { icon: "lucide:circle-dollar-sign", href: "#pricing", label: "Jump to pricing" },
+                        { icon: "lucide:circle-help", href: "#faq", label: "Jump to FAQ" },
+                        { icon: "lucide:mail", href: "mailto:hello@dealvinci.com", label: "Email Dealvinci" },
+                      ].map((item) => (
                         <a
-                          key={icon}
-                          href="#"
+                          key={item.icon}
+                          href={item.href}
+                          aria-label={item.label}
                           className="flex items-center justify-center rounded-full outline outline-border hover:bg-muted transition p-3 shadow-xs"
                         >
-                          <Icon icon={icon} width={16} height={16} />
+                          <Icon icon={item.icon} width={16} height={16} />
                         </a>
                       ))}
                     </div>
