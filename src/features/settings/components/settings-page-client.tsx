@@ -2,10 +2,12 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
@@ -14,6 +16,8 @@ interface SettingsPageClientProps {
   initialStatus: TelegramActiveStatusResponse | null;
   initialError: string | null;
   trackedCount: number;
+  supportedSites: SiteInfoResponse[];
+  supportedSitesError: string | null;
 }
 
 function formatMinimumInterval(value: number): string {
@@ -44,13 +48,24 @@ function formatPeriodEnd(value: string | null): string | null {
   }).format(date);
 }
 
+function formatSiteKey(siteKey: string): string {
+  return siteKey
+    .split(/[-_]/g)
+    .filter((segment) => segment.length > 0)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
 export function SettingsPageClient({
   initialStatus,
   initialError,
   trackedCount,
+  supportedSites,
+  supportedSitesError,
 }: SettingsPageClientProps) {
   const { isAuthenticated, me } = useViewer();
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
@@ -159,6 +174,51 @@ export function SettingsPageClient({
         initialStatus={initialStatus}
         initialError={initialError}
       />
+
+      <Card className="rounded-lg border-border bg-card">
+        <CardHeader>
+          <CardTitle>Store Adapters</CardTitle>
+          <CardDescription>
+            Pulled from backend capabilities. Any URL can still use generic extraction.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {supportedSitesError ? (
+            <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {supportedSitesError}
+            </p>
+          ) : null}
+
+          {!supportedSitesError && supportedSites.length === 0 ? (
+            <p className="rounded-md border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+              No adapter metadata returned yet.
+            </p>
+          ) : null}
+
+          {!supportedSitesError && supportedSites.length > 0 ? (
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {supportedSites.map((site, index) => (
+                <motion.li
+                  key={site.key}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0 }
+                      : { duration: 0.2, delay: Math.min(index * 0.035, 0.35) }
+                  }
+                  className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                >
+                  <p className="text-sm font-semibold text-foreground">{formatSiteKey(site.key)}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {site.description || "Backend adapter available for this store."}
+                  </p>
+                </motion.li>
+              ))}
+            </ul>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>

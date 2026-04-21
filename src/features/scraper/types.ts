@@ -51,6 +51,15 @@ export interface DiscoverResponse extends ScrapesResponse {
   discovery_stats: DiscoveryStats;
 }
 
+export interface SiteInfoResponse {
+  key: string;
+  description: string;
+}
+
+export interface SitesResponse {
+  sites: SiteInfoResponse[];
+}
+
 export interface ScrapesRequest {
   urls: string[];
   sites?: string[];

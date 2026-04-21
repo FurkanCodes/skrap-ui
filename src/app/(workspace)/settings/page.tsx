@@ -1,6 +1,8 @@
 import { SettingsPageClient } from "@/features/settings/components/settings-page-client";
+import { listSupportedSitesQuery } from "@/features/settings/server/queries";
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
+import type { SiteInfoResponse } from "@/features/scraper/types";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { getAuthContext } from "@/lib/auth-dal";
 
@@ -21,7 +23,19 @@ export default async function SettingsPage() {
   let initialStatus: TelegramActiveStatusResponse | null = null;
   let initialError: string | null = null;
   let trackedCount = 0;
-  const auth = await getAuthContext();
+  let supportedSites: SiteInfoResponse[] = [];
+  let supportedSitesError: string | null = null;
+
+  const authPromise = getAuthContext();
+  const supportedSitesPromise = listSupportedSitesQuery();
+  const auth = await authPromise;
+
+  const [supportedSitesResult] = await Promise.allSettled([supportedSitesPromise]);
+  if (supportedSitesResult.status === "fulfilled") {
+    supportedSites = supportedSitesResult.value;
+  } else {
+    supportedSitesError = "Unable to load supported store adapters.";
+  }
 
   if (auth) {
     const [telegramResult, trackedResult] = await Promise.allSettled([
@@ -41,13 +55,14 @@ export default async function SettingsPage() {
       trackedCount = 0;
     }
   }
-
   return (
     <div className="mx-auto w-full max-w-5xl p-6 lg:p-8">
       <SettingsPageClient
         initialStatus={initialStatus}
         initialError={initialError}
         trackedCount={trackedCount}
+        supportedSites={supportedSites}
+        supportedSitesError={supportedSitesError}
       />
     </div>
   );

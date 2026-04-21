@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
@@ -70,32 +70,38 @@ export function CreateTrackerModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/45 px-4">
-      <div className="w-full max-w-[460px] rounded-lg border border-border bg-card shadow-lg">
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div>
-            <p className="text-base font-bold text-foreground">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[oklch(0.15_0_0_/_0.45)] p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-tracker-title"
+        className="max-h-[90vh] w-full max-w-[480px] overflow-y-auto rounded-xl border border-border/70 bg-card shadow-xl"
+      >
+        <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
+          <div className="space-y-1">
+            <p id="create-tracker-title" className="text-2xl font-semibold leading-tight text-foreground">
               {modalStep === 1 ? "Add New Tracker" : "Configure Tracker"}
             </p>
-            <p className="text-xs text-muted-foreground">Step {modalStep} of 2</p>
+            <p className="text-sm text-muted-foreground">Step {modalStep} of 2</p>
           </div>
           <Button
             type="button"
             size="icon-sm"
             variant="ghost"
+            className="mt-0.5"
             onClick={closeModal}
             disabled={isPreviewPending || isSavePending}
             aria-label="Close add tracker modal"
           >
-            ×
+            <X className="size-4" />
           </Button>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="space-y-6 p-5 sm:p-6">
           {modalStep === 1 ? (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="new-tracker-url" className="text-xs font-semibold text-foreground">
+              <div className="space-y-2.5">
+                <Label htmlFor="new-tracker-url" className="text-sm font-semibold text-foreground">
                   Product URL
                 </Label>
                 <Input
@@ -103,24 +109,24 @@ export function CreateTrackerModal({
                   value={urlInput}
                   onChange={(event) => setUrlInput(event.target.value)}
                   placeholder="https://amazon.com/dp/..."
-                  className="h-11 border-border"
+                  className="h-11 border-input bg-background/60"
                   disabled={isPreviewPending}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Paste a full product page link to fetch title, image, and current price.
+                </p>
               </div>
 
               <Button
                 type="button"
-                className="h-11 w-full"
+                className="h-11 w-full disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
                 disabled={isPreviewPending || !urlInput.trim()}
+                aria-busy={isPreviewPending ? true : undefined}
                 onClick={fetchProductPreview}
               >
                 {isPreviewPending ? <Loader2 className="size-4 animate-spin" /> : null}
                 Fetch Product Info
               </Button>
-
-              <div className="rounded-md border border-border bg-muted/20 p-3 text-[11px] text-muted-foreground">
-                Supported stores: Amazon, Best Buy, Walmart, Apple, Newegg, B&H, Target.
-              </div>
             </>
           ) : (
             <>
@@ -140,14 +146,14 @@ export function CreateTrackerModal({
                     onChange={(event) => setTargetAmount(event.target.value)}
                     placeholder="84.99"
                     disabled={trackingMode === "monitor" || isSavePending}
-                    className="h-10 border-border"
+                    className="h-11 border-input"
                   />
                   {trackingMode === "monitor" ? (
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Monitor mode ignores target price and sends interval-based updates.
                     </p>
                   ) : (
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       We notify once the price drops to this amount or lower.
                     </p>
                   )}
