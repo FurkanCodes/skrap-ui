@@ -10,7 +10,12 @@ import {
 import { METADATA_KEYS } from "@/features/scraper/constants";
 import type { ScrapesRequest, ScrapesResponse } from "@/features/scraper/types";
 import { pickImageUrl, pickStringValue } from "@/features/scraper/utils";
+import {
+  getTrackIntervalValidationError,
+  resolveEffectiveMinIntervalMinutes,
+} from "@/features/tracking/interval-policy";
 import { getTrackedItemsTag } from "@/features/tracking/server/cache-tags";
+import { getMeQuery } from "@/features/tracking/server/queries";
 import type {
   TrackedItemBatchPreviewResult,
   TrackedItemBulkBootstrapResponse,
@@ -19,7 +24,8 @@ import type {
   TrackedItemRequest,
   TrackedItemUpdateRequest,
 } from "@/features/tracking/types";
-import { requireSession, requireUserId } from "@/lib/server-auth";
+import { getAuthContext } from "@/lib/auth-dal";
+import { requireSession, requireUserId, UnauthenticatedError } from "@/lib/server-auth";
 
 async function getTrackedItemsTagForCurrentSession(): Promise<string | null> {
   const userId = await requireUserId();
@@ -29,6 +35,38 @@ async function getTrackedItemsTagForCurrentSession(): Promise<string | null> {
 function revalidateTrackedItems(tag: string | null): void {
   if (tag) {
     updateTag(tag);
+  }
+}
+
+async function getMinIntervalForCurrentSession(): Promise<number> {
+  const authContext = await getAuthContext();
+  if (!authContext) {
+    throw new UnauthenticatedError();
+  }
+
+  const me = await getMeQuery({ cacheKey: authContext.meCacheKey });
+  return resolveEffectiveMinIntervalMinutes({
+    planKey: me.entitlement.plan_key,
+    entitlementMinIntervalMinutes: me.entitlement.min_check_interval_minutes,
+  });
+}
+
+function validateTrackIntervalOrThrow(
+  intervalMinutes: unknown,
+  minIntervalMinutes: number,
+  label: string
+): void {
+  if (intervalMinutes === null || intervalMinutes === undefined) {
+    return;
+  }
+
+  const parsedIntervalMinutes = Number(intervalMinutes);
+  const validationError = getTrackIntervalValidationError(
+    parsedIntervalMinutes,
+    minIntervalMinutes
+  );
+  if (validationError) {
+    throw new Error(`${label}: ${validationError}`);
   }
 }
 
@@ -148,6 +186,13 @@ export async function previewTrackedItemAction(rawUrl: string): Promise<TrackedI
 }
 
 export async function createTrackedItemAction(payload: TrackedItemRequest) {
+  const minIntervalMinutes = await getMinIntervalForCurrentSession();
+  validateTrackIntervalOrThrow(
+    payload.check_interval_minutes,
+    minIntervalMinutes,
+    "Check interval"
+  );
+
   const tag = await getTrackedItemsTagForCurrentSession();
   const result = await postBackendJson("/api/v1/tracked-items", payload, { auth: true });
   revalidateTrackedItems(tag);
@@ -157,6 +202,20 @@ export async function createTrackedItemAction(payload: TrackedItemRequest) {
 export async function createTrackedItemsBulkAction(
   payload: TrackedItemBulkRequest
 ): Promise<TrackedItemBulkBootstrapResponse> {
+  const minIntervalMinutes = await getMinIntervalForCurrentSession();
+  validateTrackIntervalOrThrow(
+    payload.check_interval_minutes,
+    minIntervalMinutes,
+    "Default check interval"
+  );
+  payload.items?.forEach((item, index) => {
+    validateTrackIntervalOrThrow(
+      item.check_interval_minutes,
+      minIntervalMinutes,
+      `Item ${index + 1} check interval`
+    );
+  });
+
   const tag = await getTrackedItemsTagForCurrentSession();
   const result = await postBackendJson<TrackedItemBulkBootstrapResponse, TrackedItemBulkRequest>(
     "/api/v1/tracked-items/bulk",
@@ -168,6 +227,13 @@ export async function createTrackedItemsBulkAction(
 }
 
 export async function patchTrackedItemAction(itemId: string, payload: TrackedItemUpdateRequest) {
+  const minIntervalMinutes = await getMinIntervalForCurrentSession();
+  validateTrackIntervalOrThrow(
+    payload.check_interval_minutes,
+    minIntervalMinutes,
+    "Check interval"
+  );
+
   const tag = await getTrackedItemsTagForCurrentSession();
   const result = await patchBackendJson(`/api/v1/tracked-items/${itemId}`, payload, { auth: true });
   revalidateTrackedItems(tag);

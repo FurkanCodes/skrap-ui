@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
+import { resolveEffectiveMinIntervalMinutes } from "@/features/tracking/interval-policy";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 
 interface SettingsPageClientProps {
@@ -82,7 +83,10 @@ export function SettingsPageClient({
   );
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
-  const minInterval = Number(me?.entitlement.min_check_interval_minutes) || 1;
+  const minInterval = resolveEffectiveMinIntervalMinutes({
+    planKey: me?.entitlement.plan_key,
+    entitlementMinIntervalMinutes: Number(me?.entitlement.min_check_interval_minutes),
+  });
   const monthlyCredits = Math.max(
     0,
     Number(me?.usage?.monthly_check_units ?? me?.entitlement.monthly_check_units) || 0

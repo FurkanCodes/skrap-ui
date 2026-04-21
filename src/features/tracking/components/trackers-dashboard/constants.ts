@@ -2,8 +2,7 @@ import type {
   ModeFilterOption,
   StatusFilterOption,
 } from "@/features/tracking/components/trackers-dashboard/types";
-
-export const TEST_INTERVAL_15_SECONDS_VALUE = 10_079;
+export { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/interval-policy";
 
 export const STATUS_FILTERS: StatusFilterOption[] = [
   { key: "all", label: "All" },
@@ -22,11 +21,11 @@ export const INTERVAL_OPTIONS: Array<{ label: string; value: number }> = [
   { label: "30 min", value: 30 },
   { label: "45 min", value: 45 },
   { label: "1 hour", value: 60 },
+  { label: "2 hours", value: 120 },
   { label: "3 hours", value: 180 },
   { label: "6 hours", value: 360 },
   { label: "12 hours", value: 720 },
   { label: "24 hours", value: 1440 },
-  { label: "15 sec (test)", value: TEST_INTERVAL_15_SECONDS_VALUE },
 ];
 
 export const ACTION_LOADING_MIN_DURATION_MS = 350;

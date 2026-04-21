@@ -36,6 +36,7 @@ import {
   syncBulkDraftSelectionLimits,
   toTrackedItemSummary,
 } from "@/features/tracking/components/trackers-dashboard/utils";
+import { resolveEffectiveMinIntervalMinutes } from "@/features/tracking/interval-policy";
 import {
   createTrackedItemsBulkAction,
   deleteTrackedItemAction,
@@ -162,7 +163,10 @@ export function useTrackersDashboardController({
   const [isEditSavePending, setIsEditSavePending] = useState(false);
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
-  const minInterval = Math.max(1, Number(me?.entitlement.min_check_interval_minutes) || 1);
+  const minInterval = resolveEffectiveMinIntervalMinutes({
+    planKey: me?.entitlement.plan_key,
+    entitlementMinIntervalMinutes: Number(me?.entitlement.min_check_interval_minutes),
+  });
   const monthlyCredits = Math.max(
     0,
     Number(me?.usage?.monthly_check_units ?? me?.entitlement.monthly_check_units) || 0
@@ -1141,15 +1145,12 @@ export function useTrackersDashboardController({
       return;
     }
 
-    const parsedInterval = Number(editInterval);
-    if (
-      !Number.isInteger(parsedInterval) ||
-      parsedInterval < minInterval ||
-      parsedInterval > 10080
-    ) {
-      setEditModalError(`Interval must be between ${minInterval} and 10080.`);
+    const intervalValidationError = getIntervalValidationError(editInterval, minInterval);
+    if (intervalValidationError) {
+      setEditModalError(intervalValidationError);
       return;
     }
+    const parsedInterval = Number(editInterval);
 
     const normalizedTargetAmount =
       editTrackingMode === "alert"

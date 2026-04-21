@@ -10,6 +10,10 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
+import {
+  getTrackIntervalValidationError,
+  resolveEffectiveMinIntervalMinutes,
+} from "@/features/tracking/interval-policy";
 import { createTrackedItemAction } from "@/features/tracking/server/actions";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 
@@ -23,8 +27,6 @@ interface TrackResultPanelProps {
 
 type TrackingMode = "monitor" | "alert";
 
-const MIN_BACKEND_CHECK_INTERVAL_MINUTES = 1;
-const MAX_BACKEND_CHECK_INTERVAL_MINUTES = 10080;
 const DEFAULT_TRACK_INTERVAL_VALUE = "60";
 
 function mapActionError(error: unknown): string {
@@ -60,13 +62,14 @@ export function TrackResultPanel({
     { value: "alert", label: "Price Alert" },
   ];
 
-  const minInterval = useMemo(() => {
-    const entitlementMin = Number(me?.entitlement?.min_check_interval_minutes);
-    if (!Number.isInteger(entitlementMin)) {
-      return MIN_BACKEND_CHECK_INTERVAL_MINUTES;
-    }
-    return Math.max(entitlementMin, MIN_BACKEND_CHECK_INTERVAL_MINUTES);
-  }, [me?.entitlement?.min_check_interval_minutes]);
+  const minInterval = useMemo(
+    () =>
+      resolveEffectiveMinIntervalMinutes({
+        planKey: me?.entitlement?.plan_key,
+        entitlementMinIntervalMinutes: Number(me?.entitlement?.min_check_interval_minutes),
+      }),
+    [me?.entitlement?.min_check_interval_minutes, me?.entitlement?.plan_key]
+  );
 
   const intervalValue = useMemo(() => {
     const parsed = Number(interval);
@@ -90,14 +93,12 @@ export function TrackResultPanel({
     startTransition(async () => {
       try {
         const parsedInterval = Number(intervalValue);
-        if (
-          !Number.isInteger(parsedInterval) ||
-          parsedInterval < minInterval ||
-          parsedInterval > MAX_BACKEND_CHECK_INTERVAL_MINUTES
-        ) {
-          setError(
-            `Interval must be an integer between ${minInterval} and ${MAX_BACKEND_CHECK_INTERVAL_MINUTES}. Temporary mode: 1-59 = seconds, 60+ = minutes.`
-          );
+        const intervalValidationError = getTrackIntervalValidationError(
+          parsedInterval,
+          minInterval
+        );
+        if (intervalValidationError) {
+          setError(intervalValidationError);
           return;
         }
 
@@ -184,7 +185,7 @@ export function TrackResultPanel({
 
           <div className="grid gap-1">
             <Label htmlFor={`interval-${url}`} className="text-[11px] text-muted-foreground">
-              Check interval (temp: 1-59 sec, 60+ min, min {minInterval})
+              Check interval (minutes, min {minInterval})
             </Label>
             <Input
               id={`interval-${url}`}

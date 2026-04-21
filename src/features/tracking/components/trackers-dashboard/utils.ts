@@ -4,6 +4,7 @@ import type {
   ItemMutationAction,
 } from "@/features/tracking/components/trackers-dashboard/types";
 import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
+import { getTrackIntervalValidationError } from "@/features/tracking/interval-policy";
 import { formatCurrencyAmount } from "@/lib/currency";
 
 const OPTIMISTIC_ITEM_ID_PREFIX = "optimistic-";
@@ -96,11 +97,7 @@ export function getIntervalValidationError(
   minInterval: number
 ): string | null {
   const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < minInterval || parsed > 10080) {
-    return `Interval must be between ${minInterval} and 10080.`;
-  }
-
-  return null;
+  return getTrackIntervalValidationError(parsed, minInterval);
 }
 
 export function formatPrice(value: string | null, currency: string | null): string {
