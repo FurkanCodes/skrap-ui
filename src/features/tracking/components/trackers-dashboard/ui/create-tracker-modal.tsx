@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PreviewCard } from "@/features/tracking/components/trackers-dashboard/ui/preview-card";
 import { TrackingModePicker } from "@/features/tracking/components/trackers-dashboard/ui/tracking-mode-picker";
+import { cn } from "@/lib/utils";
 
 interface CreateTrackerModalProps {
   isModalOpen: boolean;
@@ -75,7 +76,10 @@ export function CreateTrackerModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-tracker-title"
-        className="max-h-[90vh] w-full max-w-[480px] overflow-y-auto rounded-xl border border-border/70 bg-card shadow-xl"
+        className={cn(
+          "w-full max-w-[480px] rounded-xl border border-border/70 bg-card shadow-xl",
+          modalStep === 1 ? "max-h-[90vh] overflow-y-auto" : "overflow-visible"
+        )}
       >
         <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
           <div className="space-y-1">
