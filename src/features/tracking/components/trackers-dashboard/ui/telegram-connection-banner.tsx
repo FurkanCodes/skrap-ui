@@ -47,7 +47,7 @@ export function TelegramConnectionBanner({ telegramConnected }: TelegramConnecti
             <div>
               <p className="text-sm font-semibold text-foreground">Connect Telegram to receive alerts</p>
               <p className="text-xs text-muted-foreground">
-                Without Telegram, price drop and monitoring notifications cannot be delivered.
+                Without Telegram, price-drop and target alerts cannot be delivered.
               </p>
             </div>
           </div>

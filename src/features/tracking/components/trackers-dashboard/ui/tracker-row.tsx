@@ -135,7 +135,7 @@ export const TrackerRow = memo(function TrackerRow({
               {trackingStatusChipLabel}
             </Chip>
             <Chip tone={item.tracking_mode === "alert" ? "selected" : "subtle"}>
-              {item.tracking_mode === "alert" ? "Price Alert" : "Monitor"}
+              {item.tracking_mode === "alert" ? "Price Alert" : "Price Drop"}
             </Chip>
           </div>
 

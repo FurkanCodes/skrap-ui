@@ -56,7 +56,7 @@ export function TrackResultPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modeOptions: Array<{ value: TrackingMode; label: string }> = [
-    { value: "monitor", label: "Monitor" },
+    { value: "monitor", label: "Price Drop" },
     { value: "alert", label: "Price Alert" },
   ];
 
@@ -102,7 +102,7 @@ export function TrackResultPanel({
         }
 
         if (targetRequired && !targetAmount.trim()) {
-          setError("Target amount is required for alert mode.");
+          setError("Target amount is required for Price Alert mode.");
           return;
         }
 
@@ -114,7 +114,19 @@ export function TrackResultPanel({
           target_amount: targetRequired ? targetAmount.trim() : null,
         })) as { item?: { item_id?: string } };
 
-        setMessage(response.item?.item_id ? `Tracking started (${response.item.item_id}).` : "Tracking started.");
+        if (response.item?.item_id) {
+          setMessage(
+            targetRequired
+              ? `Tracking started (${response.item.item_id}). We will notify you when price reaches your target.`
+              : `Tracking started (${response.item.item_id}). We will notify you when price drops.`
+          );
+        } else {
+          setMessage(
+            targetRequired
+              ? "Tracking started. We will notify you when price reaches your target."
+              : "Tracking started. We will notify you when price drops."
+          );
+        }
       } catch (actionError) {
         setError(mapActionError(actionError));
       }
@@ -165,7 +177,7 @@ export function TrackResultPanel({
             <div className="grid gap-1">
               <Label className="text-[11px] text-muted-foreground">Mode</Label>
               <Chip tone="subtle" className="w-fit">
-                No target needed
+                Price-drop mode (no target)
               </Chip>
             </div>
           )}

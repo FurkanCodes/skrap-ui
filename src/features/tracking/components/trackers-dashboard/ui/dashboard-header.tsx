@@ -26,7 +26,7 @@ export function DashboardHeader({
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-foreground">Trackers</h1>
-        <p className="text-sm text-muted-foreground">Monitor prices and receive Telegram alerts.</p>
+        <p className="text-sm text-muted-foreground">Track price drops and receive Telegram alerts.</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-2">

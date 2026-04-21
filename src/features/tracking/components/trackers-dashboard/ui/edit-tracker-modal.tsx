@@ -96,7 +96,7 @@ export function EditTrackerModal({
               />
               {trackingMode === "monitor" ? (
                 <p className="text-[11px] text-muted-foreground">
-                  Monitor mode ignores target price and sends interval-based updates.
+                  Price Drop mode ignores target price and only notifies when price decreases.
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">

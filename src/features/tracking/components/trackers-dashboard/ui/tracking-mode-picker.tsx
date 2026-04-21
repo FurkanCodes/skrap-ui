@@ -28,10 +28,10 @@ export function TrackingModePicker({
     },
     {
       value: "monitor",
-      label: "Monitor",
+      label: "Price Drop",
       tooltip: {
-        title: "Monitor",
-        description: "Sends recurring updates at your selected interval.",
+        title: "Price Drop",
+        description: "Sends a notification only when price drops from the previous check.",
       },
     },
   ];
@@ -45,7 +45,7 @@ export function TrackingModePicker({
         onChange={setTrackingMode}
         ariaLabel="Tracking mode"
         fullWidth
-        className="rounded-lg border border-border/60 bg-muted/35 p-1"
+        className="rounded-lg border border-border/70 bg-muted/45 p-1 dark:bg-muted/35"
       />
     </div>
   );

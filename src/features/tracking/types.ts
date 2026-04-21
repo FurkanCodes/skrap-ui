@@ -10,6 +10,23 @@ export interface TrackedItemRequest {
   target_amount?: string | null;
 }
 
+export interface TrackedItemBulkRequestItem {
+  url?: string | null;
+  scrape_result_ref?: string | null;
+  check_interval_minutes?: number | null;
+  target_amount?: string | null;
+}
+
+export interface TrackedItemBulkRequest {
+  items?: TrackedItemBulkRequestItem[] | null;
+  urls?: string[] | null;
+  sites?: string[];
+  timeout_seconds?: number;
+  fetch_mode?: FetchMode;
+  check_interval_minutes?: number;
+  target_amount?: string | null;
+}
+
 export interface TrackedItemUpdateRequest {
   status?: TrackingStatus;
   check_interval_minutes?: number;
@@ -23,6 +40,17 @@ export interface TrackedItemPreview {
   amount: string | null;
   currency: string | null;
   image_url: string | null;
+}
+
+export interface TrackedItemBatchPreviewResult {
+  url: string;
+  success: boolean;
+  site_key: string | null;
+  product_name: string | null;
+  amount: string | null;
+  currency: string | null;
+  image_url: string | null;
+  error: string | null;
 }
 
 export interface TrackedItemSummary {
@@ -42,6 +70,22 @@ export interface TrackedItemSummary {
 
 export interface TrackedItemsListResponse {
   items: TrackedItemSummary[];
+}
+
+export interface TrackedItemBulkBootstrapResult {
+  index: number;
+  url: string | null;
+  success: boolean;
+  item?: unknown | null;
+  error?: string | null;
+}
+
+export interface TrackedItemBulkBootstrapResponse {
+  request_id: string;
+  total_items: number;
+  success_count: number;
+  failure_count: number;
+  results: TrackedItemBulkBootstrapResult[];
 }
 
 export interface MeResponse {

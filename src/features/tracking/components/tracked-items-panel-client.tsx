@@ -61,6 +61,10 @@ function formatInterval(value: number): string {
   return `${value}m`;
 }
 
+function formatTrackingMode(mode: TrackedItemSummary["tracking_mode"]): string {
+  return mode === "alert" ? "Price Alert" : "Price Drop";
+}
+
 function applyItemAction(
   current: TrackedItemSummary[],
   action: ItemOptimisticAction
@@ -145,9 +149,9 @@ export function TrackedItemsPanelClient({
       <Card>
         <CardHeader>
           <CardTitle>My tracked items</CardTitle>
-          <CardDescription>
-            Sign in to see your private tracked products and control monitoring.
-          </CardDescription>
+        <CardDescription>
+          Sign in to see your private tracked products and control alerts.
+        </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/auth/sign-in?next=/dashboard" className={buttonVariants({ size: "sm" })}>
@@ -207,7 +211,7 @@ export function TrackedItemsPanelClient({
                   <p className="line-clamp-1 text-xs text-muted-foreground">{item.source_url}</p>
                   <div className="flex flex-wrap gap-1">
                     <Chip tone={item.status === "active" ? "success" : "muted"}>{item.status}</Chip>
-                    <Chip tone="muted">{item.tracking_mode}</Chip>
+                    <Chip tone="muted">{formatTrackingMode(item.tracking_mode)}</Chip>
                     <Chip tone="muted">Every {formatInterval(item.check_interval_minutes)}</Chip>
                     <Chip tone="muted">{formatAmount(item)}</Chip>
                   </div>

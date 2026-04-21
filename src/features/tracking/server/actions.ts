@@ -12,6 +12,9 @@ import type { ScrapesRequest, ScrapesResponse } from "@/features/scraper/types";
 import { pickImageUrl, pickStringValue } from "@/features/scraper/utils";
 import { getTrackedItemsTag } from "@/features/tracking/server/cache-tags";
 import type {
+  TrackedItemBatchPreviewResult,
+  TrackedItemBulkBootstrapResponse,
+  TrackedItemBulkRequest,
   TrackedItemPreview,
   TrackedItemRequest,
   TrackedItemUpdateRequest,
@@ -63,40 +66,103 @@ function deriveProductName(url: string, fallback: string | null): string {
   }
 }
 
-export async function previewTrackedItemAction(rawUrl: string): Promise<TrackedItemPreview> {
+function toTrackedItemBatchPreviewResult(
+  normalizedUrl: string,
+  result: ScrapesResponse["results"][number] | undefined
+): TrackedItemBatchPreviewResult {
+  if (!result) {
+    return {
+      url: normalizedUrl,
+      success: false,
+      site_key: null,
+      product_name: null,
+      amount: null,
+      currency: null,
+      image_url: null,
+      error: "No product result returned. Try a different URL.",
+    };
+  }
+
+  if (!result.success) {
+    return {
+      url: normalizedUrl,
+      success: false,
+      site_key: result.site_key ?? result.adapter_key ?? null,
+      product_name: null,
+      amount: result.amount,
+      currency: result.currency,
+      image_url: pickImageUrl(result),
+      error: result.error ?? "Could not fetch product info. Try another URL.",
+    };
+  }
+
+  return {
+    url: normalizedUrl,
+    success: true,
+    site_key: result.site_key ?? result.adapter_key ?? null,
+    product_name: deriveProductName(normalizedUrl, pickStringValue(result, METADATA_KEYS)),
+    amount: result.amount,
+    currency: result.currency,
+    image_url: pickImageUrl(result),
+    error: null,
+  };
+}
+
+export async function previewTrackedItemsAction(
+  rawUrls: string[]
+): Promise<TrackedItemBatchPreviewResult[]> {
   await requireSession();
-  const normalizedUrl = normalizeProductUrl(rawUrl);
+  const normalizedUrls = rawUrls.map((rawUrl) => normalizeProductUrl(rawUrl));
+  if (normalizedUrls.length === 0) {
+    throw new Error("Add at least one product URL.");
+  }
 
   const payload: ScrapesRequest = {
-    urls: [normalizedUrl],
+    urls: normalizedUrls,
     fetch_mode: "auto",
   };
   const response = await postBackendJson<ScrapesResponse, ScrapesRequest>("/api/v1/scrapes", payload, {
     auth: true,
   });
-  const firstResult = response.results[0];
 
-  if (!firstResult) {
-    throw new Error("No product result returned. Try a different URL.");
-  }
+  return normalizedUrls.map((normalizedUrl, index) =>
+    toTrackedItemBatchPreviewResult(normalizedUrl, response.results[index])
+  );
+}
 
-  if (!firstResult.success) {
+export async function previewTrackedItemAction(rawUrl: string): Promise<TrackedItemPreview> {
+  const [firstResult] = await previewTrackedItemsAction([rawUrl]);
+
+  if (!firstResult || !firstResult.success) {
     throw new Error(firstResult.error ?? "Could not fetch product info. Try another URL.");
   }
 
   return {
-    url: normalizedUrl,
-    site_key: firstResult.site_key ?? firstResult.adapter_key ?? null,
-    product_name: deriveProductName(normalizedUrl, pickStringValue(firstResult, METADATA_KEYS)),
+    url: firstResult.url,
+    site_key: firstResult.site_key,
     amount: firstResult.amount,
     currency: firstResult.currency,
-    image_url: pickImageUrl(firstResult),
+    image_url: firstResult.image_url,
+    product_name: firstResult.product_name ?? deriveProductName(firstResult.url, null),
   };
 }
 
 export async function createTrackedItemAction(payload: TrackedItemRequest) {
   const tag = await getTrackedItemsTagForCurrentSession();
   const result = await postBackendJson("/api/v1/tracked-items", payload, { auth: true });
+  revalidateTrackedItems(tag);
+  return result;
+}
+
+export async function createTrackedItemsBulkAction(
+  payload: TrackedItemBulkRequest
+): Promise<TrackedItemBulkBootstrapResponse> {
+  const tag = await getTrackedItemsTagForCurrentSession();
+  const result = await postBackendJson<TrackedItemBulkBootstrapResponse, TrackedItemBulkRequest>(
+    "/api/v1/tracked-items/bulk",
+    payload,
+    { auth: true }
+  );
   revalidateTrackedItems(tag);
   return result;
 }

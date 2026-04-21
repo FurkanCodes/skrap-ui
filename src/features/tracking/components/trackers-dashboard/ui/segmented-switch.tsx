@@ -43,7 +43,7 @@ export function SegmentedSwitch<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-1 rounded-md bg-card p-1",
+        "inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/35 p-1",
         disabled && "opacity-60",
         fullWidth && "w-full",
         className
@@ -74,7 +74,7 @@ export function SegmentedSwitch<T extends string>({
                     ? { duration: 0 }
                     : { type: "spring", stiffness: 420, damping: 34, mass: 0.6 }
                 }
-                className="pointer-events-none absolute inset-0 rounded-md bg-background shadow-sm"
+                className="pointer-events-none absolute inset-0 rounded-md bg-background/85 shadow-sm dark:bg-muted/45"
               />
             ) : null}
             <span className="relative z-10">{option.label}</span>

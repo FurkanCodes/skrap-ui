@@ -112,23 +112,36 @@ export function TrackersDashboardAuthenticatedView({
       <CreateTrackerModal
         isModalOpen={controller.isModalOpen}
         modalStep={controller.modalStep}
-        setModalStep={controller.setModalStep}
         closeModal={controller.closeModal}
         isPreviewPending={controller.isPreviewPending}
         isSavePending={controller.isSavePending}
-        urlInput={controller.urlInput}
-        setUrlInput={controller.setUrlInput}
-        fetchProductPreview={controller.fetchProductPreview}
-        preview={controller.preview}
-        trackingMode={controller.trackingMode}
-        setTrackingMode={controller.setTrackingMode}
-        targetAmount={controller.targetAmount}
-        setTargetAmount={controller.setTargetAmount}
-        interval={controller.interval}
-        setInterval={controller.setInterval}
+        urlRows={controller.urlRows}
+        drafts={controller.drafts}
+        activeDraftId={controller.activeDraftId}
+        activeDraft={controller.activeDraft}
+        sharedTrackingMode={controller.sharedTrackingMode}
+        setSharedTrackingMode={controller.setSharedTrackingMode}
+        sharedInterval={controller.sharedInterval}
+        setSharedInterval={controller.setSharedInterval}
         minInterval={controller.minInterval}
+        remainingSlots={controller.remainingSlots}
+        canSaveDrafts={controller.canSaveDrafts}
+        bulkResultSummary={controller.bulkResultSummary}
         telegramConnected={controller.telegramConnected}
         modalError={controller.modalError}
+        setUrlRowValue={controller.setUrlRowValue}
+        addUrlRow={controller.addUrlRow}
+        removeUrlRow={controller.removeUrlRow}
+        handleUrlRowPaste={controller.handleUrlRowPaste}
+        reviewUrlRows={controller.reviewUrlRows}
+        goBackToUrlStep={controller.goBackToUrlStep}
+        setActiveDraft={controller.setActiveDraft}
+        toggleDraftSelection={controller.toggleDraftSelection}
+        setDraftTrackingMode={controller.setDraftTrackingMode}
+        setDraftInterval={controller.setDraftInterval}
+        setDraftTargetAmount={controller.setDraftTargetAmount}
+        setDraftRawUrl={controller.setDraftRawUrl}
+        retryDraftPreview={controller.retryDraftPreview}
         saveTracker={controller.saveTracker}
       />
 

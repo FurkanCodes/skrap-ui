@@ -1,5 +1,8 @@
 import type { TrackedItemSummary } from "@/features/tracking/types";
-import type { ItemMutationAction } from "@/features/tracking/components/trackers-dashboard/types";
+import type {
+  BulkTrackerDraft,
+  ItemMutationAction,
+} from "@/features/tracking/components/trackers-dashboard/types";
 import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
 import { formatCurrencyAmount } from "@/lib/currency";
 
@@ -50,6 +53,54 @@ export function parseNumberish(value: string | null): number | null {
   const normalized = value.replace(/,/g, ".").replace(/[^0-9.\-]/g, "");
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function normalizeHttpUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function getSuggestedTargetAmount(value: string | null): string {
+  const parsed = parseNumberish(value);
+  if (parsed === null || parsed <= 0) {
+    return "";
+  }
+
+  return (parsed * 0.9).toFixed(2);
+}
+
+export function normalizePositiveTargetAmount(value: string): string | null {
+  const parsed = parseNumberish(value.trim());
+  if (parsed === null || parsed <= 0) {
+    return null;
+  }
+
+  return String(Number(parsed.toFixed(2)));
+}
+
+export function getIntervalValidationError(
+  value: string,
+  minInterval: number
+): string | null {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < minInterval || parsed > 10080) {
+    return `Interval must be between ${minInterval} and 10080.`;
+  }
+
+  return null;
 }
 
 export function formatPrice(value: string | null, currency: string | null): string {
@@ -310,6 +361,40 @@ export function mergePatchedItem(
     };
 
     return toTrackedItemSummary(extractTrackedItemPayload(patchResult), fallbackItem);
+  });
+}
+
+export function getInitialBulkDraftId(drafts: BulkTrackerDraft[]): string | null {
+  const selectedReadyDraft = drafts.find(
+    (draft) => draft.previewStatus === "ready" && draft.selected
+  );
+  if (selectedReadyDraft) {
+    return selectedReadyDraft.clientId;
+  }
+
+  const failedDraft = drafts.find((draft) => draft.previewStatus === "failed");
+  if (failedDraft) {
+    return failedDraft.clientId;
+  }
+
+  return drafts[0]?.clientId ?? null;
+}
+
+export function syncBulkDraftSelectionLimits(
+  drafts: BulkTrackerDraft[],
+  remainingSlots: number
+): BulkTrackerDraft[] {
+  const selectedReadyCount = drafts.filter(
+    (draft) => draft.previewStatus === "ready" && draft.selected
+  ).length;
+
+  return drafts.map((draft) => {
+    if (draft.previewStatus !== "ready") {
+      return draft.overLimit ? { ...draft, overLimit: false } : draft;
+    }
+
+    const overLimit = !draft.selected && selectedReadyCount >= remainingSlots;
+    return draft.overLimit === overLimit ? draft : { ...draft, overLimit };
   });
 }
 

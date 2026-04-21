@@ -26,7 +26,7 @@ export function CurrencyInput({ className, currency, ...props }: CurrencyInputPr
       <Input
         type="text"
         inputMode="decimal"
-        className={cn("bg-background pl-9", className)}
+        className={cn("bg-background/80 pl-9 dark:bg-muted/30", className)}
         {...props}
       />
     </div>

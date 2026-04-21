@@ -14,7 +14,7 @@ export const STATUS_FILTERS: StatusFilterOption[] = [
 export const MODE_FILTERS: ModeFilterOption[] = [
   { key: "all", label: "All" },
   { key: "alert", label: "Price Alert" },
-  { key: "monitor", label: "Monitor" },
+  { key: "monitor", label: "Price Drop" },
 ];
 
 export const INTERVAL_OPTIONS: Array<{ label: string; value: number }> = [

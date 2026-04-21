@@ -76,7 +76,7 @@ export function TrackersList({
               <p>
                 {hasAnyItems
                   ? "No trackers match this search or filter."
-                  : "No trackers yet. Add your first tracker to start monitoring prices."}
+                  : "No trackers yet. Add your first tracker to start tracking price drops."}
               </p>
               {hasAnyItems && hasActiveFilters ? (
                 <Button type="button" size="sm" variant="outline" onClick={onClearFilters}>

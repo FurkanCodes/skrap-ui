@@ -38,9 +38,41 @@ export function AnimatedDropdown({
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [openUpward, setOpenUpward] = React.useState(false);
+  const [menuMaxHeight, setMenuMaxHeight] = React.useState(256);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const updateMenuLayout = React.useCallback(() => {
+    if (!triggerRef.current) {
+      return;
+    }
+
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const gap = 8;
+    const viewportPadding = 12;
+    const minMenuHeight = searchable ? 190 : 150;
+    const maxMenuHeight = searchable ? 360 : 320;
+
+    const spaceBelow = Math.max(
+      0,
+      window.innerHeight - triggerRect.bottom - gap - viewportPadding
+    );
+    const spaceAbove = Math.max(0, triggerRect.top - gap - viewportPadding);
+
+    const shouldOpenUpward = spaceBelow < minMenuHeight && spaceAbove > spaceBelow;
+    const preferredSpace = shouldOpenUpward ? spaceAbove : spaceBelow;
+    const fallbackSpace = Math.max(spaceAbove, spaceBelow);
+    const resolvedSpace = preferredSpace >= 96 ? preferredSpace : fallbackSpace;
+
+    setOpenUpward(shouldOpenUpward);
+    setMenuMaxHeight(Math.max(96, Math.min(maxMenuHeight, Math.floor(resolvedSpace))));
+  }, [searchable]);
+
+  const listMaxHeight = React.useMemo(() => {
+    const searchHeaderOffset = searchable ? 56 : 0;
+    return Math.max(96, menuMaxHeight - searchHeaderOffset);
+  }, [menuMaxHeight, searchable]);
 
   React.useEffect(() => {
     if (open && searchable) {
@@ -74,17 +106,31 @@ export function AnimatedDropdown({
     };
   }, [open]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!open || !triggerRef.current) {
       return;
     }
 
-    const rect = triggerRef.current.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const expectedHeight = searchable ? 300 : 220;
-    setOpenUpward(spaceBelow < expectedHeight && spaceAbove > spaceBelow);
-  }, [open, searchable]);
+    updateMenuLayout();
+  }, [open, updateMenuLayout]);
+
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handleViewportChange = () => {
+      updateMenuLayout();
+    };
+
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
+
+    return () => {
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
+    };
+  }, [open, updateMenuLayout]);
 
   const selectedOption = React.useMemo(
     () => options.find((option) => option.value === value) ?? null,
@@ -123,7 +169,7 @@ export function AnimatedDropdown({
           setOpen((prev) => !prev);
         }}
         className={cn(
-          "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground transition-colors",
+          "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border bg-background/80 px-3 text-sm text-foreground transition-colors dark:bg-muted/30",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
           "disabled:cursor-not-allowed disabled:opacity-60"
         )}
@@ -143,8 +189,9 @@ export function AnimatedDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
+            style={{ maxHeight: menuMaxHeight }}
             className={cn(
-              "absolute right-0 left-0 z-50 overflow-hidden rounded-xl border border-border bg-popover shadow-lg",
+              "absolute right-0 left-0 z-50 flex flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-lg",
               openUpward ? "bottom-full mb-2" : "top-full mt-2"
             )}
           >
@@ -163,7 +210,7 @@ export function AnimatedDropdown({
               </div>
             ) : null}
 
-            <div className="max-h-64 overflow-y-auto">
+            <div className="min-h-0 overflow-y-auto" style={{ maxHeight: listMaxHeight }}>
               {filteredOptions.length === 0 ? (
                 <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                   No options found
