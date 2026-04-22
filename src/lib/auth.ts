@@ -217,6 +217,7 @@ const PASSWORD_PROTECTED_ENDPOINTS = new Set([
   "/set-password",
   "/reset-password",
 ]);
+const SIGN_UP_ENDPOINT = "/sign-up/email";
 
 function getPasswordFromEndpointBody(body: unknown): string | null {
   if (!body || typeof body !== "object") {
@@ -233,10 +234,41 @@ function getPasswordFromEndpointBody(body: unknown): string | null {
   return null;
 }
 
+function getEmailFromEndpointBody(body: unknown): string | null {
+  if (!body || typeof body !== "object") {
+    return null;
+  }
+
+  const values = body as Record<string, unknown>;
+  if (typeof values.email !== "string") {
+    return null;
+  }
+
+  const normalized = values.email.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
 const passwordSecurityPlugin = {
   id: "password-security",
   hooks: {
     before: [
+      {
+        matcher: (context) => context.path === SIGN_UP_ENDPOINT,
+        handler: createAuthMiddleware(async (ctx) => {
+          const email = getEmailFromEndpointBody(ctx.body);
+          if (!email) {
+            return;
+          }
+
+          const existingUser = await ctx.context.internalAdapter.findUserByEmail(email);
+          if (existingUser?.user) {
+            throw APIError.fromStatus("UNPROCESSABLE_ENTITY", {
+              message: "This email is already registered. Please sign in or verify your inbox.",
+              code: "USER_ALREADY_EXISTS",
+            });
+          }
+        }),
+      },
       {
         matcher: (context) =>
           Boolean(context.path && PASSWORD_PROTECTED_ENDPOINTS.has(context.path)),
@@ -264,6 +296,11 @@ function buildAuth() {
   const secret = requiredEnv("BETTER_AUTH_SECRET");
   assertSecretSecurity(secret);
   const authEmailOptions = getAuthEmailOptions(baseUrl);
+  if (!authEmailOptions.emailVerification) {
+    throw new Error(
+      "Email verification is required. Configure RESEND_API_KEY and AUTH_EMAIL_FROM to enable auth email delivery."
+    );
+  }
 
   const audience = process.env.BETTER_AUTH_JWT_AUDIENCE?.trim() || baseUrl;
   const issuer = process.env.BETTER_AUTH_JWT_ISSUER?.trim() || baseUrl;
@@ -281,7 +318,7 @@ function buildAuth() {
     }),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
+      requireEmailVerification: true,
       minPasswordLength: PASSWORD_MIN_LENGTH,
       maxPasswordLength: PASSWORD_MAX_LENGTH,
       ...authEmailOptions.emailAndPassword,

@@ -35,8 +35,14 @@ interface ResendConfig {
   appName: string;
 }
 
+const RESEND_TEST_SENDER_DOMAIN = "resend.dev";
+const RESEND_TEST_MODE_HINT =
+  "You can only send testing emails to your own email address";
+
 let cachedResend: Resend | null = null;
 let warnedAboutMissingResendConfig = false;
+let warnedAboutResendTestSender = false;
+let warnedAboutDevConsoleFallback = false;
 
 function readResendConfig(): ResendConfig {
   const apiKey = process.env.RESEND_API_KEY?.trim() || null;
@@ -82,6 +88,68 @@ function getResendClient(config: ResendConfig): Resend {
   return cachedResend;
 }
 
+function isDevelopmentMode(): boolean {
+  return process.env.NODE_ENV !== "production";
+}
+
+function shouldUseDevConsoleFallback(): boolean {
+  if (!isDevelopmentMode()) {
+    return false;
+  }
+
+  const value = process.env.AUTH_EMAIL_DEV_CONSOLE_FALLBACK?.trim().toLowerCase();
+  if (!value) {
+    return true;
+  }
+
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function getEmailAddress(value: string): string {
+  const trimmed = value.trim();
+  const matched = trimmed.match(/<([^>]+)>/);
+  if (matched?.[1]) {
+    return matched[1].trim().toLowerCase();
+  }
+  return trimmed.toLowerCase();
+}
+
+function getSenderDomain(from: string): string | null {
+  const emailAddress = getEmailAddress(from);
+  const separator = emailAddress.lastIndexOf("@");
+  if (separator <= 0 || separator === emailAddress.length - 1) {
+    return null;
+  }
+  return emailAddress.slice(separator + 1);
+}
+
+function warnResendTestSender(config: ResendConfig): void {
+  if (warnedAboutResendTestSender || !config.from) {
+    return;
+  }
+
+  const senderDomain = getSenderDomain(config.from);
+  if (senderDomain !== RESEND_TEST_SENDER_DOMAIN) {
+    return;
+  }
+
+  warnedAboutResendTestSender = true;
+  console.warn(
+    `[auth-email] AUTH_EMAIL_FROM is using ${RESEND_TEST_SENDER_DOMAIN} test sender. Emails will only deliver to your own Resend account email. Verify a custom domain at https://resend.com/domains and switch AUTH_EMAIL_FROM to that domain.`
+  );
+}
+
+function warnDevConsoleFallbackEnabled(): void {
+  if (warnedAboutDevConsoleFallback || !shouldUseDevConsoleFallback()) {
+    return;
+  }
+
+  warnedAboutDevConsoleFallback = true;
+  console.warn(
+    "[auth-email] Development console fallback is enabled. Verification and reset links will be logged to the server console when delivery is unavailable."
+  );
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -94,6 +162,27 @@ function escapeHtml(value: string): string {
 function getDisplayName(user: AuthEmailRecipient): string {
   const value = user.name?.trim();
   return value && value.length > 0 ? value : "there";
+}
+
+function resolveResetPasswordUiUrl(baseUrl: string, rawUrl: string): string {
+  try {
+    const parsed = new URL(rawUrl);
+    const callbackURL = parsed.searchParams.get("callbackURL");
+    if (!callbackURL) {
+      return rawUrl;
+    }
+
+    const token = parsed.pathname.split("/").filter(Boolean).at(-1);
+    if (!token) {
+      return rawUrl;
+    }
+
+    const callback = new URL(callbackURL, baseUrl);
+    callback.searchParams.set("token", token);
+    return callback.toString();
+  } catch {
+    return rawUrl;
+  }
 }
 
 function authEmailLayout({
@@ -143,22 +232,81 @@ function authEmailLayout({
   `;
 }
 
+function mapResendErrorMessage(message: string): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("you can only send testing emails to your own email address")) {
+    return "Resend is in test mode. Verify a domain at https://resend.com/domains and set AUTH_EMAIL_FROM to an address on that verified domain.";
+  }
+
+  if (normalized.includes("domain is not verified")) {
+    return "Resend sender domain is not verified. Verify your domain in Resend and ensure AUTH_EMAIL_FROM uses that exact domain/subdomain.";
+  }
+
+  if (normalized.includes("invalid `from` field")) {
+    return "AUTH_EMAIL_FROM is invalid. Use either email@example.com or Name <email@example.com>.";
+  }
+
+  return message;
+}
+
+function shouldFallbackForResendError(message: string): boolean {
+  if (!shouldUseDevConsoleFallback()) {
+    return false;
+  }
+
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes(RESEND_TEST_MODE_HINT.toLowerCase()) ||
+    normalized.includes("domain is not verified") ||
+    normalized.includes("invalid `from` field")
+  );
+}
+
+function logDevConsoleLink({
+  action,
+  to,
+  url,
+  reason,
+}: {
+  action: "email verification" | "password reset";
+  to: string;
+  url: string;
+  reason: string;
+}): void {
+  warnDevConsoleFallbackEnabled();
+  console.warn(`[auth-email] Falling back to dev console link for ${action}: ${reason}`);
+  console.info(`[auth-email][dev-link] ${action} for ${to}: ${url}`);
+}
+
 async function sendAuthEmail({
   config,
   to,
   subject,
   html,
   text,
+  url,
+  action,
 }: {
   config: ResendConfig;
   to: string;
   subject: string;
   html: string;
   text: string;
+  url: string;
+  action: "email verification" | "password reset";
 }): Promise<void> {
   const client = getResendClient(config);
   const from = config.from;
   if (!from) {
+    if (shouldUseDevConsoleFallback()) {
+      logDevConsoleLink({
+        action,
+        to,
+        url,
+        reason: "AUTH_EMAIL_FROM is not configured",
+      });
+      return;
+    }
     throw new Error("AUTH_EMAIL_FROM is required for auth email delivery.");
   }
 
@@ -172,18 +320,26 @@ async function sendAuthEmail({
   });
 
   if (result.error) {
+    if (shouldFallbackForResendError(result.error.message)) {
+      logDevConsoleLink({
+        action,
+        to,
+        url,
+        reason: result.error.message,
+      });
+      return;
+    }
+
     throw new Error(
-      `[auth-email] Resend failed (${result.error.name ?? "unknown_error"}): ${result.error.message}`
+      `[auth-email] Resend failed (${result.error.name ?? "unknown_error"}): ${mapResendErrorMessage(
+        result.error.message
+      )}`
     );
   }
 }
 
-export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
-  const config = readResendConfig();
-  if (!isResendConfigured(config)) {
-    warnResendNotConfigured(config);
-    return {};
-  }
+function createDevConsoleEmailOptions(appName: string, baseUrl: string): AuthEmailOptions {
+  warnDevConsoleFallbackEnabled();
 
   return {
     emailAndPassword: {
@@ -192,6 +348,45 @@ export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
         if (!to) {
           return;
         }
+        const resetUiUrl = resolveResetPasswordUiUrl(baseUrl, url);
+        console.info(
+          `[auth-email][dev-link] password reset for ${to} (${appName}): ${resetUiUrl}`
+        );
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        const to = user.email.trim();
+        if (!to) {
+          return;
+        }
+        console.info(
+          `[auth-email][dev-link] email verification for ${to} (${appName}): ${url}`
+        );
+      },
+    },
+  };
+}
+
+export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
+  const config = readResendConfig();
+  if (!isResendConfigured(config)) {
+    warnResendNotConfigured(config);
+    if (shouldUseDevConsoleFallback()) {
+      return createDevConsoleEmailOptions(config.appName, baseUrl);
+    }
+    return {};
+  }
+  warnResendTestSender(config);
+
+  return {
+    emailAndPassword: {
+      sendResetPassword: async ({ user, url }) => {
+        const to = user.email.trim();
+        if (!to) {
+          return;
+        }
+        const resetUiUrl = resolveResetPasswordUiUrl(baseUrl, url);
 
         const subject = `${config.appName} password reset`;
         const intro = `Hi ${getDisplayName(user)}, use the button below to reset your password. This link points to ${new URL(
@@ -202,10 +397,10 @@ export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
           headline: "Reset your password",
           intro,
           ctaLabel: "Reset password",
-          ctaUrl: url,
+          ctaUrl: resetUiUrl,
           fallbackLabel: "If the button does not work, open this link:",
         });
-        const text = `Reset your password: ${url}`;
+        const text = `Reset your password: ${resetUiUrl}`;
 
         await sendAuthEmail({
           config,
@@ -213,6 +408,8 @@ export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
           subject,
           html,
           text,
+          url: resetUiUrl,
+          action: "password reset",
         });
       },
     },
@@ -241,6 +438,8 @@ export function getAuthEmailOptions(baseUrl: string): AuthEmailOptions {
           subject,
           html,
           text,
+          url,
+          action: "email verification",
         });
       },
     },

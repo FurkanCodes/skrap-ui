@@ -1,7 +1,15 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/auth/sign-in", "/auth/sign-up"] as const;
+const PUBLIC_ROUTES = [
+  "/",
+  "/auth/sign-in",
+  "/auth/sign-up",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/verify-email",
+  "/reset-password",
+] as const;
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));

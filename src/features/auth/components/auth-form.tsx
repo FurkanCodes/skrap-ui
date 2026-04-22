@@ -39,6 +39,7 @@ type AuthFormValues = {
 
 type AuthFormField = keyof AuthFormValues;
 type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
+type ParsedAuthError = { message: string; code: string | null };
 
 const signInSchema = z.object({
   email: z
@@ -114,6 +115,25 @@ function mapAuthError(error: unknown): string {
   return "Authentication failed. Please try again.";
 }
 
+function parseAuthError(error: unknown): ParsedAuthError {
+  const fallbackMessage = mapAuthError(error);
+  if (!error || typeof error !== "object") {
+    return { message: fallbackMessage, code: null };
+  }
+
+  const maybeError = error as { message?: unknown; code?: unknown };
+  const message =
+    typeof maybeError.message === "string" && maybeError.message.trim()
+      ? maybeError.message
+      : fallbackMessage;
+  const code =
+    typeof maybeError.code === "string" && maybeError.code.trim()
+      ? maybeError.code
+      : null;
+
+  return { message, code };
+}
+
 function mapAuthFieldErrors(
   issues: z.ZodIssue[]
 ): AuthFormFieldErrors {
@@ -169,6 +189,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [rememberDevice, setRememberDevice] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
+  const [signUpNotice, setSignUpNotice] = useState<string | null>(null);
   const [touchedFields, setTouchedFields] = useState<
     Partial<Record<AuthFormField, boolean>>
   >({});
@@ -239,6 +260,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const runEmailAuth = async () => {
     setHasSubmittedAttempt(true);
     setError(null);
+    if (isSignUp) {
+      setSignUpNotice(null);
+    }
     const normalizedEmail = email.trim();
     if (Object.keys(validationErrors).length > 0) {
       return;
@@ -254,9 +278,50 @@ export function AuthForm({ mode }: AuthFormProps) {
           callbackURL: redirectTo,
         });
         if (response.error) {
-          setError(mapAuthError(response.error.message));
+          const parsedError = parseAuthError(response.error);
+          const isAlreadyExists =
+            parsedError.code === "USER_ALREADY_EXISTS" ||
+            parsedError.message.toLowerCase().includes("already registered");
+
+          if (isAlreadyExists) {
+            const resendResponse = await fetch("/api/auth/send-verification-email", {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                email: normalizedEmail,
+                callbackURL: redirectTo,
+              }),
+            });
+
+            if (!resendResponse.ok) {
+              setError(parsedError.message);
+              return;
+            }
+
+            setSignUpNotice(
+              `An account already exists for ${normalizedEmail}. If it is not verified yet, we sent a fresh verification link.`
+            );
+            setPassword("");
+            setConfirmPassword("");
+            setTouchedFields({});
+            setHasSubmittedAttempt(false);
+            return;
+          }
+
+          setError(parsedError.message);
           return;
         }
+        setSignUpNotice(
+          `Verification email sent to ${normalizedEmail}. Please verify your email before signing in.`
+        );
+        setPassword("");
+        setConfirmPassword("");
+        setTouchedFields({});
+        setHasSubmittedAttempt(false);
+        return;
       } else {
         const response = await authClient.signIn.email({
           email: normalizedEmail,
@@ -329,7 +394,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {isSignUp
-                ? "Get tracker ownership, Telegram alerts, and monthly credits in one workspace."
+                ? "Create your account and verify your email to unlock dashboard access."
                 : "Access your dashboard, trackers, and Telegram alert settings."}
             </p>
 
@@ -349,6 +414,21 @@ export function AuthForm({ mode }: AuthFormProps) {
                 >
                   {error}
                 </div>
+              ) : null}
+              {isSignUp && signUpNotice ? (
+                <div
+                  role="status"
+                  className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-700 dark:text-emerald-300"
+                >
+                  {signUpNotice}
+                </div>
+              ) : null}
+              {isSignUp && process.env.NODE_ENV !== "production" ? (
+                <p className="text-xs text-muted-foreground">
+                  Local dev tip: if external email delivery is unavailable, use the
+                  verification link printed in the server logs with
+                  <span className="font-mono"> [auth-email][dev-link] </span>.
+                </p>
               ) : null}
 
               {isSignUp ? (
@@ -491,12 +571,12 @@ export function AuthForm({ mode }: AuthFormProps) {
                     />
                     Remember this device
                   </Label>
-                  <a
-                    href="mailto:hello@dealvinci.com?subject=Password%20reset%20request"
+                  <Link
+                    href="/auth/forgot-password"
                     className="font-medium text-foreground underline underline-offset-4"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               )}
 

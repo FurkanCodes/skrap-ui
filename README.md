@@ -53,7 +53,7 @@ Notes:
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are only needed if you use `@supabase/supabase-js` in client code.
 - Drizzle client uses `prepare: false` for Supabase transaction pooler compatibility.
 
-Optional auth email delivery (Resend):
+Auth email delivery (required for email/password signup + verification):
 
 ```bash
 RESEND_API_KEY=...
@@ -62,7 +62,7 @@ AUTH_EMAIL_REPLY_TO=
 AUTH_EMAIL_APP_NAME=Dealvinci
 ```
 
-When configured, Better Auth password reset + verification emails are sent through Resend.
+Better Auth password reset + verification emails are sent through Resend.
 
 5. Start UI:
 
