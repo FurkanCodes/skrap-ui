@@ -3,6 +3,12 @@
 import { LiveNumberTicker } from "@/components/ui/live-number-ticker";
 import { formatCurrencyAmount } from "@/lib/currency";
 
+const NUMBER_LOCALE = "en-US";
+
+function formatNumber(value: number): string {
+  return value.toLocaleString(NUMBER_LOCALE);
+}
+
 interface SummaryBarProps {
   active: number;
   alerts: number;
@@ -58,7 +64,7 @@ export function SummaryBar({
   resetDateLabel,
 }: SummaryBarProps) {
   const savedLabel = formatSavedLabel(savedBreakdown);
-  const activeAlertsLabel = `${active.toLocaleString()} / ${alerts.toLocaleString()}`;
+  const activeAlertsLabel = `${formatNumber(active)} / ${formatNumber(alerts)}`;
   const planLabel = `${planKey.toUpperCase()} plan`;
   const hasLiveTracking = active > 0;
 
@@ -72,17 +78,18 @@ export function SummaryBar({
               <LiveNumberTicker
                 value={remainingCredits}
                 live
+                locale={NUMBER_LOCALE}
                 className="text-foreground"
               />
             ) : (
-              <span className="tabular-nums">{remainingCredits.toLocaleString()}</span>
+              <span className="tabular-nums">{formatNumber(remainingCredits)}</span>
             )}
             <span className="text-sm font-medium text-muted-foreground">
-              / {monthlyCredits.toLocaleString()}
+              / {formatNumber(monthlyCredits)}
             </span>
           </p>
           <p className="text-xs text-muted-foreground">
-            {consumedCredits.toLocaleString()} consumed so far
+            {formatNumber(consumedCredits)} consumed so far
           </p>
         </div>
 
@@ -94,7 +101,7 @@ export function SummaryBar({
           />
           <SummaryMetric
             label="Trackers used"
-            value={`${trackersUsed.toLocaleString()} / ${maxTrackers.toLocaleString()}`}
+            value={`${formatNumber(trackersUsed)} / ${formatNumber(maxTrackers)}`}
           />
           <SummaryMetric
             label="Estimated savings"

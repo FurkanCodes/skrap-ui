@@ -20,6 +20,11 @@ interface SettingsPageClientProps {
   supportedSites: SiteInfoResponse[];
   supportedSitesError: string | null;
 }
+const NUMBER_LOCALE = "en-US";
+
+function formatCount(value: number): string {
+  return value.toLocaleString(NUMBER_LOCALE);
+}
 
 function formatMinimumInterval(value: number): string {
   if (value < 60) {
@@ -311,7 +316,7 @@ export function SettingsPageClient({
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Monthly credits</span>
             <span className="font-semibold text-foreground">
-              {remainingCredits.toLocaleString()} / {monthlyCredits.toLocaleString()}
+              {formatCount(remainingCredits)} / {formatCount(monthlyCredits)}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">

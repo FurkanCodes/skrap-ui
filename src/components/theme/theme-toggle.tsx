@@ -17,9 +17,12 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button type="button" variant="outline" size="icon-sm" disabled aria-hidden="true">
+      <span
+        aria-hidden="true"
+        className="inline-flex size-7 items-center justify-center rounded-[min(var(--radius-md),12px)] border border-border bg-background"
+      >
         <span className="size-3.5" />
-      </Button>
+      </span>
     );
   }
 

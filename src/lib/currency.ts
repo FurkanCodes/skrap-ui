@@ -11,6 +11,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   BRL: "R$",
   CHF: "Fr",
 };
+const DEFAULT_NUMBER_LOCALE = "en-US";
 
 function coerceAmountToNumber(amount: number | string | null | undefined): number | null {
   if (typeof amount === "number") {
@@ -89,7 +90,7 @@ export function formatCurrencyAmount(
   const numericAmount = coerceAmountToNumber(amount);
 
   if (numericAmount !== null) {
-    const formatted = new Intl.NumberFormat(options?.locale, {
+    const formatted = new Intl.NumberFormat(options?.locale ?? DEFAULT_NUMBER_LOCALE, {
       maximumFractionDigits: options?.maximumFractionDigits ?? 2,
       minimumFractionDigits: options?.minimumFractionDigits ?? 0,
     }).format(numericAmount);

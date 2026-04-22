@@ -1,6 +1,7 @@
 import AppSidebar from "@/components/layout/app-sidebar";
 import { ViewerProvider } from "@/features/tracking/viewer/viewer-provider";
 import { getViewerBootstrap } from "@/lib/viewer-bootstrap";
+import { redirect } from "next/navigation";
 
 export default async function WorkspaceShell({
   children,
@@ -8,6 +9,9 @@ export default async function WorkspaceShell({
   children: React.ReactNode;
 }>) {
   const bootstrap = await getViewerBootstrap();
+  if (!bootstrap.initialUserKey) {
+    redirect("/auth/sign-in?next=/dashboard");
+  }
 
   return (
     <ViewerProvider

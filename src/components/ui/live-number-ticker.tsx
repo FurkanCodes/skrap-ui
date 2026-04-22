@@ -11,6 +11,7 @@ interface LiveNumberTickerProps {
   live?: boolean;
   className?: string;
   label?: string;
+  locale?: string;
 }
 
 function isDigit(value: string): boolean {
@@ -65,16 +66,17 @@ export function LiveNumberTicker({
   live = false,
   className,
   label,
+  locale = "en-US",
 }: LiveNumberTickerProps) {
   const shouldReduceMotion = useReducedMotion() ?? false;
 
   const formatter = useMemo(
     () =>
-      new Intl.NumberFormat(undefined, {
+      new Intl.NumberFormat(locale, {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       }),
-    [decimals]
+    [decimals, locale]
   );
   const formattedValue = formatter.format(value);
   const slots = useMemo(

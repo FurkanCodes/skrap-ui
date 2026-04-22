@@ -1,12 +1,7 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
 
-const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
-const PUBLIC_ROUTES = ["/", ...AUTH_ROUTES] as const;
-
-function isAuthRoute(pathname: string): boolean {
-  return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
-}
+const PUBLIC_ROUTES = ["/", "/auth/sign-in", "/auth/sign-up"] as const;
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -22,12 +17,7 @@ function buildRedirectToSignIn(request: NextRequest): NextResponse {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSessionCookie = Boolean(getSessionCookie(request));
-  const onAuthRoute = isAuthRoute(pathname);
   const onPublicRoute = isPublicRoute(pathname);
-
-  if (hasSessionCookie && (onAuthRoute || pathname === "/")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
 
   if (!hasSessionCookie && !onPublicRoute) {
     return buildRedirectToSignIn(request);
