@@ -8,6 +8,7 @@ import {
   LogIn,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,6 +16,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Logo from "@/assets/marketing/logo";
 import { authClient } from "@/lib/auth-client";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_POLICY_HINT,
+  securePasswordSchema,
+} from "@/lib/password-policy";
 
 type AuthMode = "sign-in" | "sign-up";
 type SocialProvider = "google" | "github";
@@ -23,6 +29,46 @@ type PendingAction = "email" | SocialProvider | null;
 interface AuthFormProps {
   mode: AuthMode;
 }
+
+type AuthFormValues = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type AuthFormField = keyof AuthFormValues;
+type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
+
+const signInSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Please enter your email address.")
+    .email("Please enter a valid email address."),
+  password: z
+    .string()
+    .min(1, "Please enter your password."),
+});
+
+const signUpSchema = signInSchema
+  .extend({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Please enter your full name."),
+    password: securePasswordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .superRefine((value, context) => {
+    if (value.password !== value.confirmPassword) {
+      context.addIssue({
+        code: "custom",
+        message: "Passwords do not match.",
+        path: ["confirmPassword"],
+      });
+    }
+  });
 
 function GoogleIcon() {
   return (
@@ -68,6 +114,48 @@ function mapAuthError(error: unknown): string {
   return "Authentication failed. Please try again.";
 }
 
+function mapAuthFieldErrors(
+  issues: z.ZodIssue[]
+): AuthFormFieldErrors {
+  const next: AuthFormFieldErrors = {};
+  for (const issue of issues) {
+    const field = issue.path[0];
+    if (typeof field !== "string") {
+      continue;
+    }
+    if (
+      field !== "name" &&
+      field !== "email" &&
+      field !== "password" &&
+      field !== "confirmPassword"
+    ) {
+      continue;
+    }
+    if (!next[field]) {
+      next[field] = issue.message;
+    }
+  }
+  return next;
+}
+
+function getAuthFormFieldErrors(
+  values: AuthFormValues,
+  isSignUp: boolean
+): AuthFormFieldErrors {
+  const parsed = isSignUp
+    ? signUpSchema.safeParse(values)
+    : signInSchema.safeParse({
+        email: values.email,
+        password: values.password,
+      });
+
+  if (parsed.success) {
+    return {};
+  }
+
+  return mapAuthFieldErrors(parsed.error.issues);
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const params = useSearchParams();
@@ -81,6 +169,10 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [rememberDevice, setRememberDevice] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<
+    Partial<Record<AuthFormField, boolean>>
+  >({});
+  const [hasSubmittedAttempt, setHasSubmittedAttempt] = useState(false);
 
   const redirectTo = useMemo(() => {
     const value = params.get("next")?.trim();
@@ -91,37 +183,73 @@ export function AuthForm({ mode }: AuthFormProps) {
   const isSignUp = mode === "sign-up";
   const isBusy = isPending || pendingAction !== null;
   const isEmailActionPending = pendingAction === "email";
+  const formValues = useMemo<AuthFormValues>(
+    () => ({
+      name,
+      email,
+      password,
+      confirmPassword,
+    }),
+    [confirmPassword, email, name, password]
+  );
+  const validationErrors = useMemo(
+    () => getAuthFormFieldErrors(formValues, isSignUp),
+    [formValues, isSignUp]
+  );
+  const visibleValidationErrors = useMemo<AuthFormFieldErrors>(() => {
+    if (hasSubmittedAttempt) {
+      return validationErrors;
+    }
 
-  const validateFields = () => {
-    if (isSignUp && name.trim().length < 2) {
-      return "Please enter your full name.";
+    const next: AuthFormFieldErrors = {};
+    const fields: AuthFormField[] = [
+      "name",
+      "email",
+      "password",
+      "confirmPassword",
+    ];
+    for (const field of fields) {
+      if (touchedFields[field] && validationErrors[field]) {
+        next[field] = validationErrors[field];
+      }
     }
-    if (!email.trim()) {
-      return "Please enter your email address.";
-    }
-    if (password.length < 8) {
-      return "Password must be at least 8 characters.";
-    }
-    if (isSignUp && password !== confirmPassword) {
-      return "Passwords do not match.";
-    }
-    return null;
+
+    return next;
+  }, [hasSubmittedAttempt, touchedFields, validationErrors]);
+
+  const nameError = isSignUp ? visibleValidationErrors.name : undefined;
+  const emailError = visibleValidationErrors.email;
+  const passwordError = visibleValidationErrors.password;
+  const confirmPasswordError = isSignUp
+    ? visibleValidationErrors.confirmPassword
+    : undefined;
+
+  const markFieldTouched = (field: AuthFormField) => {
+    setTouchedFields((current) => {
+      if (current[field]) {
+        return current;
+      }
+      return {
+        ...current,
+        [field]: true,
+      };
+    });
   };
 
   const runEmailAuth = async () => {
-    const validationError = validateFields();
-    if (validationError) {
-      setError(validationError);
+    setHasSubmittedAttempt(true);
+    setError(null);
+    const normalizedEmail = email.trim();
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
-    setError(null);
     setPendingAction("email");
     try {
       if (isSignUp) {
         const response = await authClient.signUp.email({
           name: name.trim(),
-          email: email.trim(),
+          email: normalizedEmail,
           password,
           callbackURL: redirectTo,
         });
@@ -131,7 +259,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         }
       } else {
         const response = await authClient.signIn.email({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
           callbackURL: redirectTo,
           rememberMe: rememberDevice,
@@ -225,19 +353,29 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               {isSignUp ? (
                 <div className="grid gap-2">
-                  <Label htmlFor="name">
-                    Full name
-                  </Label>
+                  <Label htmlFor="name">Full name</Label>
                   <Input
                     id="name"
                     autoComplete="name"
                     value={name}
-                    onChange={(event) => setName(event.target.value)}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      setError(null);
+                      markFieldTouched("name");
+                    }}
+                    onBlur={() => markFieldTouched("name")}
                     placeholder="Jane Doe"
                     disabled={isBusy}
+                    aria-invalid={Boolean(nameError)}
+                    aria-describedby={nameError ? "name-error" : undefined}
                     className="h-10 rounded-lg border-border bg-card"
                     required
                   />
+                  {nameError ? (
+                    <p id="name-error" className="text-xs text-destructive">
+                      {nameError}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -250,12 +388,24 @@ export function AuthForm({ mode }: AuthFormProps) {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setError(null);
+                    markFieldTouched("email");
+                  }}
+                  onBlur={() => markFieldTouched("email")}
                   placeholder="you@example.com"
                   disabled={isBusy}
+                  aria-invalid={Boolean(emailError)}
+                  aria-describedby={emailError ? "email-error" : undefined}
                   className="h-10 rounded-lg border-border bg-card"
                   required
                 />
+                {emailError ? (
+                  <p id="email-error" className="text-xs text-destructive">
+                    {emailError}
+                  </p>
+                ) : null}
               </div>
 
               <div className="grid gap-2">
@@ -267,13 +417,32 @@ export function AuthForm({ mode }: AuthFormProps) {
                   type="password"
                   autoComplete={isSignUp ? "new-password" : "current-password"}
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setError(null);
+                    markFieldTouched("password");
+                    if (isSignUp && confirmPassword.length > 0) {
+                      markFieldTouched("confirmPassword");
+                    }
+                  }}
+                  onBlur={() => markFieldTouched("password")}
                   placeholder="Enter your password"
                   disabled={isBusy}
-                  minLength={8}
+                  minLength={isSignUp ? PASSWORD_MIN_LENGTH : 1}
+                  aria-invalid={Boolean(passwordError)}
+                  aria-describedby={passwordError ? "password-error" : undefined}
                   className="h-10 rounded-lg border-border bg-card"
                   required
                 />
+                {passwordError ? (
+                  <p id="password-error" className="text-xs text-destructive">
+                    {passwordError}
+                  </p>
+                ) : isSignUp ? (
+                  <p className="text-xs text-muted-foreground">
+                    {PASSWORD_POLICY_HINT}
+                  </p>
+                ) : null}
               </div>
 
               {isSignUp ? (
@@ -286,13 +455,29 @@ export function AuthForm({ mode }: AuthFormProps) {
                     type="password"
                     autoComplete="new-password"
                     value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    onChange={(event) => {
+                      setConfirmPassword(event.target.value);
+                      setError(null);
+                      markFieldTouched("confirmPassword");
+                    }}
+                    onBlur={() => markFieldTouched("confirmPassword")}
                     placeholder="Confirm your password"
                     disabled={isBusy}
-                    minLength={8}
+                    minLength={PASSWORD_MIN_LENGTH}
+                    aria-invalid={Boolean(confirmPasswordError)}
+                    aria-describedby={
+                      confirmPasswordError
+                        ? "confirm-password-error"
+                        : undefined
+                    }
                     className="h-10 rounded-lg border-border bg-card"
                     required
                   />
+                  {confirmPasswordError ? (
+                    <p id="confirm-password-error" className="text-xs text-destructive">
+                      {confirmPasswordError}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-4 pt-1 text-sm text-muted-foreground">

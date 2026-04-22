@@ -1,10 +1,18 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { jwt } from "better-auth/plugins/jwt";
 
+import { getAuthEmailOptions } from "@/lib/auth-email";
 import { getDb } from "@/lib/db";
 import { schema } from "@/lib/auth-schema";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  getPasswordPolicyError,
+} from "@/lib/password-policy";
 
 const MIN_SECRET_LENGTH = 32;
 const WEAK_SECRET_VALUES = new Set([
@@ -203,10 +211,59 @@ function getSocialProviders() {
   };
 }
 
+const PASSWORD_PROTECTED_ENDPOINTS = new Set([
+  "/sign-up/email",
+  "/change-password",
+  "/set-password",
+  "/reset-password",
+]);
+
+function getPasswordFromEndpointBody(body: unknown): string | null {
+  if (!body || typeof body !== "object") {
+    return null;
+  }
+
+  const values = body as Record<string, unknown>;
+  if (typeof values.password === "string") {
+    return values.password;
+  }
+  if (typeof values.newPassword === "string") {
+    return values.newPassword;
+  }
+  return null;
+}
+
+const passwordSecurityPlugin = {
+  id: "password-security",
+  hooks: {
+    before: [
+      {
+        matcher: (context) =>
+          Boolean(context.path && PASSWORD_PROTECTED_ENDPOINTS.has(context.path)),
+        handler: createAuthMiddleware(async (ctx) => {
+          const password = getPasswordFromEndpointBody(ctx.body);
+          if (!password) {
+            return;
+          }
+
+          const passwordError = getPasswordPolicyError(password);
+          if (passwordError) {
+            throw APIError.fromStatus("BAD_REQUEST", {
+              message: passwordError,
+              code: "WEAK_PASSWORD",
+            });
+          }
+        }),
+      },
+    ],
+  },
+} satisfies BetterAuthPlugin;
+
 function buildAuth() {
   const baseUrl = requiredEnv("BETTER_AUTH_URL");
   const secret = requiredEnv("BETTER_AUTH_SECRET");
   assertSecretSecurity(secret);
+  const authEmailOptions = getAuthEmailOptions(baseUrl);
 
   const audience = process.env.BETTER_AUTH_JWT_AUDIENCE?.trim() || baseUrl;
   const issuer = process.env.BETTER_AUTH_JWT_ISSUER?.trim() || baseUrl;
@@ -225,7 +282,18 @@ function buildAuth() {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
+      minPasswordLength: PASSWORD_MIN_LENGTH,
+      maxPasswordLength: PASSWORD_MAX_LENGTH,
+      ...authEmailOptions.emailAndPassword,
     },
+    ...(authEmailOptions.emailVerification
+      ? {
+          emailVerification: {
+            ...authEmailOptions.emailVerification,
+            sendOnSignUp: true,
+          },
+        }
+      : {}),
     socialProviders: getSocialProviders(),
     rateLimit: {
       enabled: true,
@@ -350,6 +418,7 @@ function buildAuth() {
       },
     },
     plugins: [
+      passwordSecurityPlugin,
       jwt({
         jwt: {
           issuer,

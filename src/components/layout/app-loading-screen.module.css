@@ -1,0 +1,130 @@
+.screenEnter {
+  animation: loadingScreenEnter 320ms ease-out both;
+}
+
+.illustrationWrap {
+  position: relative;
+  animation: loadingFloat 3.2s ease-in-out infinite;
+}
+
+.illustrationWrap::after {
+  content: "";
+  position: absolute;
+  inset: auto 12% -4% 12%;
+  height: 18%;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--primary) 28%, transparent);
+  filter: blur(28px);
+  opacity: 0.35;
+  animation: loadingGlow 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.illustration {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 8px 18px color-mix(in oklab, var(--foreground) 8%, transparent));
+}
+
+.progressRail {
+  width: min(280px, 70vw);
+  height: 4px;
+  margin-inline: auto;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--muted-foreground) 14%, transparent);
+}
+
+.progressRail::before {
+  content: "";
+  display: block;
+  width: 44%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--primary) 70%, white 20%) 0%,
+    color-mix(in oklab, var(--primary) 88%, white 6%) 100%
+  );
+  animation: loadingScan 1.5s ease-in-out infinite;
+}
+
+.ellipsis {
+  display: inline-flex;
+  gap: 1px;
+  margin-left: 2px;
+}
+
+.ellipsis > span {
+  animation: loadingDot 1.2s ease-in-out infinite;
+}
+
+.ellipsis > span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.ellipsis > span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes loadingScreenEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loadingFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes loadingGlow {
+  0%,
+  100% {
+    opacity: 0.26;
+    transform: scaleX(0.94);
+  }
+  50% {
+    opacity: 0.42;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loadingScan {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+
+@keyframes loadingDot {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screenEnter,
+  .illustrationWrap,
+  .illustrationWrap::after,
+  .progressRail::before,
+  .ellipsis > span {
+    animation: none !important;
+  }
+}
