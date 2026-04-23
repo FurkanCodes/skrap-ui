@@ -41,6 +41,8 @@ interface CreateTrackerModalProps {
   setSharedTrackingMode: (value: TrackingMode) => void;
   sharedInterval: string;
   setSharedInterval: (value: string) => void;
+  sharedNotifyOnPriceIncrease: boolean;
+  setSharedNotifyOnPriceIncrease: (value: boolean) => void;
   minInterval: number;
   remainingSlots: number;
   canSaveDrafts: boolean;
@@ -61,6 +63,7 @@ interface CreateTrackerModalProps {
   setDraftTrackingMode: (clientId: string, value: TrackingMode) => void;
   setDraftInterval: (clientId: string, value: string) => void;
   setDraftTargetAmount: (clientId: string, value: string) => void;
+  setDraftNotifyOnPriceIncrease: (clientId: string, value: boolean) => void;
   setDraftRawUrl: (clientId: string, value: string) => void;
   retryDraftPreview: (clientId: string) => void;
   saveTracker: () => void;
@@ -94,6 +97,8 @@ export function CreateTrackerModal({
   setSharedTrackingMode,
   sharedInterval,
   setSharedInterval,
+  sharedNotifyOnPriceIncrease,
+  setSharedNotifyOnPriceIncrease,
   minInterval,
   remainingSlots,
   canSaveDrafts,
@@ -111,6 +116,7 @@ export function CreateTrackerModal({
   setDraftTrackingMode,
   setDraftInterval,
   setDraftTargetAmount,
+  setDraftNotifyOnPriceIncrease,
   setDraftRawUrl,
   retryDraftPreview,
   saveTracker,
@@ -261,7 +267,7 @@ export function CreateTrackerModal({
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Shared Defaults
                   </p>
-                  <div className="mt-2 grid gap-3 md:grid-cols-2">
+                  <div className="mt-2 grid gap-3 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Mode</Label>
                       <TrackingModePicker
@@ -280,6 +286,21 @@ export function CreateTrackerModal({
                       <p className="text-[11px] text-muted-foreground">
                         Applies to ready rows that were not manually overridden.
                       </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-foreground">
+                        Extra alerts
+                      </Label>
+                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
+                        <Checkbox
+                          checked={sharedNotifyOnPriceIncrease}
+                          onCheckedChange={(checked) =>
+                            setSharedNotifyOnPriceIncrease(Boolean(checked))
+                          }
+                          disabled={isSavePending || isPreviewPending}
+                        />
+                        Notify on price increase
+                      </Label>
                     </div>
                   </div>
                 </div>
@@ -474,9 +495,25 @@ export function CreateTrackerModal({
                         </div>
                       </div>
 
+                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-xs text-foreground">
+                        <Checkbox
+                          checked={activeDraft.notifyOnPriceIncrease}
+                          onCheckedChange={(checked) =>
+                            setDraftNotifyOnPriceIncrease(
+                              activeDraft.clientId,
+                              Boolean(checked)
+                            )
+                          }
+                          disabled={isSavePending}
+                        />
+                        Notify when price increases
+                      </Label>
+
                       {activeDraft.trackingMode === "monitor" ? (
                         <p className="text-xs text-muted-foreground">
-                          Price Drop mode ignores target price and only notifies when price decreases.
+                          {activeDraft.notifyOnPriceIncrease
+                            ? "Price Drop mode ignores target price and notifies when prices move in either direction."
+                            : "Price Drop mode ignores target price and only notifies when price decreases."}
                         </p>
                       ) : (
                         <p className="text-xs text-muted-foreground">
@@ -497,7 +534,10 @@ export function CreateTrackerModal({
               {telegramConnected === false ? (
                 <div className="rounded-md border border-amber-300/50 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
                   <p className="font-semibold">Telegram not connected</p>
-                  <p className="mt-0.5">Alerts will not be delivered until you link Telegram in Settings.</p>
+                  <p className="mt-0.5">
+                    Price-drop, price-increase, and tracking status alerts will not be delivered
+                    until you link Telegram in Settings.
+                  </p>
                 </div>
               ) : null}
             </div>

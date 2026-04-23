@@ -147,6 +147,7 @@ export function useTrackersDashboardController({
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [sharedTrackingMode, setSharedTrackingMode] = useState<TrackingMode>("alert");
   const [sharedInterval, setSharedInterval] = useState("60");
+  const [sharedNotifyOnPriceIncrease, setSharedNotifyOnPriceIncrease] = useState(false);
   const [bulkResultSummary, setBulkResultSummary] = useState<{
     successCount: number;
     failureCount: number;
@@ -159,6 +160,7 @@ export function useTrackersDashboardController({
   const [editTrackingMode, setEditTrackingMode] = useState<TrackingMode>("alert");
   const [editTargetAmount, setEditTargetAmount] = useState("");
   const [editInterval, setEditInterval] = useState("60");
+  const [editNotifyOnPriceIncrease, setEditNotifyOnPriceIncrease] = useState(false);
   const [editModalError, setEditModalError] = useState<string | null>(null);
   const [isEditSavePending, setIsEditSavePending] = useState(false);
 
@@ -510,6 +512,7 @@ export function useTrackersDashboardController({
     setActiveDraftId(null);
     setSharedTrackingMode("alert");
     setSharedInterval(defaultInterval);
+    setSharedNotifyOnPriceIncrease(false);
     setBulkResultSummary(null);
     setModalError(null);
   }, [defaultInterval]);
@@ -656,8 +659,10 @@ export function useTrackersDashboardController({
             trackingMode: sharedTrackingMode,
             interval: sharedInterval,
             targetAmount: isReady ? getSuggestedTargetAmount(result.amount) : "",
+            notifyOnPriceIncrease: sharedNotifyOnPriceIncrease,
             modeOverridden: false,
             intervalOverridden: false,
+            notifyOnPriceIncreaseOverridden: false,
           };
         });
 
@@ -672,6 +677,7 @@ export function useTrackersDashboardController({
   }, [
     remainingSlots,
     sharedInterval,
+    sharedNotifyOnPriceIncrease,
     sharedTrackingMode,
     startPreviewTransition,
     urlRows,
@@ -736,6 +742,22 @@ export function useTrackersDashboardController({
     [remainingSlots]
   );
 
+  const setSharedNotifyOnPriceIncreaseAndSeed = useCallback(
+    (enabled: boolean) => {
+      setSharedNotifyOnPriceIncrease(enabled);
+      setDrafts((current) => {
+        const next = current.map((draft) => {
+          if (draft.previewStatus !== "ready" || draft.notifyOnPriceIncreaseOverridden) {
+            return draft;
+          }
+          return { ...draft, notifyOnPriceIncrease: enabled };
+        });
+        return syncBulkDraftSelectionLimits(next, remainingSlots);
+      });
+    },
+    [remainingSlots]
+  );
+
   const setDraftTrackingMode = useCallback(
     (clientId: string, value: TrackingMode) => {
       setDrafts((current) => {
@@ -784,6 +806,25 @@ export function useTrackersDashboardController({
             ? {
                 ...draft,
                 targetAmount: value,
+                submitError: null,
+              }
+            : draft
+        );
+        return syncBulkDraftSelectionLimits(next, remainingSlots);
+      });
+    },
+    [remainingSlots]
+  );
+
+  const setDraftNotifyOnPriceIncrease = useCallback(
+    (clientId: string, enabled: boolean) => {
+      setDrafts((current) => {
+        const next = current.map((draft) =>
+          draft.clientId === clientId
+            ? {
+                ...draft,
+                notifyOnPriceIncrease: enabled,
+                notifyOnPriceIncreaseOverridden: true,
                 submitError: null,
               }
             : draft
@@ -1129,6 +1170,7 @@ export function useTrackersDashboardController({
       setEditTrackingMode(item.tracking_mode);
       setEditTargetAmount(item.target_amount ?? "");
       setEditInterval(String(item.check_interval_minutes));
+      setEditNotifyOnPriceIncrease(Boolean(item.notify_on_price_increase));
       setIsEditModalOpen(true);
     },
     [items, setRowActionError]
@@ -1171,6 +1213,7 @@ export function useTrackersDashboardController({
         const patchResult = await patchTrackedItemAction(itemId, {
           check_interval_minutes: parsedInterval,
           target_amount: normalizedTargetAmount,
+          notify_on_price_increase: editNotifyOnPriceIncrease,
         });
         setItemsState((current) => {
           const latest = current.find((item) => item.item_id === itemId);
@@ -1192,6 +1235,7 @@ export function useTrackersDashboardController({
   }, [
     closeEditModal,
     editInterval,
+    editNotifyOnPriceIncrease,
     editTargetAmount,
     editTrackingMode,
     editingItemId,
@@ -1223,6 +1267,7 @@ export function useTrackersDashboardController({
         url: draft.normalizedUrl,
         check_interval_minutes: Number(draft.interval),
         target_amount: normalizedTargetAmount,
+        notify_on_price_increase: draft.notifyOnPriceIncrease,
       };
     });
 
@@ -1258,6 +1303,7 @@ export function useTrackersDashboardController({
               tracking_mode: draft.trackingMode,
               check_interval_minutes: parsedInterval,
               target_amount: normalizedTargetAmount,
+              notify_on_price_increase: draft.notifyOnPriceIncrease,
               last_amount: draft.amount,
               currency: draft.currency,
               next_check_at: null,
@@ -1350,6 +1396,7 @@ export function useTrackersDashboardController({
     drafts,
     sharedTrackingMode,
     sharedInterval,
+    sharedNotifyOnPriceIncrease,
     urlRows,
     editModalError,
     modalStep,
@@ -1357,6 +1404,7 @@ export function useTrackersDashboardController({
     editInterval,
     editTargetAmount,
     editTrackingMode,
+    editNotifyOnPriceIncrease,
     deleteConfirmItemId,
     dismissRowActionError,
     pendingActionItemIds,
@@ -1387,13 +1435,16 @@ export function useTrackersDashboardController({
     setActiveDraft,
     addUrlRow,
     setEditInterval,
+    setEditNotifyOnPriceIncrease,
     setEditTargetAmount,
     setEditTrackingMode: setEditTrackingModeWithNormalization,
     setDraftInterval,
+    setDraftNotifyOnPriceIncrease,
     setDraftRawUrl,
     setDraftTargetAmount,
     setDraftTrackingMode,
     setSharedInterval: setSharedIntervalAndSeed,
+    setSharedNotifyOnPriceIncrease: setSharedNotifyOnPriceIncreaseAndSeed,
     setSharedTrackingMode: setSharedTrackingModeAndSeed,
     setUrlRowValue,
     removeUrlRow,

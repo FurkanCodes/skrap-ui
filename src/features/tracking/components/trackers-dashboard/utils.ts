@@ -193,6 +193,33 @@ function toOptionalString(value: unknown): string | null {
   return null;
 }
 
+function toOptionalBoolean(value: unknown): boolean | null {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") {
+      return true;
+    }
+    if (normalized === "false") {
+      return false;
+    }
+  }
+
+  if (typeof value === "number") {
+    if (value === 1) {
+      return true;
+    }
+    if (value === 0) {
+      return false;
+    }
+  }
+
+  return null;
+}
+
 export function toTrackedItemSummary(
   raw: unknown,
   fallback: TrackedItemSummary
@@ -238,6 +265,8 @@ export function toTrackedItemSummary(
       record.target_amount === null
         ? null
         : (toOptionalString(record.target_amount) ?? fallback.target_amount),
+    notify_on_price_increase:
+      toOptionalBoolean(record.notify_on_price_increase) ?? fallback.notify_on_price_increase,
     last_amount:
       record.last_amount === null
         ? null
@@ -303,6 +332,13 @@ function hasSameTargetAmount(
   return normalizeAmountForMatch(left.target_amount) === normalizeAmountForMatch(right.target_amount);
 }
 
+function hasSamePriceIncreasePreference(
+  left: TrackedItemSummary,
+  right: TrackedItemSummary
+): boolean {
+  return left.notify_on_price_increase === right.notify_on_price_increase;
+}
+
 function isLikelySameTracker(
   optimisticItem: TrackedItemSummary,
   candidate: TrackedItemSummary
@@ -311,7 +347,8 @@ function isLikelySameTracker(
     optimisticItem.source_url === candidate.source_url &&
     optimisticItem.tracking_mode === candidate.tracking_mode &&
     optimisticItem.check_interval_minutes === candidate.check_interval_minutes &&
-    hasSameTargetAmount(optimisticItem, candidate)
+    hasSameTargetAmount(optimisticItem, candidate) &&
+    hasSamePriceIncreasePreference(optimisticItem, candidate)
   );
 }
 

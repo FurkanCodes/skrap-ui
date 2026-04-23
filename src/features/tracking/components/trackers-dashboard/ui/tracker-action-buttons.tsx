@@ -1,12 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Loader2, Pencil, Trash2, X } from "lucide-react";
+import { ExternalLink, Loader2, Pencil, Trash2, X } from "lucide-react";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import type { TrackedItemSummary } from "@/features/tracking/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface TrackerActionButtonsProps {
@@ -55,10 +55,20 @@ export function TrackerActionButtons({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-end gap-1.5 md:w-full">
+        <a
+          href={item.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
+          aria-label="Go to product link"
+        >
+          <ExternalLink className="size-3.5" />
+        </a>
+
         <Button
           type="button"
           size="icon-sm"
-          variant="outline"
+          variant="ghost"
           disabled={controlsDisabled}
           aria-label="Edit tracker"
           onClick={() => openEditModal(item.item_id)}
@@ -79,7 +89,7 @@ export function TrackerActionButtons({
               <Button
                 type="button"
                 size="icon-sm"
-                variant="outline"
+                variant="ghost"
                 disabled={controlsDisabled}
                 aria-busy={pauseFeedbackState === "loading" ? true : undefined}
                 aria-label={
@@ -116,7 +126,7 @@ export function TrackerActionButtons({
               <Button
                 type="button"
                 size="icon-sm"
-                variant="outline"
+                variant="ghost"
                 disabled={controlsDisabled}
                 aria-busy={resumeFeedbackState === "loading" ? true : undefined}
                 aria-label={
@@ -199,7 +209,7 @@ export function TrackerActionButtons({
               <Button
                 type="button"
                 size="icon-sm"
-                variant="outline"
+                variant="ghost"
                 disabled={controlsDisabled}
                 aria-busy={isDeletePending ? true : undefined}
                 onClick={() => requestDeleteAction(item.item_id)}

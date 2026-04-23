@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Chip } from "@/components/ui/chip";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ export function TrackResultPanel({
   const [mode, setMode] = useState<TrackingMode>("monitor");
   const [targetAmount, setTargetAmount] = useState(amount ?? "");
   const [interval, setInterval] = useState(DEFAULT_TRACK_INTERVAL_VALUE);
+  const [notifyOnPriceIncrease, setNotifyOnPriceIncrease] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modeOptions: Array<{ value: TrackingMode; label: string }> = [
@@ -113,20 +115,21 @@ export function TrackResultPanel({
           fetch_mode: "auto",
           check_interval_minutes: parsedInterval,
           target_amount: targetRequired ? targetAmount.trim() : null,
+          notify_on_price_increase: notifyOnPriceIncrease,
         })) as { item?: { item_id?: string } };
 
+        const successMessage = targetRequired
+          ? notifyOnPriceIncrease
+            ? "We will notify you when price reaches your target and when it increases."
+            : "We will notify you when price reaches your target."
+          : notifyOnPriceIncrease
+            ? "We will notify you when price drops or increases."
+            : "We will notify you when price drops.";
+
         if (response.item?.item_id) {
-          setMessage(
-            targetRequired
-              ? `Tracking started (${response.item.item_id}). We will notify you when price reaches your target.`
-              : `Tracking started (${response.item.item_id}). We will notify you when price drops.`
-          );
+          setMessage(`Tracking started (${response.item.item_id}). ${successMessage}`);
         } else {
-          setMessage(
-            targetRequired
-              ? "Tracking started. We will notify you when price reaches your target."
-              : "Tracking started. We will notify you when price drops."
-          );
+          setMessage(`Tracking started. ${successMessage}`);
         }
       } catch (actionError) {
         setError(mapActionError(actionError));
@@ -159,7 +162,7 @@ export function TrackResultPanel({
           .
         </p>
       ) : (
-        <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+        <div className="grid gap-2 md:grid-cols-2">
           {targetRequired ? (
             <div className="grid gap-1">
               <Label htmlFor={`target-${url}`} className="text-[11px] text-muted-foreground">
@@ -196,7 +199,16 @@ export function TrackResultPanel({
             />
           </div>
 
-          <div className="flex items-end">
+          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground md:col-span-2">
+            <Checkbox
+              checked={notifyOnPriceIncrease}
+              onCheckedChange={(checked) => setNotifyOnPriceIncrease(Boolean(checked))}
+              disabled={isPending}
+            />
+            Notify when price increases too
+          </Label>
+
+          <div className="flex items-end md:col-span-2 md:justify-end">
             <Button type="button" size="sm" disabled={!canSubmit || isPending} onClick={runTrack}>
               {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               Track item

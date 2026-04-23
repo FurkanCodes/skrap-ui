@@ -59,6 +59,8 @@ export interface BulkTrackerDraft {
   trackingMode: TrackingMode;
   interval: string;
   targetAmount: string;
+  notifyOnPriceIncrease: boolean;
   modeOverridden: boolean;
   intervalOverridden: boolean;
+  notifyOnPriceIncreaseOverridden: boolean;
 }

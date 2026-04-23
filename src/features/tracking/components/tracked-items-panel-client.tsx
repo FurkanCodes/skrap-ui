@@ -3,7 +3,7 @@
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
+import { ExternalLink, Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,12 +212,24 @@ export function TrackedItemsPanelClient({
                   <div className="flex flex-wrap gap-1">
                     <Chip tone={item.status === "active" ? "success" : "muted"}>{item.status}</Chip>
                     <Chip tone="muted">{formatTrackingMode(item.tracking_mode)}</Chip>
+                    {item.notify_on_price_increase ? (
+                      <Chip tone="muted">Price Increase</Chip>
+                    ) : null}
                     <Chip tone="muted">Every {formatInterval(item.check_interval_minutes)}</Chip>
                     <Chip tone="muted">{formatAmount(item)}</Chip>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1 md:justify-end">
+                  <a
+                    href={item.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({ size: "xs", variant: "outline" })}
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Go to link
+                  </a>
                   {item.status === "active" ? (
                     <Button
                       type="button"

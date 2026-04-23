@@ -8,6 +8,7 @@ import { TrackingModePicker } from "@/features/tracking/components/trackers-dash
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 
@@ -20,6 +21,8 @@ interface EditTrackerModalProps {
   setTargetAmount: (value: string) => void;
   interval: string;
   setInterval: (value: string) => void;
+  notifyOnPriceIncrease: boolean;
+  setNotifyOnPriceIncrease: (value: boolean) => void;
   minInterval: number;
   error: string | null;
   isSavePending: boolean;
@@ -36,6 +39,8 @@ export function EditTrackerModal({
   setTargetAmount,
   interval,
   setInterval,
+  notifyOnPriceIncrease,
+  setNotifyOnPriceIncrease,
   minInterval,
   error,
   isSavePending,
@@ -96,7 +101,9 @@ export function EditTrackerModal({
               />
               {trackingMode === "monitor" ? (
                 <p className="text-[11px] text-muted-foreground">
-                  Price Drop mode ignores target price and only notifies when price decreases.
+                  {notifyOnPriceIncrease
+                    ? "Price Drop mode ignores target price and notifies when prices move in either direction."
+                    : "Price Drop mode ignores target price and only notifies when price decreases."}
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
@@ -116,6 +123,20 @@ export function EditTrackerModal({
                 onValueChange={setInterval}
                 disabled={isSavePending}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground">Extra alerts</Label>
+              <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-muted/25 px-3 py-2 text-xs text-foreground">
+                <Checkbox
+                  checked={notifyOnPriceIncrease}
+                  onCheckedChange={(checked) =>
+                    setNotifyOnPriceIncrease(Boolean(checked))
+                  }
+                  disabled={isSavePending}
+                />
+                Notify when price increases
+              </Label>
             </div>
           </div>
 

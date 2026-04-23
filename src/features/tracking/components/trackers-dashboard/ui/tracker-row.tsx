@@ -137,6 +137,11 @@ export const TrackerRow = memo(function TrackerRow({
             <Chip tone={item.tracking_mode === "alert" ? "selected" : "subtle"}>
               {item.tracking_mode === "alert" ? "Price Alert" : "Price Drop"}
             </Chip>
+            {item.notify_on_price_increase ? (
+              <Chip tone="subtle">
+                Price Increase
+              </Chip>
+            ) : null}
           </div>
 
           <p className="line-clamp-1 text-sm font-semibold text-foreground">{productName}</p>

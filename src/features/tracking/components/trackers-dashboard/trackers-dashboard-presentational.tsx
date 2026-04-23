@@ -123,6 +123,8 @@ export function TrackersDashboardAuthenticatedView({
         setSharedTrackingMode={controller.setSharedTrackingMode}
         sharedInterval={controller.sharedInterval}
         setSharedInterval={controller.setSharedInterval}
+        sharedNotifyOnPriceIncrease={controller.sharedNotifyOnPriceIncrease}
+        setSharedNotifyOnPriceIncrease={controller.setSharedNotifyOnPriceIncrease}
         minInterval={controller.minInterval}
         remainingSlots={controller.remainingSlots}
         canSaveDrafts={controller.canSaveDrafts}
@@ -140,6 +142,7 @@ export function TrackersDashboardAuthenticatedView({
         setDraftTrackingMode={controller.setDraftTrackingMode}
         setDraftInterval={controller.setDraftInterval}
         setDraftTargetAmount={controller.setDraftTargetAmount}
+        setDraftNotifyOnPriceIncrease={controller.setDraftNotifyOnPriceIncrease}
         setDraftRawUrl={controller.setDraftRawUrl}
         retryDraftPreview={controller.retryDraftPreview}
         saveTracker={controller.saveTracker}
@@ -154,6 +157,8 @@ export function TrackersDashboardAuthenticatedView({
         setTargetAmount={controller.setEditTargetAmount}
         interval={controller.editInterval}
         setInterval={controller.setEditInterval}
+        notifyOnPriceIncrease={controller.editNotifyOnPriceIncrease}
+        setNotifyOnPriceIncrease={controller.setEditNotifyOnPriceIncrease}
         minInterval={controller.minInterval}
         error={controller.editModalError}
         isSavePending={controller.isEditSavePending}

@@ -8,6 +8,7 @@ export interface TrackedItemRequest {
   fetch_mode?: FetchMode;
   check_interval_minutes?: number;
   target_amount?: string | null;
+  notify_on_price_increase?: boolean;
 }
 
 export interface TrackedItemBulkRequestItem {
@@ -15,6 +16,7 @@ export interface TrackedItemBulkRequestItem {
   scrape_result_ref?: string | null;
   check_interval_minutes?: number | null;
   target_amount?: string | null;
+  notify_on_price_increase?: boolean | null;
 }
 
 export interface TrackedItemBulkRequest {
@@ -25,12 +27,14 @@ export interface TrackedItemBulkRequest {
   fetch_mode?: FetchMode;
   check_interval_minutes?: number;
   target_amount?: string | null;
+  notify_on_price_increase?: boolean;
 }
 
 export interface TrackedItemUpdateRequest {
   status?: TrackingStatus;
   check_interval_minutes?: number;
   target_amount?: string | null;
+  notify_on_price_increase?: boolean;
 }
 
 export interface TrackedItemPreview {
@@ -62,6 +66,7 @@ export interface TrackedItemSummary {
   tracking_mode: "monitor" | "alert";
   check_interval_minutes: number;
   target_amount: string | null;
+  notify_on_price_increase: boolean;
   last_amount: string | null;
   currency: string | null;
   next_check_at: string | null;
