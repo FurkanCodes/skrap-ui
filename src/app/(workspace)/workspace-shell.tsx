@@ -10,7 +10,7 @@ export default async function WorkspaceShell({
 }>) {
   const bootstrap = await getViewerBootstrap();
   if (!bootstrap.initialUserKey) {
-    redirect("/auth/sign-in?next=/dashboard");
+    redirect("/auth/sign-in?next=/dashboard&expired=1");
   }
 
   return (

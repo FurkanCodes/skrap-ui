@@ -44,7 +44,7 @@ interface ViewerContextValue {
 
 const ViewerContext = createContext<ViewerContextValue | null>(null);
 const USAGE_STREAM_PATH = "/api/tracking/me/usage/stream";
-const FALLBACK_REFRESH_INTERVAL_MS = 60_000;
+const ROUTER_REFRESH_THROTTLE_MS = 5_000;
 
 function isUsagePayload(value: unknown): value is MeResponse["usage"] {
   if (!value || typeof value !== "object") {
@@ -80,9 +80,10 @@ export function ViewerProvider({
 }: ViewerProviderProps) {
   const router = useRouter();
   const eventSourceRef = useRef<EventSource | null>(null);
-  const fallbackRefreshTimerRef = useRef<number | null>(null);
   const wasHiddenRef = useRef(false);
   const hasMountedRef = useRef(false);
+  const refreshScheduledRef = useRef(false);
+  const lastRefreshAtRef = useRef(0);
   const viewerRecord = useSyncExternalStore(
     subscribeViewerCache,
     readViewerCache,
@@ -96,15 +97,36 @@ export function ViewerProvider({
     };
   }, []);
 
-  const refreshRouterSafely = useCallback(() => {
+  const refreshRouterSafely = useCallback((options?: { force?: boolean }) => {
     if (typeof window === "undefined") {
       return;
     }
+    if (!hasMountedRef.current) {
+      return;
+    }
+
+    const now = Date.now();
+    const shouldThrottle =
+      !options?.force && now - lastRefreshAtRef.current < ROUTER_REFRESH_THROTTLE_MS;
+    if (shouldThrottle || refreshScheduledRef.current) {
+      return;
+    }
+
+    refreshScheduledRef.current = true;
 
     const runRefresh = () => {
+      refreshScheduledRef.current = false;
       if (!hasMountedRef.current) {
         return;
       }
+      if (
+        !options?.force &&
+        Date.now() - lastRefreshAtRef.current < ROUTER_REFRESH_THROTTLE_MS
+      ) {
+        return;
+      }
+
+      lastRefreshAtRef.current = Date.now();
 
       try {
         router.refresh();
@@ -148,23 +170,6 @@ export function ViewerProvider({
     }
   }, []);
 
-  const clearFallbackRefreshLoop = useCallback(() => {
-    if (fallbackRefreshTimerRef.current) {
-      clearInterval(fallbackRefreshTimerRef.current);
-      fallbackRefreshTimerRef.current = null;
-    }
-  }, []);
-
-  const startFallbackRefreshLoop = useCallback(() => {
-    if (fallbackRefreshTimerRef.current) {
-      return;
-    }
-    fallbackRefreshTimerRef.current = window.setInterval(() => {
-      clearViewerCacheStore();
-      refreshRouterSafely();
-    }, FALLBACK_REFRESH_INTERVAL_MS);
-  }, [refreshRouterSafely]);
-
   const applyUsageUpdate = useCallback(
     (usage: MeResponse["usage"]) => {
       if (!initialUserKey) {
@@ -204,7 +209,6 @@ export function ViewerProvider({
       return;
     }
     if (typeof window.EventSource === "undefined") {
-      startFallbackRefreshLoop();
       return;
     }
 
@@ -212,7 +216,6 @@ export function ViewerProvider({
     eventSourceRef.current = stream;
 
     stream.addEventListener("usage", (event) => {
-      clearFallbackRefreshLoop();
       try {
         const parsed = JSON.parse(event.data);
         if (!isUsagePayload(parsed)) {
@@ -225,23 +228,17 @@ export function ViewerProvider({
     });
 
     stream.onopen = () => {
-      clearFallbackRefreshLoop();
+      // No-op: keep the stream open and rely on incoming usage events.
     };
 
     stream.onerror = () => {
-      startFallbackRefreshLoop();
+      // Let EventSource retry; avoid full-route refresh loops on transient failures.
     };
-  }, [
-    applyUsageUpdate,
-    clearFallbackRefreshLoop,
-    initialUserKey,
-    startFallbackRefreshLoop,
-  ]);
+  }, [applyUsageUpdate, initialUserKey]);
 
   useEffect(() => {
     if (!initialUserKey) {
       closeUsageStream();
-      clearFallbackRefreshLoop();
       clearViewerCacheStore();
       wasHiddenRef.current = false;
       return;
@@ -256,14 +253,8 @@ export function ViewerProvider({
 
     return () => {
       closeUsageStream();
-      clearFallbackRefreshLoop();
     };
-  }, [
-    clearFallbackRefreshLoop,
-    closeUsageStream,
-    connectUsageStream,
-    initialUserKey,
-  ]);
+  }, [closeUsageStream, connectUsageStream, initialUserKey]);
 
   useEffect(() => {
     if (!initialUserKey) {
@@ -275,14 +266,18 @@ export function ViewerProvider({
       if (hidden) {
         wasHiddenRef.current = true;
         closeUsageStream();
-        clearFallbackRefreshLoop();
         return;
       }
 
       if (wasHiddenRef.current) {
         wasHiddenRef.current = false;
-        clearViewerCacheStore();
-        refreshRouterSafely();
+        const snapshot = readViewerCache();
+        const shouldRefresh =
+          !snapshot || snapshot.userKey !== initialUserKey;
+        if (shouldRefresh) {
+          clearViewerCacheStore();
+          refreshRouterSafely();
+        }
       }
       connectUsageStream();
     };
@@ -292,7 +287,6 @@ export function ViewerProvider({
       window.document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [
-    clearFallbackRefreshLoop,
     closeUsageStream,
     connectUsageStream,
     initialUserKey,
@@ -305,7 +299,7 @@ export function ViewerProvider({
 
   const refreshViewer = useCallback(() => {
     clearViewerCacheStore();
-    refreshRouterSafely();
+    refreshRouterSafely({ force: true });
   }, [refreshRouterSafely]);
 
   const fallbackMe = useMemo(() => {

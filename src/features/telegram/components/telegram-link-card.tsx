@@ -86,7 +86,6 @@ export function TelegramLinkCard({
   const [qrCode, setQrCode] = useState<QrCodeSnapshot | null>(null);
   const [flowMessage, setFlowMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
   const [pendingAction, setPendingAction] = useState<"connect" | "refresh" | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -129,12 +128,7 @@ export function TelegramLinkCard({
         };
 
         setPendingSession(nextSession);
-        setFlowMessage("Link ready. Scan the QR code or open Telegram, then tap Start.");
-
-        const popup = window.open(response.deep_link_url, "_blank", "noopener,noreferrer");
-        if (!popup) {
-          setFlowMessage("Connect link ready. Pop-up blocked, open with button below.");
-        }
+        setFlowMessage("QR code ready. Scan it or open Telegram below, then tap Start.");
       } catch (error) {
         setActionError(mapError(error));
       } finally {
@@ -214,7 +208,6 @@ export function TelegramLinkCard({
         return;
       }
 
-      setIsPolling(true);
       try {
         const response = await checkTelegramConnectStatusAction(pendingSession.state);
         if (cancelled) {
@@ -251,10 +244,6 @@ export function TelegramLinkCard({
         }
         setActionError(mapError(error));
         timeoutId = window.setTimeout(poll, 5000);
-      } finally {
-        if (!cancelled) {
-          setIsPolling(false);
-        }
       }
     };
 
@@ -334,7 +323,7 @@ export function TelegramLinkCard({
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
           {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
-          {isPolling ? (
+          {pendingSession ? (
             <Chip tone="muted" className="gap-1">
               <Loader2 className="size-3 animate-spin" />
               Waiting for Telegram start
@@ -412,7 +401,7 @@ export function TelegramLinkCard({
                 <p className="max-w-lg text-sm text-muted-foreground">
                   {isConnected
                     ? "Alerts will be delivered to your linked bot chat. You can relink if you want to use another chat."
-                    : "Generate a one-time Telegram link. We will show a QR code and open Telegram from the same link."}
+                    : "Generate a one-time Telegram link and QR code. After the code appears, open Telegram from the same secure link."}
                 </p>
               </div>
             </div>
@@ -425,10 +414,10 @@ export function TelegramLinkCard({
                 disabled={isPending || allowsTelegram === false}
               >
                 {isCreatingLink ? <Loader2 className="size-3.5 animate-spin" /> : <Link2 className="size-3.5" />}
-                {isConnected ? "Relink Telegram" : "Link Telegram"}
+                  {isConnected ? "Show relink QR" : "Show QR code"}
               </Button>
 
-              {botDeepLink ? (
+              {isConnected && botDeepLink ? (
                 <Link
                   href={botDeepLink}
                   target="_blank"

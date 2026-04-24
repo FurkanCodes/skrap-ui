@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -40,6 +40,7 @@ type AuthFormValues = {
 type AuthFormField = keyof AuthFormValues;
 type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
 type ParsedAuthError = { message: string; code: string | null };
+const SESSION_EXPIRED_SEARCH_PARAM = "expired";
 
 const signInSchema = z.object({
   email: z
@@ -190,15 +191,23 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
   const [signUpNotice, setSignUpNotice] = useState<string | null>(null);
+  const [signInNotice, setSignInNotice] = useState<string | null>(null);
   const [touchedFields, setTouchedFields] = useState<
     Partial<Record<AuthFormField, boolean>>
   >({});
   const [hasSubmittedAttempt, setHasSubmittedAttempt] = useState(false);
+  const handledExpiredQueryRef = useRef<string | null>(null);
 
   const redirectTo = useMemo(() => {
     const value = params.get("next")?.trim();
     if (!value) return "/dashboard";
     return value.startsWith("/") ? value : "/dashboard";
+  }, [params]);
+  const sanitizedSignInPath = useMemo(() => {
+    const nextParams = new URLSearchParams(params.toString());
+    nextParams.delete(SESSION_EXPIRED_SEARCH_PARAM);
+    const query = nextParams.toString();
+    return query ? `/auth/sign-in?${query}` : "/auth/sign-in";
   }, [params]);
 
   const isSignUp = mode === "sign-up";
@@ -257,11 +266,48 @@ export function AuthForm({ mode }: AuthFormProps) {
     });
   };
 
+  useEffect(() => {
+    if (mode !== "sign-in") {
+      return;
+    }
+    const expired = params.get(SESSION_EXPIRED_SEARCH_PARAM);
+    if (expired !== "1") {
+      return;
+    }
+
+    const queryKey = params.toString();
+    if (handledExpiredQueryRef.current === queryKey) {
+      return;
+    }
+    handledExpiredQueryRef.current = queryKey;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        await authClient.signOut();
+      } catch {
+        // Continue even if sign-out fails; next sign-in can still recover.
+      }
+
+      if (cancelled) {
+        return;
+      }
+      setSignInNotice("Your session expired. Please sign in again.");
+      router.replace(sanitizedSignInPath);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, params, router, sanitizedSignInPath]);
+
   const runEmailAuth = async () => {
     setHasSubmittedAttempt(true);
     setError(null);
     if (isSignUp) {
       setSignUpNotice(null);
+    } else {
+      setSignInNotice(null);
     }
     const normalizedEmail = email.trim();
     if (Object.keys(validationErrors).length > 0) {
@@ -346,6 +392,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const runSocialAuth = (provider: SocialProvider) => {
     if (isBusy) return;
     setError(null);
+    if (!isSignUp) {
+      setSignInNotice(null);
+    }
     startTransition(async () => {
       setPendingAction(provider);
       try {
@@ -413,6 +462,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                   className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
                 >
                   {error}
+                </div>
+              ) : null}
+              {!isSignUp && signInNotice ? (
+                <div
+                  role="status"
+                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-300"
+                >
+                  {signInNotice}
                 </div>
               ) : null}
               {isSignUp && signUpNotice ? (
