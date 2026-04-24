@@ -11,8 +11,14 @@ const PUBLIC_ROUTES = [
   "/reset-password",
 ] as const;
 
+const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
+
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
+function isAuthRoute(pathname: string): boolean {
+  return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 function buildRedirectToSignIn(request: NextRequest): NextResponse {
@@ -22,6 +28,10 @@ function buildRedirectToSignIn(request: NextRequest): NextResponse {
   return NextResponse.redirect(url);
 }
 
+function buildRedirectToDashboard(request: NextRequest): NextResponse {
+  return NextResponse.redirect(new URL("/dashboard", request.url));
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSessionCookie = Boolean(getSessionCookie(request));
@@ -29,6 +39,10 @@ export function proxy(request: NextRequest) {
 
   if (!hasSessionCookie && !onPublicRoute) {
     return buildRedirectToSignIn(request);
+  }
+
+  if (hasSessionCookie && (pathname === "/" || isAuthRoute(pathname))) {
+    return buildRedirectToDashboard(request);
   }
 
   return NextResponse.next();
