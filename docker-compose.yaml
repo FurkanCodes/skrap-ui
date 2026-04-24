@@ -1,11 +1,7 @@
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_PUBLIC_BETTER_AUTH_URL: ${NEXT_PUBLIC_BETTER_AUTH_URL}
+    image: ghcr.io/furkancodes/skrap-ui:main
+    pull_policy: always
     env_file:
       - .env
     environment:
