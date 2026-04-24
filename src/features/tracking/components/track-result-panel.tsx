@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,8 @@ import {
 } from "@/features/tracking/interval-policy";
 import { createTrackedItemAction } from "@/features/tracking/server/actions";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { Link } from "@/i18n/navigation";
+import { isAppLocale, localizePathname } from "@/i18n/paths";
 
 interface TrackResultPanelProps {
   url: string;
@@ -30,7 +32,7 @@ type TrackingMode = "monitor" | "alert";
 
 const DEFAULT_TRACK_INTERVAL_VALUE = "60";
 
-function mapActionError(error: unknown): string {
+function mapActionError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -40,7 +42,7 @@ function mapActionError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Unable to create tracker. Please try again.";
+  return fallback;
 }
 
 export function TrackResultPanel({
@@ -50,6 +52,8 @@ export function TrackResultPanel({
   currency,
   primarySeller = null,
 }: TrackResultPanelProps) {
+  const t = useTranslations("tracking.trackResult");
+  const locale = useLocale();
   const { isAuthenticated, me } = useViewer();
   const [isPending, startTransition] = useTransition();
 
@@ -60,8 +64,8 @@ export function TrackResultPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modeOptions: Array<{ value: TrackingMode; label: string }> = [
-    { value: "monitor", label: "Price Drop" },
-    { value: "alert", label: "Price Alert" },
+    { value: "monitor", label: t("mode.monitor") },
+    { value: "alert", label: t("mode.alert") },
   ];
 
   const minInterval = useMemo(
@@ -105,7 +109,7 @@ export function TrackResultPanel({
         }
 
         if (targetRequired && !targetAmount.trim()) {
-          setError("Target amount is required for Price Alert mode.");
+          setError(t("errors.targetRequired"));
           return;
         }
 
@@ -120,44 +124,51 @@ export function TrackResultPanel({
 
         const successMessage = targetRequired
           ? notifyOnPriceIncrease
-            ? "We will notify you when price reaches your target and when it increases."
-            : "We will notify you when price reaches your target."
+            ? t("success.alertWithIncrease")
+            : t("success.alert")
           : notifyOnPriceIncrease
-            ? "We will notify you when price drops or increases."
-            : "We will notify you when price drops.";
+            ? t("success.monitorWithIncrease")
+            : t("success.monitor");
 
         if (response.item?.item_id) {
-          setMessage(`Tracking started (${response.item.item_id}). ${successMessage}`);
+          setMessage(t("startedWithId", { itemId: response.item.item_id, detail: successMessage }));
         } else {
-          setMessage(`Tracking started. ${successMessage}`);
+          setMessage(t("started", { detail: successMessage }));
         }
       } catch (actionError) {
-        setError(mapActionError(actionError));
+        setError(mapActionError(actionError, t("errors.createFailed")));
       }
     });
   };
 
+  const nextPath = localizePathname("/dashboard", isAppLocale(locale) ? locale : "en");
+
   return (
     <div className="grid gap-2 rounded-md border bg-muted/20 p-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-foreground">Tracking</p>
+        <p className="text-xs font-medium text-foreground">{t("title")}</p>
         <SegmentedSwitch
           options={modeOptions}
           value={mode}
           onChange={setMode}
-          ariaLabel="Tracking mode"
+          ariaLabel={t("mode.ariaLabel")}
           disabled={isPending}
         />
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Using primary offer for tracking{primarySeller ? ` (${primarySeller})` : ""}.
+        {primarySeller
+          ? t("primaryOfferWithSeller", { seller: primarySeller })
+          : t("primaryOffer")}
       </p>
 
       {!isAuthenticated ? (
         <p className="text-xs text-muted-foreground">
-          Sign in to start tracking this product.{" "}
-          <Link href="/auth/sign-in?next=/dashboard" className="underline underline-offset-4">
-            Go to sign in
+          {t("auth.description")}{" "}
+          <Link
+            href={`/auth/sign-in?next=${encodeURIComponent(nextPath)}`}
+            className="underline underline-offset-4"
+          >
+            {t("auth.cta")}
           </Link>
           .
         </p>
@@ -166,29 +177,29 @@ export function TrackResultPanel({
           {targetRequired ? (
             <div className="grid gap-1">
               <Label htmlFor={`target-${url}`} className="text-[11px] text-muted-foreground">
-                Target amount
+                {t("fields.targetAmount")}
               </Label>
               <CurrencyInput
                 id={`target-${url}`}
                 currency={currency}
                 value={targetAmount}
                 onChange={(event) => setTargetAmount(event.target.value)}
-                placeholder="45000.00"
+                placeholder={t("fields.targetAmountPlaceholder")}
                 disabled={isPending}
               />
             </div>
           ) : (
             <div className="grid gap-1">
-              <Label className="text-[11px] text-muted-foreground">Mode</Label>
+              <Label className="text-[11px] text-muted-foreground">{t("fields.mode")}</Label>
               <Chip tone="subtle" className="w-fit">
-                Price-drop mode (no target)
+                {t("mode.monitorHint")}
               </Chip>
             </div>
           )}
 
           <div className="grid gap-1">
             <Label htmlFor={`interval-${url}`} className="text-[11px] text-muted-foreground">
-              Check interval (minutes, min {minInterval})
+              {t("fields.interval", { minInterval })}
             </Label>
             <Input
               id={`interval-${url}`}
@@ -205,13 +216,13 @@ export function TrackResultPanel({
               onCheckedChange={(checked) => setNotifyOnPriceIncrease(Boolean(checked))}
               disabled={isPending}
             />
-            Notify when price increases too
+            {t("fields.notifyIncrease")}
           </Label>
 
           <div className="flex items-end md:col-span-2 md:justify-end">
             <Button type="button" size="sm" disabled={!canSubmit || isPending} onClick={runTrack}>
               {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              Track item
+              {t("actions.trackItem")}
             </Button>
           </div>
         </div>

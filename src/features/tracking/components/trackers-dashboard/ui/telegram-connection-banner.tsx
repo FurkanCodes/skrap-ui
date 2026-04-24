@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Bell, CheckCircle2, ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Chip } from "@/components/ui/chip";
+import { Link } from "@/i18n/navigation";
 
 interface TelegramConnectionBannerProps {
   telegramConnected: boolean | null;
@@ -16,6 +17,8 @@ interface TelegramConnectionStatusChipProps {
 export function TelegramConnectionStatusChip({
   telegramConnected,
 }: TelegramConnectionStatusChipProps) {
+  const t = useTranslations("tracking.dashboard.telegram");
+
   if (telegramConnected !== true) {
     return null;
   }
@@ -26,12 +29,14 @@ export function TelegramConnectionStatusChip({
       className="rounded-full bg-emerald-500/14 text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-500/22 dark:text-emerald-200 dark:ring-emerald-400/30"
     >
       <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-300" />
-      <span>Telegram connected</span>
+      <span>{t("connectedChip")}</span>
     </Chip>
   );
 }
 
 export function TelegramConnectionBanner({ telegramConnected }: TelegramConnectionBannerProps) {
+  const t = useTranslations("tracking.dashboard.telegram");
+
   if (telegramConnected === false) {
     return (
       <Link
@@ -45,14 +50,14 @@ export function TelegramConnectionBanner({ telegramConnected }: TelegramConnecti
               <Bell className="size-4" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-foreground">Connect Telegram to receive alerts</p>
+              <p className="text-sm font-semibold text-foreground">{t("connectTitle")}</p>
               <p className="text-xs text-muted-foreground">
-                Without Telegram, price-drop, price-increase, and tracking status alerts cannot be delivered.
+                {t("connectDescription")}
               </p>
             </div>
           </div>
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
-            Set up <ExternalLink className="size-3" />
+            {t("setup")} <ExternalLink className="size-3" />
           </span>
         </div>
       </Link>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+
 import { CreateTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/create-tracker-modal";
 import { DashboardHeader } from "@/features/tracking/components/trackers-dashboard/ui/dashboard-header";
 import { EditTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/edit-tracker-modal";
@@ -12,7 +14,7 @@ import type { TrackersDashboardController } from "@/features/tracking/components
 
 export { TrackersDashboardUnauthenticated };
 
-function formatResetDate(value: string | null): string | null {
+function formatResetDate(value: string | null, locale: string): string | null {
   if (!value) {
     return null;
   }
@@ -22,7 +24,7 @@ function formatResetDate(value: string | null): string | null {
     return null;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
   }).format(date);
@@ -33,7 +35,9 @@ export function TrackersDashboardAuthenticatedView({
 }: {
   controller: TrackersDashboardController;
 }) {
-  const resetDateLabel = formatResetDate(controller.creditsResetAt);
+  const t = useTranslations("tracking.dashboard");
+  const locale = useLocale();
+  const resetDateLabel = formatResetDate(controller.creditsResetAt, locale);
   const hasActiveFilters =
     controller.query.trim().length > 0 ||
     controller.statusFilter !== "all" ||
@@ -105,7 +109,7 @@ export function TrackersDashboardAuthenticatedView({
 
       {controller.creditsExhausted ? (
         <p className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
-          Monthly credits exhausted. Scheduled checks resume at the next reset cycle.
+          {t("creditsExhausted")}
         </p>
       ) : null}
 

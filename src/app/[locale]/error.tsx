@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errors.page");
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -21,13 +24,13 @@ export default function Error({
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8">
         <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle>Something went wrong</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
             <CardDescription>
-              We could not render this page. Try again or refresh the browser.
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={reset}>Try again</Button>
+            <Button onClick={reset}>{t("retry")}</Button>
           </CardContent>
         </Card>
       </main>

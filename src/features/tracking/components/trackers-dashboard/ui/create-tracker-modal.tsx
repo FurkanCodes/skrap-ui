@@ -10,6 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
@@ -121,6 +122,7 @@ export function CreateTrackerModal({
   retryDraftPreview,
   saveTracker,
 }: CreateTrackerModalProps) {
+  const t = useTranslations("tracking.dashboard.createModal");
   const shouldReduceMotion = useReducedMotion();
 
   if (!isModalOpen) {
@@ -158,10 +160,10 @@ export function CreateTrackerModal({
         <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
           <div className="space-y-1">
             <p id="create-tracker-title" className="text-2xl font-semibold leading-tight text-foreground">
-              {modalStep === 1 ? "Add Trackers" : "Review & Configure"}
+              {modalStep === 1 ? t("titleStepOne") : t("titleStepTwo")}
             </p>
             <p className="text-sm text-muted-foreground">
-              Step {modalStep} of 2 · {remainingSlots} slot{remainingSlots === 1 ? "" : "s"} available
+              {t("stepLabel", { step: modalStep, slots: remainingSlots })}
             </p>
           </div>
           <Button
@@ -171,7 +173,7 @@ export function CreateTrackerModal({
             className="mt-0.5"
             onClick={closeModal}
             disabled={isPreviewPending || isSavePending}
-            aria-label="Close add tracker modal"
+            aria-label={t("close")}
           >
             <X className="size-4" />
           </Button>
@@ -181,9 +183,9 @@ export function CreateTrackerModal({
           {modalStep === 1 ? (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-foreground">Product URLs</Label>
+                <Label className="text-sm font-semibold text-foreground">{t("productUrls")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Paste one or many links. Multi-url paste automatically fans out into rows.
+                  {t("productUrlsDescription")}
                 </p>
               </div>
 
@@ -206,13 +208,13 @@ export function CreateTrackerModal({
                               event.preventDefault();
                             }
                           }}
-                          placeholder="https://amazon.com/dp/..."
+                          placeholder={t("urlPlaceholder")}
                           className={cn(
                             "h-11 border-input bg-background/70 pr-20 dark:bg-muted/25",
                             invalid && "border-destructive/60 focus-visible:ring-destructive/20"
                           )}
                           disabled={isPreviewPending}
-                          aria-label={`Product URL ${index + 1}`}
+                          aria-label={t("productUrlAria", { index: index + 1 })}
                         />
                         <div className="absolute inset-y-0 right-1 flex items-center gap-1">
                           <Button
@@ -222,7 +224,7 @@ export function CreateTrackerModal({
                             className="size-6 text-muted-foreground hover:text-foreground"
                             onClick={() => addUrlRow(row.id)}
                             disabled={isPreviewPending}
-                            aria-label="Add URL row"
+                            aria-label={t("addUrlRow")}
                           >
                             <Plus className="size-3.5" />
                           </Button>
@@ -234,7 +236,7 @@ export function CreateTrackerModal({
                               className="size-6 text-muted-foreground hover:text-destructive"
                               onClick={() => removeUrlRow(row.id)}
                               disabled={isPreviewPending}
-                              aria-label="Remove URL row"
+                              aria-label={t("removeUrlRow")}
                             >
                               <Trash2 className="size-3.5" />
                             </Button>
@@ -242,7 +244,7 @@ export function CreateTrackerModal({
                         </div>
                       </div>
                       {invalid ? (
-                        <p className="text-xs text-destructive">Enter a valid http/https URL.</p>
+                        <p className="text-xs text-destructive">{t("invalidUrl")}</p>
                       ) : null}
                     </div>
                   );
@@ -257,7 +259,7 @@ export function CreateTrackerModal({
                 onClick={reviewUrlRows}
               >
                 {isPreviewPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                Review Products
+                {t("reviewProducts")}
               </Button>
             </div>
           ) : (
@@ -265,18 +267,18 @@ export function CreateTrackerModal({
               {!isSingleDraft ? (
                 <div className="rounded-lg bg-muted/30 p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Shared Defaults
+                    {t("sharedDefaults")}
                   </p>
                   <div className="mt-2 grid gap-3 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground">Mode</Label>
+                      <Label className="text-xs font-semibold text-foreground">{t("mode")}</Label>
                       <TrackingModePicker
                         trackingMode={sharedTrackingMode}
                         setTrackingMode={setSharedTrackingMode}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground">Check every</Label>
+                      <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
                       <AnimatedDropdown
                         options={intervalOptions}
                         value={sharedInterval}
@@ -284,12 +286,12 @@ export function CreateTrackerModal({
                         disabled={isSavePending || isPreviewPending}
                       />
                       <p className="text-[11px] text-muted-foreground">
-                        Applies to ready rows that were not manually overridden.
+                        {t("sharedDefaultsHint")}
                       </p>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">
-                        Extra alerts
+                        {t("extraAlerts")}
                       </Label>
                       <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
                         <Checkbox
@@ -299,7 +301,7 @@ export function CreateTrackerModal({
                           }
                           disabled={isSavePending || isPreviewPending}
                         />
-                        Notify on price increase
+                        {t("notifyIncrease")}
                       </Label>
                     </div>
                   </div>
@@ -318,10 +320,10 @@ export function CreateTrackerModal({
                   <div className="rounded-lg border border-border/70 bg-muted/10 p-2">
                     <div className="mb-2 flex items-center justify-between px-1">
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        Items
+                        {t("items")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Selected {selectedReadyCount}
+                        {t("selected", { count: selectedReadyCount })}
                       </p>
                     </div>
                     <div className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
@@ -362,7 +364,7 @@ export function CreateTrackerModal({
                                   <p className="truncate text-sm font-semibold text-foreground">
                                     {isReady
                                       ? draft.productName ?? draft.normalizedUrl
-                                      : draft.rawUrl || "Untitled URL"}
+                                      : draft.rawUrl || t("untitledUrl")}
                                   </p>
                                   <p className="truncate text-xs text-muted-foreground">{domainLabel}</p>
                                   {isReady ? (
@@ -371,12 +373,12 @@ export function CreateTrackerModal({
                                     </p>
                                   ) : (
                                     <p className="truncate text-xs text-destructive">
-                                      {draft.previewError ?? "Could not fetch this item."}
+                                      {draft.previewError ?? t("previewFailed")}
                                     </p>
                                   )}
                                   {draft.overLimit ? (
                                     <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                                      Slot limit reached. Deselect another ready row first.
+                                      {t("slotLimitReached")}
                                     </p>
                                   ) : null}
                                   {draft.submitError ? (
@@ -402,22 +404,22 @@ export function CreateTrackerModal({
                     <div className="grid min-h-[240px] place-items-center text-center">
                       <div className="space-y-2">
                         <CircleAlert className="mx-auto size-5 text-muted-foreground" />
-                        <p className="text-sm font-medium text-foreground">Select an item to configure.</p>
+                          <p className="text-sm font-medium text-foreground">{t("selectItem")}</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : activeDraft.previewStatus === "failed" ? (
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">Fix URL</p>
-                        <p className="text-xs text-muted-foreground">
-                          Update this URL and retry preview. Failed rows are excluded from send.
-                        </p>
-                      </div>
+                    ) : activeDraft.previewStatus === "failed" ? (
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-foreground">{t("fixUrl")}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("fixUrlDescription")}
+                          </p>
+                        </div>
 
                       <Input
                         value={activeDraft.rawUrl}
                         onChange={(event) => setDraftRawUrl(activeDraft.clientId, event.target.value)}
-                        placeholder="https://amazon.com/dp/..."
+                        placeholder={t("urlPlaceholder")}
                         className="h-10"
                         disabled={isPreviewPending || isSavePending}
                       />
@@ -437,7 +439,7 @@ export function CreateTrackerModal({
                         disabled={isPreviewPending || isSavePending}
                       >
                         {isPreviewPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCcw className="size-3.5" />}
-                        Retry Preview
+                        {t("retryPreview")}
                       </Button>
                     </div>
                   ) : (
@@ -474,7 +476,7 @@ export function CreateTrackerModal({
 
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">Target price</Label>
+                          <Label className="text-xs font-semibold text-foreground">{t("targetPrice")}</Label>
                           <CurrencyInput
                             currency={activeDraft.currency}
                             value={activeDraft.targetAmount}
@@ -485,7 +487,7 @@ export function CreateTrackerModal({
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">Check every</Label>
+                          <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
                           <AnimatedDropdown
                             options={intervalOptions}
                             value={activeDraft.interval}
@@ -506,18 +508,18 @@ export function CreateTrackerModal({
                           }
                           disabled={isSavePending}
                         />
-                        Notify when price increases
+                        {t("notifyIncrease")}
                       </Label>
 
                       {activeDraft.trackingMode === "monitor" ? (
                         <p className="text-xs text-muted-foreground">
                           {activeDraft.notifyOnPriceIncrease
-                            ? "Price Drop mode ignores target price and notifies when prices move in either direction."
-                            : "Price Drop mode ignores target price and only notifies when price decreases."}
+                            ? t("monitorBothDirectionsHint")
+                            : t("monitorHint")}
                         </p>
                       ) : (
                         <p className="text-xs text-muted-foreground">
-                          Price Alert mode requires a positive target amount.
+                          {t("alertHint")}
                         </p>
                       )}
 
@@ -533,10 +535,9 @@ export function CreateTrackerModal({
 
               {telegramConnected === false ? (
                 <div className="rounded-md border border-amber-300/50 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
-                  <p className="font-semibold">Telegram not connected</p>
+                  <p className="font-semibold">{t("telegramNotConnected")}</p>
                   <p className="mt-0.5">
-                    Price-drop, price-increase, and tracking status alerts will not be delivered
-                    until you link Telegram in Settings.
+                    {t("telegramNotConnectedDescription")}
                   </p>
                 </div>
               ) : null}
@@ -554,14 +555,14 @@ export function CreateTrackerModal({
             >
               {bulkResultSummary.failureCount > 0 ? (
                 <>
-                  {bulkResultSummary.successCount} tracker
-                  {bulkResultSummary.successCount === 1 ? "" : "s"} created,{" "}
-                  {bulkResultSummary.failureCount} failed. Fix the remaining rows and send again.
+                  {t("bulkPartial", {
+                    success: bulkResultSummary.successCount,
+                    failure: bulkResultSummary.failureCount
+                  })}
                 </>
               ) : (
                 <>
-                  {bulkResultSummary.successCount} tracker
-                  {bulkResultSummary.successCount === 1 ? "" : "s"} created successfully.
+                  {t("bulkSuccess", { success: bulkResultSummary.successCount })}
                 </>
               )}
             </p>
@@ -583,7 +584,7 @@ export function CreateTrackerModal({
               onClick={goBackToUrlStep}
               disabled={isSavePending || isPreviewPending}
             >
-              Back
+              {t("back")}
             </Button>
           ) : (
             <div />
@@ -597,7 +598,7 @@ export function CreateTrackerModal({
               disabled={!canSaveDrafts}
             >
               {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              Send {selectedReadyCount > 0 ? `(${selectedReadyCount})` : ""}
+              {t("send")} {selectedReadyCount > 0 ? `(${selectedReadyCount})` : ""}
             </Button>
           ) : (
             <div />

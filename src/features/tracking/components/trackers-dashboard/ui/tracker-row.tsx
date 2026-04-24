@@ -3,6 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
+import { useLocale, useTranslations } from "next-intl";
 
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import {
@@ -53,20 +54,39 @@ export const TrackerRow = memo(function TrackerRow({
   runItemAction,
   requestDeleteAction,
 }: TrackerRowProps) {
+  const t = useTranslations("tracking.dashboard.row");
+  const locale = useLocale();
   const shouldReduceMotion = useReducedMotion();
   const visibleActionFeedbackState =
     item.status === "active" ? pauseFeedbackState : resumeFeedbackState;
   const visibleActionFeedbackActive = visibleActionFeedbackState !== "idle";
   const busy = isItemActionPending || isDeleteExiting || visibleActionFeedbackActive;
-  const progress = getProgress(item);
+  const intervalLabel = formatInterval(item.check_interval_minutes, {
+    everyPrefix: t("every"),
+  });
+  const checkedLabel = getRelativeCheckedLabel(item.updated_at, {
+    checkedRecently: t("checkedRecently"),
+    checkedJustNow: t("checkedJustNow"),
+    checkedMinutesAgo: (minutes) => t("checkedMinutesAgo", { minutes }),
+    checkedHoursAgo: (hours) => t("checkedHoursAgo", { hours }),
+    checkedDaysAgo: (days) => t("checkedDaysAgo", { days }),
+  });
+  const progress = getProgress(item, {
+    locale,
+    atTarget: t("atTarget"),
+    belowTarget: (value) => t("belowTarget", { value }),
+    belowTargetCompact: t("belowTargetCompact"),
+    aboveTarget: (value) => t("aboveTarget", { value }),
+    aboveTargetCompact: t("aboveTargetCompact"),
+  });
   const domain = getDomainLabel(item.source_url);
   const productName = item.product_name ?? item.source_url;
   const showDomainBadge = domain.toLowerCase() !== productName.trim().toLowerCase();
-  const formattedTargetAmount = formatTargetAmount(item.target_amount, item.currency);
-  const formattedCurrentAmount = formatTargetAmount(item.last_amount, item.currency);
+  const formattedTargetAmount = formatTargetAmount(item.target_amount, item.currency, locale);
+  const formattedCurrentAmount = formatTargetAmount(item.last_amount, item.currency, locale);
   const isTrackingLive = item.status === "active";
-  const trackingStatusChipLabel = isTrackingLive ? "Live" : "Paused";
-  const trackingStatusLineLabel = isTrackingLive ? "Tracking live" : "Tracking paused";
+  const trackingStatusChipLabel = isTrackingLive ? t("live") : t("paused");
+  const trackingStatusLineLabel = isTrackingLive ? t("trackingLive") : t("trackingPaused");
   const glowTransition = shouldReduceMotion
     ? { duration: 0 }
     : {
@@ -112,7 +132,7 @@ export const TrackerRow = memo(function TrackerRow({
           ) : (
             <Image
               src={faviconUrl}
-              alt="Store"
+              alt={t("store")}
               fill
               unoptimized
               className="object-cover p-5 opacity-70"
@@ -135,11 +155,11 @@ export const TrackerRow = memo(function TrackerRow({
               {trackingStatusChipLabel}
             </Chip>
             <Chip tone={item.tracking_mode === "alert" ? "selected" : "subtle"}>
-              {item.tracking_mode === "alert" ? "Price Alert" : "Price Drop"}
+              {item.tracking_mode === "alert" ? t("priceAlert") : t("priceDrop")}
             </Chip>
             {item.notify_on_price_increase ? (
               <Chip tone="subtle">
-                Price Increase
+                {t("priceIncrease")}
               </Chip>
             ) : null}
           </div>
@@ -148,10 +168,12 @@ export const TrackerRow = memo(function TrackerRow({
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-2xl font-semibold text-foreground">
-              {formatPrice(item.last_amount, item.currency)}
+              {formatPrice(item.last_amount, item.currency, locale)}
             </span>
             {formattedTargetAmount ? (
-              <span className="text-xs text-muted-foreground">Target: {formattedTargetAmount}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("target", { value: formattedTargetAmount })}
+              </span>
             ) : null}
           </div>
 
@@ -179,7 +201,7 @@ export const TrackerRow = memo(function TrackerRow({
           ) : null}
 
           <p className="text-[11px] text-muted-foreground">
-            {trackingStatusLineLabel} · {getRelativeCheckedLabel(item.updated_at)} · {formatInterval(item.check_interval_minutes)}
+            {trackingStatusLineLabel} · {checkedLabel} · {intervalLabel}
           </p>
         </div>
       </div>

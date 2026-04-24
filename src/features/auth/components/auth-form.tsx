@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import {
   Loader2,
   LogIn,
@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link, useRouter } from "@/i18n/navigation";
 import Logo from "@/assets/marketing/logo";
 import { authClient } from "@/lib/auth-client";
 import {
   PASSWORD_MIN_LENGTH,
-  PASSWORD_POLICY_HINT,
   securePasswordSchema,
 } from "@/lib/password-policy";
 
@@ -41,36 +41,6 @@ type AuthFormField = keyof AuthFormValues;
 type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
 type ParsedAuthError = { message: string; code: string | null };
 const SESSION_EXPIRED_SEARCH_PARAM = "expired";
-
-const signInSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "Please enter your email address.")
-    .email("Please enter a valid email address."),
-  password: z
-    .string()
-    .min(1, "Please enter your password."),
-});
-
-const signUpSchema = signInSchema
-  .extend({
-    name: z
-      .string()
-      .trim()
-      .min(2, "Please enter your full name."),
-    password: securePasswordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password."),
-  })
-  .superRefine((value, context) => {
-    if (value.password !== value.confirmPassword) {
-      context.addIssue({
-        code: "custom",
-        message: "Passwords do not match.",
-        path: ["confirmPassword"],
-      });
-    }
-  });
 
 function GoogleIcon() {
   return (
@@ -103,7 +73,7 @@ function GithubMark() {
   );
 }
 
-function mapAuthError(error: unknown): string {
+function mapAuthError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -113,11 +83,11 @@ function mapAuthError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Authentication failed. Please try again.";
+  return fallback;
 }
 
-function parseAuthError(error: unknown): ParsedAuthError {
-  const fallbackMessage = mapAuthError(error);
+function parseAuthError(error: unknown, fallback: string): ParsedAuthError {
+  const fallbackMessage = mapAuthError(error, fallback);
   if (!error || typeof error !== "object") {
     return { message: fallbackMessage, code: null };
   }
@@ -161,7 +131,9 @@ function mapAuthFieldErrors(
 
 function getAuthFormFieldErrors(
   values: AuthFormValues,
-  isSignUp: boolean
+  isSignUp: boolean,
+  signInSchema: z.ZodType<{ email: string; password: string }>,
+  signUpSchema: z.ZodType<AuthFormValues>
 ): AuthFormFieldErrors {
   const parsed = isSignUp
     ? signUpSchema.safeParse(values)
@@ -178,6 +150,7 @@ function getAuthFormFieldErrors(
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const params = useSearchParams();
   const shouldReduceMotion = useReducedMotion();
@@ -211,6 +184,37 @@ export function AuthForm({ mode }: AuthFormProps) {
   }, [params]);
 
   const isSignUp = mode === "sign-up";
+  const signInSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .trim()
+          .min(1, t("validation.enterEmail"))
+          .email(t("validation.validEmail")),
+        password: z.string().min(1, t("validation.enterPassword")),
+      }),
+    [t]
+  );
+  const signUpSchema = useMemo(
+    () =>
+      signInSchema
+        .extend({
+          name: z.string().trim().min(2, t("validation.fullName")),
+          password: securePasswordSchema,
+          confirmPassword: z.string().min(1, t("validation.confirmPassword")),
+        })
+        .superRefine((value, context) => {
+          if (value.password !== value.confirmPassword) {
+            context.addIssue({
+              code: "custom",
+              message: t("validation.passwordsMismatch"),
+              path: ["confirmPassword"],
+            });
+          }
+        }),
+    [signInSchema, t]
+  );
   const isBusy = isPending || pendingAction !== null;
   const isEmailActionPending = pendingAction === "email";
   const formValues = useMemo<AuthFormValues>(
@@ -223,8 +227,8 @@ export function AuthForm({ mode }: AuthFormProps) {
     [confirmPassword, email, name, password]
   );
   const validationErrors = useMemo(
-    () => getAuthFormFieldErrors(formValues, isSignUp),
-    [formValues, isSignUp]
+    () => getAuthFormFieldErrors(formValues, isSignUp, signInSchema, signUpSchema),
+    [formValues, isSignUp, signInSchema, signUpSchema]
   );
   const visibleValidationErrors = useMemo<AuthFormFieldErrors>(() => {
     if (hasSubmittedAttempt) {
@@ -292,14 +296,14 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (cancelled) {
         return;
       }
-      setSignInNotice("Your session expired. Please sign in again.");
+      setSignInNotice(t("signIn.sessionExpired"));
       router.replace(sanitizedSignInPath);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [mode, params, router, sanitizedSignInPath]);
+  }, [mode, params, router, sanitizedSignInPath, t]);
 
   const runEmailAuth = async () => {
     setHasSubmittedAttempt(true);
@@ -324,7 +328,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           callbackURL: redirectTo,
         });
         if (response.error) {
-          const parsedError = parseAuthError(response.error);
+          const parsedError = parseAuthError(response.error, t("errors.fallback"));
           const isAlreadyExists =
             parsedError.code === "USER_ALREADY_EXISTS" ||
             parsedError.message.toLowerCase().includes("already registered");
@@ -348,7 +352,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             }
 
             setSignUpNotice(
-              `An account already exists for ${normalizedEmail}. If it is not verified yet, we sent a fresh verification link.`
+              t("signUp.alreadyExistsNotice", { email: normalizedEmail })
             );
             setPassword("");
             setConfirmPassword("");
@@ -361,7 +365,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
         setSignUpNotice(
-          `Verification email sent to ${normalizedEmail}. Please verify your email before signing in.`
+          t("signUp.verificationSentNotice", { email: normalizedEmail })
         );
         setPassword("");
         setConfirmPassword("");
@@ -376,14 +380,14 @@ export function AuthForm({ mode }: AuthFormProps) {
           rememberMe: rememberDevice,
         });
         if (response.error) {
-          setError(mapAuthError(response.error.message));
+          setError(mapAuthError(response.error.message, t("errors.fallback")));
           return;
         }
       }
       router.push(redirectTo);
       router.refresh();
     } catch (err) {
-      setError(mapAuthError(err));
+      setError(mapAuthError(err, t("errors.fallback")));
     } finally {
       setPendingAction(null);
     }
@@ -403,10 +407,10 @@ export function AuthForm({ mode }: AuthFormProps) {
           callbackURL: redirectTo,
         });
         if (response.error) {
-          setError(mapAuthError(response.error.message));
+          setError(mapAuthError(response.error.message, t("errors.fallback")));
         }
       } catch (err) {
-        setError(mapAuthError(err));
+        setError(mapAuthError(err, t("errors.fallback")));
       } finally {
         setPendingAction(null);
       }
@@ -439,12 +443,12 @@ export function AuthForm({ mode }: AuthFormProps) {
             </Link>
 
             <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              {isSignUp ? "Create your account." : "Sign in."}
+              {isSignUp ? t("signUp.title") : t("signIn.title")}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {isSignUp
-                ? "Create your account and verify your email to unlock dashboard access."
-                : "Access your dashboard, trackers, and Telegram alert settings."}
+                ? t("signUp.subtitle")
+                : t("signIn.subtitle")}
             </p>
 
             <form
@@ -490,7 +494,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               {isSignUp ? (
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full name</Label>
+                  <Label htmlFor="name">{t("fields.name")}</Label>
                   <Input
                     id="name"
                     autoComplete="name"
@@ -501,7 +505,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       markFieldTouched("name");
                     }}
                     onBlur={() => markFieldTouched("name")}
-                    placeholder="Jane Doe"
+                    placeholder={t("fields.namePlaceholder")}
                     disabled={isBusy}
                     aria-invalid={Boolean(nameError)}
                     aria-describedby={nameError ? "name-error" : undefined}
@@ -518,7 +522,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               <div className="grid gap-2">
                 <Label htmlFor="email">
-                  Email
+                  {t("fields.email")}
                 </Label>
                 <Input
                   id="email"
@@ -531,7 +535,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     markFieldTouched("email");
                   }}
                   onBlur={() => markFieldTouched("email")}
-                  placeholder="you@example.com"
+                  placeholder={t("fields.emailPlaceholder")}
                   disabled={isBusy}
                   aria-invalid={Boolean(emailError)}
                   aria-describedby={emailError ? "email-error" : undefined}
@@ -547,7 +551,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               <div className="grid gap-2">
                 <Label htmlFor="password">
-                  Password
+                  {t("fields.password")}
                 </Label>
                 <Input
                   id="password"
@@ -563,7 +567,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     }
                   }}
                   onBlur={() => markFieldTouched("password")}
-                  placeholder="Enter your password"
+                  placeholder={t("fields.passwordPlaceholder")}
                   disabled={isBusy}
                   minLength={isSignUp ? PASSWORD_MIN_LENGTH : 1}
                   aria-invalid={Boolean(passwordError)}
@@ -577,7 +581,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   </p>
                 ) : isSignUp ? (
                   <p className="text-xs text-muted-foreground">
-                    {PASSWORD_POLICY_HINT}
+                    {t("signUp.passwordHint")}
                   </p>
                 ) : null}
               </div>
@@ -585,7 +589,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               {isSignUp ? (
                 <div className="grid gap-2">
                   <Label htmlFor="confirm-password">
-                    Confirm password
+                    {t("fields.confirmPassword")}
                   </Label>
                   <Input
                     id="confirm-password"
@@ -598,7 +602,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       markFieldTouched("confirmPassword");
                     }}
                     onBlur={() => markFieldTouched("confirmPassword")}
-                    placeholder="Confirm your password"
+                    placeholder={t("fields.confirmPasswordPlaceholder")}
                     disabled={isBusy}
                     minLength={PASSWORD_MIN_LENGTH}
                     aria-invalid={Boolean(confirmPasswordError)}
@@ -626,13 +630,13 @@ export function AuthForm({ mode }: AuthFormProps) {
                       disabled={isBusy}
                       className="data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground"
                     />
-                    Remember this device
+                    {t("signIn.rememberDevice")}
                   </Label>
                   <Link
                     href="/auth/forgot-password"
                     className="font-medium text-foreground underline underline-offset-4"
                   >
-                    Forgot password?
+                    {t("signIn.forgotPassword")}
                   </Link>
                 </div>
               )}
@@ -649,14 +653,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : (
                   <>
                     <LogIn className="size-4" />
-                    {isSignUp ? "Create account" : "Login"}
+                    {isSignUp ? t("signUp.submit") : t("signIn.submit")}
                   </>
                 )}
               </Button>
             </form>
 
             <p className="mt-5 text-center text-sm text-muted-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              {isSignUp ? t("links.alreadyHaveAccount") : t("links.dontHaveAccount")}{" "}
               <Link
                 href={
                   isSignUp
@@ -665,7 +669,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 }
                 className="font-semibold text-foreground underline underline-offset-4"
               >
-                {isSignUp ? "Sign in" : "Create an account"}
+                {isSignUp ? t("links.signIn") : t("links.createAccount")}
               </Link>
             </p>
           </motion.section>
@@ -681,9 +685,9 @@ export function AuthForm({ mode }: AuthFormProps) {
             className="mx-auto flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl bg-card/60 p-5 lg:max-w-md lg:border-l lg:border-border/70 lg:rounded-none lg:bg-transparent lg:pl-8 lg:pr-0"
           >
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold tracking-tight">Continue with</h2>
+              <h2 className="text-xl font-semibold tracking-tight">{t("social.title")}</h2>
               <p className="text-sm text-muted-foreground">
-                Use your preferred provider for faster access.
+                {t("social.subtitle")}
               </p>
             </div>
 
@@ -700,7 +704,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : (
                   <>
                     <GoogleIcon />
-                    Continue with Google
+                    {t("social.google")}
                   </>
                 )}
               </Button>
@@ -717,20 +721,20 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : (
                   <>
                     <GithubMark />
-                    Continue with GitHub
+                    {t("social.github")}
                   </>
                 )}
               </Button>
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
-              By continuing, you agree to our{" "}
+              {t("legal.prefix")}{" "}
               <Link href="/terms" className="font-semibold text-foreground underline underline-offset-4">
-                Terms of Service
+                {t("legal.terms")}
               </Link>{" "}
-              and{" "}
+              {t("legal.and")}{" "}
               <Link href="/privacy" className="font-semibold text-foreground underline underline-offset-4">
-                Privacy Policy
+                {t("legal.privacy")}
               </Link>
               .
             </p>

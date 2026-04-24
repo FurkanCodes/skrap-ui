@@ -1,39 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 
 import Logo from "@/assets/marketing/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_HINT,
   securePasswordSchema,
 } from "@/lib/password-policy";
 
-const resetPasswordSchema = z
-  .object({
-    password: securePasswordSchema,
-    confirmPassword: z.string().min(1, "Please confirm your password."),
-  })
-  .superRefine((value, context) => {
-    if (value.password !== value.confirmPassword) {
-      context.addIssue({
-        code: "custom",
-        path: ["confirmPassword"],
-        message: "Passwords do not match.",
-      });
-    }
-  });
-
-function mapApiError(error: unknown): string {
+function mapApiError(error: unknown, fallback: string): string {
   if (!error || typeof error !== "object") {
-    return "Unable to reset password. Please try again.";
+    return fallback;
   }
 
   const value = error as { message?: unknown };
@@ -41,11 +27,31 @@ function mapApiError(error: unknown): string {
     return value.message;
   }
 
-  return "Unable to reset password. Please try again.";
+  return fallback;
 }
 
 export function ResetPasswordForm() {
+  const t = useTranslations("auth.resetPassword");
+  const fieldT = useTranslations("auth.validation");
   const params = useSearchParams();
+  const resetPasswordSchema = useMemo(
+    () =>
+      z
+        .object({
+          password: securePasswordSchema,
+          confirmPassword: z.string().min(1, fieldT("confirmPassword")),
+        })
+        .superRefine((value, context) => {
+          if (value.password !== value.confirmPassword) {
+            context.addIssue({
+              code: "custom",
+              path: ["confirmPassword"],
+              message: fieldT("passwordsMismatch"),
+            });
+          }
+        }),
+    [fieldT]
+  );
 
   const token = useMemo(() => params.get("token")?.trim() ?? "", [params]);
   const resetError = useMemo(() => params.get("error")?.trim() ?? "", [params]);
@@ -54,7 +60,7 @@ export function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(
-    resetError === "INVALID_TOKEN" ? "This reset link is invalid or expired." : null
+    resetError === "INVALID_TOKEN" ? t("invalidToken") : null
   );
   const [notice, setNotice] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -85,7 +91,7 @@ export function ResetPasswordForm() {
     setNotice(null);
 
     if (!token) {
-      setError("Missing reset token. Request a new reset email.");
+      setError(t("missingToken"));
       return;
     }
 
@@ -112,16 +118,16 @@ export function ResetPasswordForm() {
 
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(mapApiError(payload));
+        setError(mapApiError(payload, t("error")));
         return;
       }
 
-      setNotice("Password updated successfully.");
+      setNotice(t("success"));
       setIsSuccess(true);
       setPassword("");
       setConfirmPassword("");
     } catch {
-      setError("Unable to reset password. Please try again.");
+      setError(t("error"));
     }
   };
 
@@ -141,10 +147,10 @@ export function ResetPasswordForm() {
           </Link>
 
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Reset password.
+            {t("title")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Set a new secure password for your account.
+            {t("subtitle")}
           </p>
 
           <form
@@ -175,18 +181,18 @@ export function ResetPasswordForm() {
             ) : null}
             {isSuccess ? (
               <p className="text-sm text-muted-foreground">
-                Password reset successfully.{" "}
+                {t("successHint")}{" "}
                 <Link
                   href="/auth/sign-in?next=/dashboard"
                   className="font-semibold text-foreground underline underline-offset-4"
                 >
-                  Click here to sign in.
+                  {t("signInCta")}
                 </Link>
               </p>
             ) : null}
 
             <div className="grid gap-2">
-              <Label htmlFor="password">New password</Label>
+              <Label htmlFor="password">{t("newPassword")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -201,7 +207,7 @@ export function ResetPasswordForm() {
                   }
                 }}
                 onBlur={() => setTouched((current) => ({ ...current, password: true }))}
-                placeholder="Enter your new password"
+                placeholder={t("newPasswordPlaceholder")}
                 disabled={isPending}
                 minLength={PASSWORD_MIN_LENGTH}
                 aria-invalid={Boolean(passwordError)}
@@ -219,7 +225,7 @@ export function ResetPasswordForm() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <Label htmlFor="confirm-password">{t("confirmNewPassword")}</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -233,7 +239,7 @@ export function ResetPasswordForm() {
                 onBlur={() =>
                   setTouched((current) => ({ ...current, confirmPassword: true }))
                 }
-                placeholder="Confirm your new password"
+                placeholder={t("confirmNewPasswordPlaceholder")}
                 disabled={isPending}
                 minLength={PASSWORD_MIN_LENGTH}
                 aria-invalid={Boolean(confirmPasswordError)}
@@ -258,19 +264,19 @@ export function ResetPasswordForm() {
               ) : (
                 <>
                   <Lock className="size-4" />
-                  Reset password
+                  {t("submit")}
                 </>
               )}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            Need a new reset link?{" "}
+            {t("requestNewLink")}{" "}
             <Link
               href="/auth/forgot-password"
               className="font-semibold text-foreground underline underline-offset-4"
             >
-              Request again
+              {t("requestAgain")}
             </Link>
           </p>
         </section>

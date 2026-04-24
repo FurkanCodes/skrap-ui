@@ -9,9 +9,9 @@ import {
   useRef,
   useSyncExternalStore,
 } from "react";
-import { useRouter } from "next/navigation";
 
 import type { MeResponse } from "@/features/tracking/types";
+import { useRouter } from "@/i18n/navigation";
 import {
   clearViewerCache as clearViewerCacheStore,
   getViewerCacheSnapshot,

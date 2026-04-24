@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { MODE_FILTERS, STATUS_FILTERS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
@@ -28,13 +29,24 @@ export function SearchFilterBar({
   modeFilter,
   setModeFilter,
 }: SearchFilterBarProps) {
+  const t = useTranslations("tracking.dashboard.filters");
   const statusOptions = STATUS_FILTERS.map((option) => ({
     value: option.key,
-    label: option.label,
+    label:
+      option.key === "all"
+        ? t("status.all")
+        : option.key === "active"
+          ? t("status.active")
+          : t("status.paused"),
   }));
   const modeOptions = MODE_FILTERS.map((option) => ({
     value: option.key,
-    label: option.label,
+    label:
+      option.key === "all"
+        ? t("mode.all")
+        : option.key === "alert"
+          ? t("mode.alert")
+          : t("mode.monitor"),
   }));
 
   return (
@@ -44,7 +56,7 @@ export function SearchFilterBar({
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search products..."
+          placeholder={t("searchPlaceholder")}
           className="h-10 border-border bg-card pl-9"
         />
       </div>
@@ -52,26 +64,26 @@ export function SearchFilterBar({
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex items-center gap-1 rounded-md bg-card/80 p-1">
           <Chip tone="subtle" className="uppercase tracking-wide">
-            Status
+            {t("statusLabel")}
           </Chip>
           <SegmentedSwitch
             options={statusOptions}
             value={statusFilter}
             onChange={setStatusFilter}
-            ariaLabel="Status filter"
+            ariaLabel={t("statusAria")}
             className="border-0 bg-transparent p-0"
           />
         </div>
 
         <div className="inline-flex items-center gap-1 rounded-md bg-card/80 p-1">
           <Chip tone="subtle" className="uppercase tracking-wide">
-            Mode
+            {t("modeLabel")}
           </Chip>
           <SegmentedSwitch
             options={modeOptions}
             value={modeFilter}
             onChange={setModeFilter}
-            ariaLabel="Mode filter"
+            ariaLabel={t("modeAria")}
             className="border-0 bg-transparent p-0"
           />
         </div>

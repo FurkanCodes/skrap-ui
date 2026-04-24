@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
@@ -47,6 +48,8 @@ export function EditTrackerModal({
   onClose,
   onSave,
 }: EditTrackerModalProps) {
+  const t = useTranslations("tracking.dashboard.editModal");
+
   if (!isOpen || !item) {
     return null;
   }
@@ -64,7 +67,7 @@ export function EditTrackerModal({
       <div className="w-full max-w-[460px] rounded-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <p className="text-base font-bold text-foreground">Edit Tracker</p>
+            <p className="text-base font-bold text-foreground">{t("title")}</p>
             <p className="line-clamp-1 text-xs text-muted-foreground">{title}</p>
           </div>
           <Button
@@ -73,7 +76,7 @@ export function EditTrackerModal({
             variant="ghost"
             onClick={onClose}
             disabled={isSavePending}
-            aria-label="Close edit tracker modal"
+            aria-label={t("close")}
           >
             ×
           </Button>
@@ -88,7 +91,7 @@ export function EditTrackerModal({
           <div className="space-y-3">
             <div className="space-y-2">
               <Label htmlFor="edit-target-price" className="text-xs font-semibold text-foreground">
-                Target price
+                {t("targetPrice")}
               </Label>
               <CurrencyInput
                 id="edit-target-price"
@@ -102,19 +105,19 @@ export function EditTrackerModal({
               {trackingMode === "monitor" ? (
                 <p className="text-[11px] text-muted-foreground">
                   {notifyOnPriceIncrease
-                    ? "Price Drop mode ignores target price and notifies when prices move in either direction."
-                    : "Price Drop mode ignores target price and only notifies when price decreases."}
+                    ? t("monitorBothDirectionsHint")
+                    : t("monitorHint")}
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  We notify once the price drops to this amount or lower.
+                  {t("alertHint")}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-check-every" className="text-xs font-semibold text-foreground">
-                Interval
+                {t("interval")}
               </Label>
               <AnimatedDropdown
                 id="edit-check-every"
@@ -126,7 +129,7 @@ export function EditTrackerModal({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-foreground">Extra alerts</Label>
+              <Label className="text-xs font-semibold text-foreground">{t("extraAlerts")}</Label>
               <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-muted/25 px-3 py-2 text-xs text-foreground">
                 <Checkbox
                   checked={notifyOnPriceIncrease}
@@ -135,7 +138,7 @@ export function EditTrackerModal({
                   }
                   disabled={isSavePending}
                 />
-                Notify when price increases
+                {t("notifyIncrease")}
               </Label>
             </div>
           </div>
@@ -155,7 +158,7 @@ export function EditTrackerModal({
             onClick={onClose}
             disabled={isSavePending}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             type="button"
@@ -165,7 +168,7 @@ export function EditTrackerModal({
             disabled={isSavePending}
           >
             {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            Save
+            {t("save")}
           </Button>
         </div>
       </div>

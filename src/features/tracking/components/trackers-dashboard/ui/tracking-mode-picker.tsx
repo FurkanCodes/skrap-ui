@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Label } from "@/components/ui/label";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
 import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
@@ -13,6 +15,7 @@ export function TrackingModePicker({
   trackingMode,
   setTrackingMode,
 }: TrackingModePickerProps) {
+  const t = useTranslations("tracking.dashboard.modePicker");
   const options: Array<{
     value: TrackingMode;
     label: string;
@@ -20,30 +23,30 @@ export function TrackingModePicker({
   }> = [
     {
       value: "alert",
-      label: "Price Alert",
+      label: t("alert.label"),
       tooltip: {
-        title: "Price Alert",
-        description: "Sends one notification when price reaches your target.",
+        title: t("alert.label"),
+        description: t("alert.description"),
       },
     },
     {
       value: "monitor",
-      label: "Price Drop",
+      label: t("monitor.label"),
       tooltip: {
-        title: "Price Drop",
-        description: "Sends a notification only when price drops from the previous check.",
+        title: t("monitor.label"),
+        description: t("monitor.description"),
       },
     },
   ];
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-semibold text-foreground">Mode</Label>
+      <Label className="text-xs font-semibold text-foreground">{t("title")}</Label>
       <SegmentedSwitch
         options={options}
         value={trackingMode}
         onChange={setTrackingMode}
-        ariaLabel="Tracking mode"
+        ariaLabel={t("ariaLabel")}
         fullWidth
         className="rounded-lg border border-border/70 bg-muted/45 p-1 dark:bg-muted/35"
       />

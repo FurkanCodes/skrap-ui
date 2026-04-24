@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ExternalLink, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
@@ -42,6 +43,7 @@ export function TrackerActionButtons({
   runItemAction,
   requestDeleteAction,
 }: TrackerActionButtonsProps) {
+  const t = useTranslations("tracking.dashboard.actions");
   const controlsDisabled = busy || isRefreshPending;
   const shouldReduceMotion = useReducedMotion();
   const smoothEase = [0.22, 1, 0.36, 1] as const;
@@ -60,7 +62,7 @@ export function TrackerActionButtons({
           target="_blank"
           rel="noopener noreferrer"
           className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
-          aria-label="Go to product link"
+          aria-label={t("openProduct")}
         >
           <ExternalLink className="size-3.5" />
         </a>
@@ -70,7 +72,7 @@ export function TrackerActionButtons({
           size="icon-sm"
           variant="ghost"
           disabled={controlsDisabled}
-          aria-label="Edit tracker"
+          aria-label={t("edit")}
           onClick={() => openEditModal(item.item_id)}
         >
           <Pencil className="size-3.5" />
@@ -94,12 +96,12 @@ export function TrackerActionButtons({
                 aria-busy={pauseFeedbackState === "loading" ? true : undefined}
                 aria-label={
                   pauseFeedbackState === "loading"
-                    ? "Pausing tracker"
+                    ? t("pausing")
                     : pauseFeedbackState === "success"
-                      ? "Tracker paused successfully"
+                      ? t("pausedSuccess")
                       : pauseFeedbackState === "error"
-                        ? "Failed to pause tracker"
-                        : "Pause tracker"
+                        ? t("pauseFailed")
+                        : t("pause")
                 }
                 className={cn(
                   "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
@@ -131,12 +133,12 @@ export function TrackerActionButtons({
                 aria-busy={resumeFeedbackState === "loading" ? true : undefined}
                 aria-label={
                   resumeFeedbackState === "loading"
-                    ? "Resuming tracker"
+                    ? t("resuming")
                     : resumeFeedbackState === "success"
-                      ? "Tracker resumed successfully"
+                      ? t("resumedSuccess")
                       : resumeFeedbackState === "error"
-                        ? "Failed to resume tracker"
-                        : "Resume tracker"
+                        ? t("resumeFailed")
+                        : t("resume")
                 }
                 className={cn(
                   "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
@@ -185,7 +187,7 @@ export function TrackerActionButtons({
                   className="inline-flex min-w-[52px] items-center justify-center gap-1.5 border-r border-border bg-destructive/10 px-3 text-[11px] font-semibold text-destructive transition hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isDeletePending ? <Loader2 className="size-3 animate-spin" /> : null}
-                  OK
+                  {t("confirm")}
                 </button>
                 <button
                   type="button"
@@ -193,7 +195,7 @@ export function TrackerActionButtons({
                   onClick={cancelDeleteAction}
                   className="inline-flex min-w-[70px] items-center justify-center px-3 text-[11px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
               </div>
             </motion.div>
@@ -232,7 +234,7 @@ export function TrackerActionButtons({
             type="button"
             className="mt-0.5 shrink-0 rounded-sm text-destructive/80 transition hover:text-destructive"
             onClick={() => dismissRowActionError(item.item_id)}
-            aria-label="Dismiss action error"
+            aria-label={t("dismissError")}
           >
             <X className="size-3.5" />
           </button>

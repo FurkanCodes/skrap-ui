@@ -1,10 +1,12 @@
+import { getTranslations } from "next-intl/server";
+
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { TrackersDashboardClient } from "@/features/tracking/components/trackers-dashboard-client";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { getAuthContext } from "@/lib/auth-dal";
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -14,10 +16,11 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Unable to load trackers.";
+  return fallback;
 }
 
 export async function TrackersDashboard() {
+  const t = await getTranslations("tracking.errors");
   const auth = await getAuthContext();
   if (!auth) {
     return (
@@ -44,7 +47,7 @@ export async function TrackersDashboard() {
   if (trackedResult.status === "fulfilled") {
     initialItems = trackedResult.value.items;
   } else {
-    initialError = mapError(trackedResult.reason);
+    initialError = mapError(trackedResult.reason, t("loadTrackers"));
   }
 
   if (telegramResult.status === "fulfilled") {

@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
+
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { getAuthContext } from "@/lib/auth-dal";
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -13,10 +15,11 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Unable to load Telegram status.";
+  return fallback;
 }
 
 export async function TelegramLinkPanel() {
+  const t = await getTranslations("telegram.errors");
   const auth = await getAuthContext();
   if (!auth) {
     return (
@@ -34,7 +37,7 @@ export async function TelegramLinkPanel() {
   try {
     initialStatus = await getTelegramStatusQuery();
   } catch (error) {
-    initialError = mapError(error);
+    initialError = mapError(error, t("loadStatus"));
   }
 
   return (

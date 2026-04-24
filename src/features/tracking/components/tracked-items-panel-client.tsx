@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useOptimistic, useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +14,8 @@ import {
 } from "@/features/tracking/server/actions";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { TEST_INTERVAL_15_SECONDS_VALUE } from "@/features/tracking/components/trackers-dashboard/constants";
+import { Link, useRouter } from "@/i18n/navigation";
+import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { formatCurrencyAmount } from "@/lib/currency";
 
 interface TrackedItemsPanelClientProps {
@@ -28,7 +29,7 @@ interface ItemOptimisticAction {
   itemId: string;
 }
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -38,14 +39,14 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Request failed.";
+  return fallback;
 }
 
-function formatAmount(item: TrackedItemSummary): string {
-  return formatCurrencyAmount(item.last_amount, item.currency, { fallback: "-" });
+function formatAmount(item: TrackedItemSummary, locale: string): string {
+  return formatCurrencyAmount(item.last_amount, item.currency, { fallback: "-", locale });
 }
 
-function formatInterval(value: number): string {
+function formatIntervalToken(value: number): string {
   if (value === TEST_INTERVAL_15_SECONDS_VALUE) {
     return "15s";
   }
@@ -59,10 +60,6 @@ function formatInterval(value: number): string {
     return `${value / 60}h`;
   }
   return `${value}m`;
-}
-
-function formatTrackingMode(mode: TrackedItemSummary["tracking_mode"]): string {
-  return mode === "alert" ? "Price Alert" : "Price Drop";
 }
 
 function applyItemAction(
@@ -84,6 +81,8 @@ export function TrackedItemsPanelClient({
   initialItems,
   initialError,
 }: TrackedItemsPanelClientProps) {
+  const t = useTranslations("tracking.itemsPanel");
+  const locale = useLocale();
   const router = useRouter();
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
   const [items, applyOptimisticItemAction] = useOptimistic<
@@ -97,6 +96,7 @@ export function TrackedItemsPanelClient({
   const [isActionTransitionPending, startActionTransition] = useTransition();
   const displayError = actionError ?? initialError;
   const isMutating = isActionPending || isRefreshPending || isActionTransitionPending;
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
 
   const summary = useMemo(() => {
     const active = items.filter((item) => item.status === "active").length;
@@ -133,7 +133,7 @@ export function TrackedItemsPanelClient({
 
         setItemsState((current) => applyItemAction(current, itemAction));
       } catch (actionError) {
-        setActionError(mapError(actionError));
+        setActionError(mapError(actionError, t("errors.requestFailed")));
         startRefreshTransition(() => {
           router.refresh();
         });
@@ -145,17 +145,19 @@ export function TrackedItemsPanelClient({
   };
 
   if (!isAuthenticated) {
+    const nextPath = localizePathname("/dashboard", isAppLocale(locale) ? locale : "en");
     return (
       <Card>
         <CardHeader>
-          <CardTitle>My tracked items</CardTitle>
-        <CardDescription>
-          Sign in to see your private tracked products and control alerts.
-        </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("auth.description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/auth/sign-in?next=/dashboard" className={buttonVariants({ size: "sm" })}>
-            Sign in to manage tracking
+          <Link
+            href={`/auth/sign-in?next=${encodeURIComponent(nextPath)}`}
+            className={buttonVariants({ size: "sm" })}
+          >
+            {t("auth.cta")}
           </Link>
         </CardContent>
       </Card>
@@ -166,9 +168,12 @@ export function TrackedItemsPanelClient({
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="space-y-1">
-          <CardTitle>My tracked items</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
-            Total {summary.total} • Active {summary.active}
+            {t("summary", {
+              total: numberFormatter.format(summary.total),
+              active: numberFormatter.format(summary.active),
+            })}
           </CardDescription>
         </div>
         <Button
@@ -183,7 +188,7 @@ export function TrackedItemsPanelClient({
           ) : (
             <RefreshCw className="size-3.5" />
           )}
-          Refresh
+          {t("actions.refresh")}
         </Button>
       </CardHeader>
 
@@ -196,7 +201,7 @@ export function TrackedItemsPanelClient({
 
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            You don&apos;t have tracked items yet. Run a scrape and click <strong>Track item</strong>.
+            {t("empty")}
           </p>
         ) : (
           items.map((item) => {
@@ -210,13 +215,21 @@ export function TrackedItemsPanelClient({
                   <p className="line-clamp-1 text-sm font-medium">{item.product_name ?? item.source_url}</p>
                   <p className="line-clamp-1 text-xs text-muted-foreground">{item.source_url}</p>
                   <div className="flex flex-wrap gap-1">
-                    <Chip tone={item.status === "active" ? "success" : "muted"}>{item.status}</Chip>
-                    <Chip tone="muted">{formatTrackingMode(item.tracking_mode)}</Chip>
+                    <Chip tone={item.status === "active" ? "success" : "muted"}>
+                      {item.status === "active" ? t("status.active") : t("status.paused")}
+                    </Chip>
+                    <Chip tone="muted">
+                      {item.tracking_mode === "alert" ? t("mode.alert") : t("mode.monitor")}
+                    </Chip>
                     {item.notify_on_price_increase ? (
-                      <Chip tone="muted">Price Increase</Chip>
+                      <Chip tone="muted">{t("chips.priceIncrease")}</Chip>
                     ) : null}
-                    <Chip tone="muted">Every {formatInterval(item.check_interval_minutes)}</Chip>
-                    <Chip tone="muted">{formatAmount(item)}</Chip>
+                    <Chip tone="muted">
+                      {t("chips.every", {
+                        value: formatIntervalToken(item.check_interval_minutes),
+                      })}
+                    </Chip>
+                    <Chip tone="muted">{formatAmount(item, locale)}</Chip>
                   </div>
                 </div>
 
@@ -228,7 +241,7 @@ export function TrackedItemsPanelClient({
                     className={buttonVariants({ size: "xs", variant: "outline" })}
                   >
                     <ExternalLink className="size-3.5" />
-                    Go to link
+                    {t("actions.openLink")}
                   </a>
                   {item.status === "active" ? (
                     <Button
@@ -243,7 +256,7 @@ export function TrackedItemsPanelClient({
                       ) : (
                         <PauseCircle className="size-3.5" />
                       )}
-                      Pause
+                      {t("actions.pause")}
                     </Button>
                   ) : (
                     <Button
@@ -258,7 +271,7 @@ export function TrackedItemsPanelClient({
                       ) : (
                         <PlayCircle className="size-3.5" />
                       )}
-                      Resume
+                      {t("actions.resume")}
                     </Button>
                   )}
                   <Button
@@ -269,7 +282,7 @@ export function TrackedItemsPanelClient({
                     disabled={busy || isMutating}
                   >
                     <Trash2 className="size-3.5" />
-                    Delete
+                    {t("actions.delete")}
                   </Button>
                 </div>
               </div>

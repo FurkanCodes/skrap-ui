@@ -3,9 +3,10 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { useTheme } from "next-themes";
+import { useLocale, useTranslations } from "next-intl";
 
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
+import { useTheme } from "@/components/theme/theme-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
@@ -20,10 +21,8 @@ interface SettingsPageClientProps {
   supportedSites: SiteInfoResponse[];
   supportedSitesError: string | null;
 }
-const NUMBER_LOCALE = "en-US";
-
-function formatCount(value: number): string {
-  return value.toLocaleString(NUMBER_LOCALE);
+function formatCount(value: number, locale: string): string {
+  return value.toLocaleString(locale);
 }
 
 function formatMinimumInterval(value: number): string {
@@ -37,7 +36,7 @@ function formatMinimumInterval(value: number): string {
   return `${value}m`;
 }
 
-function formatPeriodEnd(value: string | null): string | null {
+function formatPeriodEnd(value: string | null, locale: string): string | null {
   if (!value) {
     return null;
   }
@@ -47,7 +46,7 @@ function formatPeriodEnd(value: string | null): string | null {
     return null;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -69,6 +68,8 @@ export function SettingsPageClient({
   supportedSites,
   supportedSitesError,
 }: SettingsPageClientProps) {
+  const t = useTranslations("settings");
+  const locale = useLocale();
   const { isAuthenticated, me } = useViewer();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
@@ -101,7 +102,7 @@ export function SettingsPageClient({
     0,
     Number(me?.usage?.remaining_check_units ?? monthlyCredits - consumedCredits) || 0
   );
-  const cycleResetLabel = formatPeriodEnd(me?.usage?.period_end ?? null);
+  const cycleResetLabel = formatPeriodEnd(me?.usage?.period_end ?? null, locale);
   const planKey = me?.entitlement.plan_key ?? "free";
   const trackerUsagePercent = useMemo(() => {
     if (maxTrackers <= 0) {
@@ -119,14 +120,14 @@ export function SettingsPageClient({
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage integrations and notifications.</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </header>
 
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>Choose how the interface looks across the app.</CardDescription>
+          <CardTitle>{t("appearance.title")}</CardTitle>
+          <CardDescription>{t("appearance.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-3">
@@ -141,7 +142,7 @@ export function SettingsPageClient({
               }
             >
               <Sun className="size-4" />
-              Light
+              {t("appearance.light")}
             </button>
             <button
               type="button"
@@ -154,7 +155,7 @@ export function SettingsPageClient({
               }
             >
               <Moon className="size-4" />
-              Dark
+              {t("appearance.dark")}
             </button>
             <button
               type="button"
@@ -167,13 +168,16 @@ export function SettingsPageClient({
               }
             >
               <Laptop className="size-4" />
-              System
+              {t("appearance.system")}
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
             {mounted
-              ? `Active: ${resolvedTheme === "dark" ? "Dark" : "Light"} (${theme ?? "system"} mode)`
-              : "Loading theme preference..."}
+              ? t("appearance.active", {
+                  theme: resolvedTheme === "dark" ? t("appearance.dark") : t("appearance.light"),
+                  mode: theme ?? "system",
+                })
+              : t("appearance.loading")}
           </p>
         </CardContent>
       </Card>
@@ -186,9 +190,9 @@ export function SettingsPageClient({
 
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>
-          <CardTitle>Store Adapters</CardTitle>
+          <CardTitle>{t("adapters.title")}</CardTitle>
           <CardDescription>
-            Pulled from backend capabilities. Any URL can still use generic extraction.
+            {t("adapters.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -200,7 +204,7 @@ export function SettingsPageClient({
 
           {!supportedSitesError && supportedSites.length === 0 ? (
             <p className="rounded-md border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-              No adapter metadata returned yet.
+              {t("adapters.empty")}
             </p>
           ) : null}
 
@@ -220,7 +224,7 @@ export function SettingsPageClient({
                 >
                   <p className="text-sm font-semibold text-foreground">{formatSiteKey(site.key)}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {site.description || "Backend adapter available for this store."}
+                    {site.description || t("adapters.fallbackDescription")}
                   </p>
                 </motion.li>
               ))}
@@ -231,8 +235,8 @@ export function SettingsPageClient({
 
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>
-          <CardTitle>Notification Preferences</CardTitle>
-          <CardDescription>Configure global alert behavior.</CardDescription>
+          <CardTitle>{t("notifications.title")}</CardTitle>
+          <CardDescription>{t("notifications.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <label className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
@@ -241,8 +245,8 @@ export function SettingsPageClient({
                 <Clock3 className="size-4" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">Daily price summary</p>
-                <p className="text-xs text-muted-foreground">Receive a digest of all tracked prices at 9:00 AM.</p>
+                <p className="text-sm font-semibold text-foreground">{t("notifications.dailySummary")}</p>
+                <p className="text-xs text-muted-foreground">{t("notifications.dailySummaryDescription")}</p>
               </div>
             </div>
             <input
@@ -259,8 +263,8 @@ export function SettingsPageClient({
                 <VolumeX className="size-4" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">Mute on weekends</p>
-                <p className="text-xs text-muted-foreground">Pause notifications on Saturday and Sunday.</p>
+                <p className="text-sm font-semibold text-foreground">{t("notifications.muteWeekends")}</p>
+                <p className="text-xs text-muted-foreground">{t("notifications.muteWeekendsDescription")}</p>
               </div>
             </div>
             <input
@@ -277,8 +281,8 @@ export function SettingsPageClient({
                 <Bell className="size-4" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">Minimum drop to alert</p>
-                <p className="text-xs text-muted-foreground">Only notify when price drops at least this much.</p>
+                <p className="text-sm font-semibold text-foreground">{t("notifications.minDrop")}</p>
+                <p className="text-xs text-muted-foreground">{t("notifications.minDropDescription")}</p>
               </div>
             </div>
             <AnimatedDropdown
@@ -293,15 +297,23 @@ export function SettingsPageClient({
 
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>
-          <CardTitle>Plan</CardTitle>
+          <CardTitle>{t("plan.title")}</CardTitle>
           <CardDescription>
-            {planKey.toUpperCase()} plan · minimum interval {formatMinimumInterval(minInterval)}
-            {cycleResetLabel ? ` · credits reset ${cycleResetLabel}` : ""}
+            {cycleResetLabel
+              ? t("plan.subtitleWithReset", {
+                  plan: planKey.toUpperCase(),
+                  interval: formatMinimumInterval(minInterval),
+                  reset: cycleResetLabel,
+                })
+              : t("plan.subtitle", {
+                  plan: planKey.toUpperCase(),
+                  interval: formatMinimumInterval(minInterval),
+                })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Trackers used</span>
+            <span>{t("plan.trackersUsed")}</span>
             <span className="font-semibold text-foreground">
               {trackedCount} / {maxTrackers}
             </span>
@@ -314,9 +326,9 @@ export function SettingsPageClient({
           </div>
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Monthly credits</span>
+            <span>{t("plan.monthlyCredits")}</span>
             <span className="font-semibold text-foreground">
-              {formatCount(remainingCredits)} / {formatCount(monthlyCredits)}
+              {formatCount(remainingCredits, locale)} / {formatCount(monthlyCredits, locale)}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">

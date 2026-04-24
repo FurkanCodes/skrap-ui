@@ -1,5 +1,9 @@
 import { getCookieCache, getSessionCookie } from "better-auth/cookies";
+import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
+
+import { localizePathname, splitLocalePathname } from "@/i18n/paths";
+import { routing } from "@/i18n/routing";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -13,6 +17,7 @@ const PUBLIC_ROUTES = [
 
 const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
 const SESSION_COOKIE_CACHE_VERSION = "skrap-auth-v1";
+const handleI18nRouting = createMiddleware(routing);
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -22,15 +27,18 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
-function buildRedirectToSignIn(request: NextRequest): NextResponse {
-  const url = new URL("/auth/sign-in", request.url);
-  const next = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+function buildRedirectToSignIn(request: NextRequest, locale: (typeof routing.locales)[number], normalizedPathname: string): NextResponse {
+  const url = new URL(localizePathname("/auth/sign-in", locale), request.url);
+  const next = `${localizePathname(normalizedPathname, locale)}${request.nextUrl.search}`;
   url.searchParams.set("next", next);
   return NextResponse.redirect(url);
 }
 
-function buildRedirectToDashboard(request: NextRequest): NextResponse {
-  return NextResponse.redirect(new URL("/dashboard", request.url));
+function buildRedirectToDashboard(
+  request: NextRequest,
+  locale: (typeof routing.locales)[number]
+): NextResponse {
+  return NextResponse.redirect(new URL(localizePathname("/dashboard", locale), request.url));
 }
 
 async function hasValidSessionCache(request: NextRequest): Promise<boolean> {
@@ -61,22 +69,27 @@ async function hasValidSessionCache(request: NextRequest): Promise<boolean> {
 }
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hasSessionCookie = Boolean(getSessionCookie(request));
-  const onPublicRoute = isPublicRoute(pathname);
-
-  if (!hasSessionCookie && !onPublicRoute) {
-    return buildRedirectToSignIn(request);
+  const i18nResponse = handleI18nRouting(request);
+  if (i18nResponse.status >= 300 && i18nResponse.status < 400) {
+    return i18nResponse;
   }
 
-  if (hasSessionCookie && (pathname === "/" || isAuthRoute(pathname))) {
+  const { locale, pathname: normalizedPathname } = splitLocalePathname(request.nextUrl.pathname);
+  const hasSessionCookie = Boolean(getSessionCookie(request));
+  const onPublicRoute = isPublicRoute(normalizedPathname);
+
+  if (!hasSessionCookie && !onPublicRoute) {
+    return buildRedirectToSignIn(request, locale, normalizedPathname);
+  }
+
+  if (hasSessionCookie && (normalizedPathname === "/" || isAuthRoute(normalizedPathname))) {
     const hasValidSession = await hasValidSessionCache(request);
     if (hasValidSession) {
-      return buildRedirectToDashboard(request);
+      return buildRedirectToDashboard(request, locale);
     }
   }
 
-  return NextResponse.next();
+  return i18nResponse;
 }
 
 export const config = {

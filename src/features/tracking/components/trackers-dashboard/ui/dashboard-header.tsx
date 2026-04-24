@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { TelegramConnectionStatusChip } from "@/features/tracking/components/trackers-dashboard/ui/telegram-connection-banner";
 import { Button } from "@/components/ui/button";
@@ -22,18 +23,20 @@ export function DashboardHeader({
   onRefresh,
   onOpenModal,
 }: DashboardHeaderProps) {
+  const t = useTranslations("tracking.dashboard.header");
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Trackers</h1>
-        <p className="text-sm text-muted-foreground">Track price drops and receive Telegram alerts.</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-2">
         <TelegramConnectionStatusChip telegramConnected={telegramConnected} />
         <Button type="button" size="sm" variant="outline" onClick={onRefresh} disabled={isMutating}>
           {isRefreshPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-          Refresh
+          {t("refresh")}
         </Button>
         <Button
           type="button"
@@ -43,7 +46,7 @@ export function DashboardHeader({
           disabled={!canCreateTracker}
         >
           <Plus className="size-3.5" />
-          New Tracker
+          {t("newTracker")}
         </Button>
       </div>
     </header>

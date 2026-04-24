@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { SettingsPageClient } from "@/features/settings/components/settings-page-client";
 import { listSupportedSitesQuery } from "@/features/settings/server/queries";
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
@@ -6,7 +8,7 @@ import type { SiteInfoResponse } from "@/features/scraper/types";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { getAuthContext } from "@/lib/auth-dal";
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -16,10 +18,12 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Unable to load Telegram status.";
+  return fallback;
 }
 
 export default async function SettingsPage() {
+  const t = await getTranslations("telegram.errors");
+  const settingsT = await getTranslations("settings.errors");
   let initialStatus: TelegramActiveStatusResponse | null = null;
   let initialError: string | null = null;
   let trackedCount = 0;
@@ -34,7 +38,7 @@ export default async function SettingsPage() {
   if (supportedSitesResult.status === "fulfilled") {
     supportedSites = supportedSitesResult.value;
   } else {
-    supportedSitesError = "Unable to load supported store adapters.";
+    supportedSitesError = settingsT("supportedSites");
   }
 
   if (auth) {
@@ -46,7 +50,7 @@ export default async function SettingsPage() {
     if (telegramResult.status === "fulfilled") {
       initialStatus = telegramResult.value;
     } else {
-      initialError = mapError(telegramResult.reason);
+      initialError = mapError(telegramResult.reason, t("loadStatus"));
     }
 
     if (trackedResult.status === "fulfilled") {

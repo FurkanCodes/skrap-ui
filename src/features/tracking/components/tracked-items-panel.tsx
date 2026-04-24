@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
+
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import { TrackedItemsPanelClient } from "@/features/tracking/components/tracked-items-panel-client";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { getAuthContext } from "@/lib/auth-dal";
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -13,10 +15,11 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Unable to load tracked items.";
+  return fallback;
 }
 
 export async function TrackedItemsPanel() {
+  const t = await getTranslations("tracking.errors");
   const auth = await getAuthContext();
   if (!auth) {
     return (
@@ -35,7 +38,7 @@ export async function TrackedItemsPanel() {
     const response = await listTrackedItemsQuery({ userId: auth.userId });
     initialItems = response.items;
   } catch (error) {
-    initialError = mapError(error);
+    initialError = mapError(error, t("loadTrackedItems"));
   }
 
   const itemsKey = initialItems

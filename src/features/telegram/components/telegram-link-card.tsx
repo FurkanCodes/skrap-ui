@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { CheckCircle2, ExternalLink, Link2, Loader2, MessageCircle, RefreshCw } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import QRCode from "qrcode";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 } from "@/features/telegram/server/actions";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { Link } from "@/i18n/navigation";
 
 interface TelegramLinkCardProps {
   isAuthenticated: boolean;
@@ -35,7 +36,7 @@ interface QrCodeSnapshot {
   dataUrl: string;
 }
 
-function mapError(error: unknown): string {
+function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -45,7 +46,7 @@ function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Request failed.";
+  return fallback;
 }
 
 function normalizeBotUsername(botUsername: string | null | undefined): string {
@@ -63,15 +64,15 @@ function parseAllowedChannels(value: string | null | undefined): string[] {
     .filter((channel) => channel.length > 0);
 }
 
-function formatExpiry(expiresAt: string | null): string {
+function formatExpiry(expiresAt: string | null, locale: string, unknownExpiry: string): string {
   if (!expiresAt) {
-    return "Unknown expiry";
+    return unknownExpiry;
   }
   const asDate = new Date(expiresAt);
   if (Number.isNaN(asDate.valueOf())) {
-    return "Unknown expiry";
+    return unknownExpiry;
   }
-  return asDate.toLocaleString();
+  return asDate.toLocaleString(locale);
 }
 
 export function TelegramLinkCard({
@@ -79,6 +80,8 @@ export function TelegramLinkCard({
   initialStatus,
   initialError,
 }: TelegramLinkCardProps) {
+  const t = useTranslations("telegram");
+  const locale = useLocale();
   const { me } = useViewer();
   const [status, setStatus] = useState<TelegramActiveStatusResponse | null>(initialStatus);
   const [baseError, setBaseError] = useState<string | null>(initialError);
@@ -128,9 +131,9 @@ export function TelegramLinkCard({
         };
 
         setPendingSession(nextSession);
-        setFlowMessage("QR code ready. Scan it or open Telegram below, then tap Start.");
+        setFlowMessage(t("flow.qrReady"));
       } catch (error) {
-        setActionError(mapError(error));
+        setActionError(mapError(error, t("errors.fallback")));
       } finally {
         setPendingAction(null);
       }
@@ -151,7 +154,7 @@ export function TelegramLinkCard({
           setPendingSession(null);
         }
       } catch (error) {
-        setActionError(mapError(error));
+        setActionError(mapError(error, t("errors.fallback")));
       } finally {
         setPendingAction(null);
       }
@@ -204,7 +207,7 @@ export function TelegramLinkCard({
       const expiresAtMs = Date.parse(pendingSession.expiresAt);
       if (Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now()) {
         setPendingSession(null);
-        setFlowMessage("Connect session expired. Start a new link.");
+        setFlowMessage(t("flow.sessionExpired"));
         return;
       }
 
@@ -225,15 +228,15 @@ export function TelegramLinkCard({
           setBaseError(null);
           setFlowMessage(
             response.telegram_username
-              ? `Connected as @${response.telegram_username}. Alerts now route to Telegram.`
-              : "Telegram connected. Alerts now route to Telegram."
+              ? t("flow.connectedAs", { username: response.telegram_username })
+              : t("flow.connected")
           );
           return;
         }
 
         if (response.status === "expired") {
           setPendingSession(null);
-          setFlowMessage("Connect session expired. Start a new link.");
+          setFlowMessage(t("flow.sessionExpired"));
           return;
         }
 
@@ -242,7 +245,7 @@ export function TelegramLinkCard({
         if (cancelled) {
           return;
         }
-        setActionError(mapError(error));
+        setActionError(mapError(error, t("errors.fallback")));
         timeoutId = window.setTimeout(poll, 5000);
       }
     };
@@ -255,20 +258,20 @@ export function TelegramLinkCard({
         window.clearTimeout(timeoutId);
       }
     };
-  }, [pendingSession]);
+  }, [pendingSession, t]);
 
   if (!isAuthenticated) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Telegram alerts</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
-            Sign in to link your Telegram bot chat and receive tracking notifications.
+            {t("unauthenticated.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/auth/sign-in?next=/dashboard" className={buttonVariants({ size: "sm" })}>
-            Sign in to link Telegram
+            {t("unauthenticated.cta")}
           </Link>
         </CardContent>
       </Card>
@@ -280,14 +283,13 @@ export function TelegramLinkCard({
       <CardHeader className="gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <CardTitle>Telegram alerts</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
             <Chip tone={isConnected ? "success" : "muted"}>
-              {isConnected ? "Connected" : "Not linked"}
+              {isConnected ? t("connected") : t("notLinked")}
             </Chip>
           </div>
           <CardDescription className="max-w-2xl">
-            Send deal alerts to your Telegram chat. Use the QR code on mobile or open the same
-            secure link in Telegram.
+            {t("description")}
           </CardDescription>
         </div>
         <Button
@@ -303,7 +305,7 @@ export function TelegramLinkCard({
           ) : (
             <RefreshCw className="size-3.5" />
           )}
-          Refresh
+          {t("actions.refresh")}
         </Button>
       </CardHeader>
 
@@ -316,7 +318,7 @@ export function TelegramLinkCard({
 
         {allowsTelegram === false ? (
           <p className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-            Current entitlement does not include Telegram channel.
+            {t("entitlementMissing")}
           </p>
         ) : null}
 
@@ -326,7 +328,7 @@ export function TelegramLinkCard({
           {pendingSession ? (
             <Chip tone="muted" className="gap-1">
               <Loader2 className="size-3 animate-spin" />
-              Waiting for Telegram start
+              {t("waitingStart")}
             </Chip>
           ) : null}
         </div>
@@ -350,23 +352,17 @@ export function TelegramLinkCard({
             </div>
             <div className="space-y-4">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">Connection link is ready</p>
+                <p className="text-sm font-semibold text-foreground">{t("linkReady.title")}</p>
                 <p className="max-w-md text-sm text-muted-foreground">
-                  Scan the QR code or open Telegram here. Both use the same one-time link. Tap
-                  <span className="font-medium text-foreground"> Start</span> in the bot to finish.
+                  {t("linkReady.description")}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href={qrTargetUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonVariants({ size: "sm" })}
-                >
+                <a href={qrTargetUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "sm" })}>
                   <ExternalLink className="size-3.5" />
-                  Open Telegram
-                </Link>
+                  {t("actions.openTelegram")}
+                </a>
                 <Button
                   type="button"
                   size="sm"
@@ -379,12 +375,14 @@ export function TelegramLinkCard({
                   ) : (
                     <RefreshCw className="size-3.5" />
                   )}
-                  New link
+                  {t("actions.newLink")}
                 </Button>
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Expires {formatExpiry(pendingSession?.expiresAt ?? null)}.
+                {t("expires", {
+                  value: formatExpiry(pendingSession?.expiresAt ?? null, locale, t("unknownExpiry")),
+                })}
               </p>
             </div>
           </div>
@@ -396,12 +394,12 @@ export function TelegramLinkCard({
               </span>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-foreground">
-                  {isConnected ? "Telegram is linked" : "Connect your Telegram chat"}
+                  {isConnected ? t("linkedTitle") : t("connectTitle")}
                 </p>
                 <p className="max-w-lg text-sm text-muted-foreground">
                   {isConnected
-                    ? "Alerts will be delivered to your linked bot chat. You can relink if you want to use another chat."
-                    : "Generate a one-time Telegram link and QR code. After the code appears, open Telegram from the same secure link."}
+                    ? t("linkedDescription")
+                    : t("connectDescription")}
                 </p>
               </div>
             </div>
@@ -414,19 +412,14 @@ export function TelegramLinkCard({
                 disabled={isPending || allowsTelegram === false}
               >
                 {isCreatingLink ? <Loader2 className="size-3.5 animate-spin" /> : <Link2 className="size-3.5" />}
-                  {isConnected ? "Show relink QR" : "Show QR code"}
+                {isConnected ? t("actions.showRelinkQr") : t("actions.showQr")}
               </Button>
 
               {isConnected && botDeepLink ? (
-                <Link
-                  href={botDeepLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonVariants({ variant: "outline", size: "sm" })}
-                >
+                <a href={botDeepLink} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <ExternalLink className="size-3.5" />
-                  Open @{botUsername}
-                </Link>
+                  {t("actions.openBot", { username: botUsername })}
+                </a>
               ) : null}
             </div>
           </div>

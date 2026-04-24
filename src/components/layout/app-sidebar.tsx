@@ -3,13 +3,14 @@
 import { useState, type CSSProperties } from "react";
 import { LayoutDashboard, Settings2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import Logo from "@/assets/marketing/logo";
 import AuthControls from "@/components/layout/auth-controls";
+import LanguageSwitcher from "@/components/layout/language-switcher";
 import ThemeToggle from "@/components/theme/theme-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -26,18 +27,19 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   {
-    title: "Dashboard",
+    titleKey: "dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "Settings",
+    titleKey: "settings",
     href: "/settings",
     icon: Settings2,
   },
 ];
 
 const AppSidebar = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations("layout.sidebar");
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const shouldReduceMotion = useReducedMotion();
@@ -52,7 +54,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
     title: null,
   });
   const activeItemTitle =
-    navItems.find((item) => pathname === item.href)?.title ?? null;
+    navItems.find((item) => pathname === item.href)?.titleKey ?? null;
   const hoveredItemTitle =
     hoveredItemState.path === pathname ? hoveredItemState.title : null;
   const highlightedItemTitle = hoveredItemTitle ?? activeItemTitle;
@@ -91,7 +93,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             href="/dashboard"
             prefetch={false}
             className="flex h-10 w-full items-center justify-start overflow-hidden rounded-xl px-[11px] transition-colors hover:bg-sidebar-accent/60"
-            aria-label="Go to dashboard"
+            aria-label={t("goToDashboard")}
           >
             {sidebarOpen ? <SidebarLogo /> : <SidebarLogoIcon />}
           </Link>
@@ -112,15 +114,15 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                 const isActive = pathname === item.href;
                 return (
                   <SidebarMenuItem
-                    key={item.title}
+                    key={item.titleKey}
                     onMouseEnter={() =>
                       setHoveredItemState({
                         path: pathname,
-                        title: item.title,
+                        title: item.titleKey,
                       })
                     }
                   >
-                    {highlightedItemTitle === item.title ? (
+                    {highlightedItemTitle === item.titleKey ? (
                       <motion.span
                         layoutId={shouldReduceMotion ? undefined : "sidebar-nav-highlight"}
                         transition={
@@ -150,7 +152,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                           sidebarOpen ? "opacity-100" : "opacity-0"
                         )}
                       >
-                        {item.title}
+                        {t(`nav.${item.titleKey}`)}
                       </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -169,11 +171,10 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger className="-ml-1 h-8 w-8 shrink-0" />
               <div className="h-5 w-px bg-border" aria-hidden="true" />
-              <p className="truncate text-sm font-medium text-muted-foreground">
-                Dealvinci Workspace
-              </p>
+              <p className="truncate text-sm font-medium text-muted-foreground">{t("workspace")}</p>
             </div>
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <AuthControls />
             </div>

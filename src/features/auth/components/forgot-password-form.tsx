@@ -1,26 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Loader2, Mail } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
 
 import Logo from "@/assets/marketing/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { localizePathname } from "@/i18n/paths";
+import { Link } from "@/i18n/navigation";
 
-const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "Please enter your email address.")
-    .email("Please enter a valid email address."),
-});
-
-function mapApiError(error: unknown): string {
+function mapApiError(error: unknown, fallback: string): string {
   if (!error || typeof error !== "object") {
-    return "Unable to send reset email. Please try again.";
+    return fallback;
   }
 
   const value = error as { message?: unknown };
@@ -28,10 +22,21 @@ function mapApiError(error: unknown): string {
     return value.message;
   }
 
-  return "Unable to send reset email. Please try again.";
+  return fallback;
 }
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("auth.forgotPassword");
+  const fieldT = useTranslations("auth.validation");
+  const locale = useLocale();
+  const schema = z.object({
+    email: z
+      .string()
+      .trim()
+      .min(1, fieldT("enterEmail"))
+      .email(fieldT("validEmail")),
+  });
+
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +44,12 @@ export function ForgotPasswordForm() {
   const [touched, setTouched] = useState(false);
   const [hasSubmittedAttempt, setHasSubmittedAttempt] = useState(false);
 
-  const parsed = forgotPasswordSchema.safeParse({ email });
+  const parsed = schema.safeParse({ email });
   const emailError =
     hasSubmittedAttempt || touched
       ? parsed.success
         ? null
-        : parsed.error.issues[0]?.message ?? "Please enter a valid email address."
+        : parsed.error.issues[0]?.message ?? fieldT("validEmail")
       : null;
 
   const runRequest = async () => {
@@ -52,13 +57,14 @@ export function ForgotPasswordForm() {
     setError(null);
     setNotice(null);
 
-    const parsedEmail = forgotPasswordSchema.safeParse({ email });
+    const parsedEmail = schema.safeParse({ email });
     if (!parsedEmail.success) {
       return;
     }
 
     const normalizedEmail = parsedEmail.data.email;
-    const redirectTo = `${window.location.origin}/auth/reset-password`;
+    const redirectPath = localizePathname("/auth/reset-password", locale === "tr" ? "tr" : "en");
+    const redirectTo = `${window.location.origin}${redirectPath}`;
 
     try {
       const response = await fetch("/api/auth/request-password-reset", {
@@ -75,7 +81,7 @@ export function ForgotPasswordForm() {
 
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(mapApiError(payload));
+        setError(mapApiError(payload, t("error")));
         return;
       }
 
@@ -86,10 +92,10 @@ export function ForgotPasswordForm() {
 
       setNotice(
         message ||
-          "If that email exists, we sent a password reset link. Check your inbox (or server logs in local dev)."
+          t("success")
       );
     } catch {
-      setError("Unable to send reset email. Please try again.");
+      setError(t("error"));
     }
   };
 
@@ -109,10 +115,10 @@ export function ForgotPasswordForm() {
           </Link>
 
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Forgot password.
+            {t("title")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter your account email and we will send you a reset link.
+            {t("subtitle")}
           </p>
 
           <form
@@ -151,7 +157,7 @@ export function ForgotPasswordForm() {
             ) : null}
 
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -163,7 +169,7 @@ export function ForgotPasswordForm() {
                   setTouched(true);
                 }}
                 onBlur={() => setTouched(true)}
-                placeholder="you@example.com"
+                  placeholder={t("emailPlaceholder")}
                 disabled={isPending}
                 aria-invalid={Boolean(emailError)}
                 aria-describedby={emailError ? "email-error" : undefined}
@@ -187,19 +193,19 @@ export function ForgotPasswordForm() {
               ) : (
                 <>
                   <Mail className="size-4" />
-                  Send reset link
+                  {t("submit")}
                 </>
               )}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            Remembered your password?{" "}
+            {t("remembered")}{" "}
             <Link
               href="/auth/sign-in?next=/dashboard"
               className="font-semibold text-foreground underline underline-offset-4"
             >
-              Back to sign in
+              {t("backToSignIn")}
             </Link>
           </p>
         </section>
@@ -207,4 +213,3 @@ export function ForgotPasswordForm() {
     </div>
   );
 }
-

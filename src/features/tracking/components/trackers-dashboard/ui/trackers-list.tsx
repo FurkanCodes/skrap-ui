@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export function TrackersList({
   onClearFilters,
   onOpenModal,
 }: TrackersListProps) {
+  const t = useTranslations("tracking.dashboard.list");
   const shouldReduceMotion = useReducedMotion();
   const rowTransition = shouldReduceMotion
     ? { duration: 0 }
@@ -75,12 +77,12 @@ export function TrackersList({
             <div className="space-y-3">
               <p>
                 {hasAnyItems
-                  ? "No trackers match this search or filter."
-                  : "No trackers yet. Add your first tracker to start tracking price drops."}
+                  ? t("noFilteredItems")
+                  : t("noItems")}
               </p>
               {hasAnyItems && hasActiveFilters ? (
                 <Button type="button" size="sm" variant="outline" onClick={onClearFilters}>
-                  Clear filters
+                  {t("clearFilters")}
                 </Button>
               ) : null}
               {!hasAnyItems ? (
@@ -90,7 +92,7 @@ export function TrackersList({
                   onClick={onOpenModal}
                   disabled={!canCreateTracker}
                 >
-                  New Tracker
+                  {t("newTracker")}
                 </Button>
               ) : null}
             </div>

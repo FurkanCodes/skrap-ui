@@ -1,0 +1,472 @@
+{
+  "common": {
+    "loading": {
+      "pageMessage": "Loading page...",
+      "pageDetail": "Preparing your experience",
+      "workspaceMessage": "Loading workspace...",
+      "workspaceDetail": "Preparing trackers and alerts"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "save": "Save",
+      "cancel": "Cancel",
+      "back": "Back"
+    }
+  },
+  "errors": {
+    "requestFailed": "Request failed.",
+    "page": {
+      "title": "Something went wrong",
+      "description": "We could not render this page. Try again or refresh the browser.",
+      "retry": "Try again"
+    }
+  },
+  "layout": {
+    "sidebar": {
+      "workspace": "Dealvinci Workspace",
+      "goToDashboard": "Go to dashboard",
+      "nav": {
+        "dashboard": "Dashboard",
+        "settings": "Settings"
+      }
+    },
+    "language": {
+      "options": {
+        "en": "English",
+        "tr": "Turkish"
+      }
+    },
+    "auth": {
+      "signedIn": "Signed in",
+      "account": "Account",
+      "openMenu": "Open account menu",
+      "signOut": "Sign out",
+      "signIn": "Sign in",
+      "signUp": "Sign up",
+      "errors": {
+        "requestFailed": "Request failed. Please try again."
+      }
+    }
+  },
+  "auth": {
+    "meta": {
+      "signIn": {
+        "title": "Sign In | Dealvinci",
+        "description": "Sign in to manage tracked products and alerts."
+      },
+      "signUp": {
+        "title": "Sign Up | Dealvinci",
+        "description": "Create an account for tracker ownership and notifications."
+      },
+      "forgotPassword": {
+        "title": "Forgot Password | Dealvinci",
+        "description": "Request a password reset link for your Dealvinci account."
+      },
+      "resetPassword": {
+        "title": "Reset Password | Dealvinci",
+        "description": "Set a new password for your Dealvinci account."
+      }
+    },
+    "errors": {
+      "fallback": "Authentication failed. Please try again."
+    },
+    "validation": {
+      "enterEmail": "Please enter your email address.",
+      "validEmail": "Please enter a valid email address.",
+      "enterPassword": "Please enter your password.",
+      "fullName": "Please enter your full name.",
+      "confirmPassword": "Please confirm your password.",
+      "passwordsMismatch": "Passwords do not match."
+    },
+    "signIn": {
+      "title": "Sign in.",
+      "subtitle": "Access your dashboard, trackers, and Telegram alert settings.",
+      "rememberDevice": "Remember this device",
+      "forgotPassword": "Forgot password?",
+      "submit": "Login",
+      "sessionExpired": "Your session expired. Please sign in again."
+    },
+    "signUp": {
+      "title": "Create your account.",
+      "subtitle": "Create your account and verify your email to unlock dashboard access.",
+      "submit": "Create account",
+      "passwordHint": "Use 12+ characters with upper/lowercase letters, a number, and a symbol.",
+      "alreadyExistsNotice": "An account already exists for {email}. If it is not verified yet, we sent a fresh verification link.",
+      "verificationSentNotice": "Verification email sent to {email}. Please verify your email before signing in."
+    },
+    "social": {
+      "title": "Continue with",
+      "subtitle": "Use your preferred provider for faster access.",
+      "google": "Continue with Google",
+      "github": "Continue with GitHub"
+    },
+    "fields": {
+      "name": "Full name",
+      "namePlaceholder": "Jane Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm your password"
+    },
+    "links": {
+      "alreadyHaveAccount": "Already have an account?",
+      "dontHaveAccount": "Don't have an account?",
+      "createAccount": "Create an account",
+      "signIn": "Sign in"
+    },
+    "legal": {
+      "prefix": "By continuing, you agree to our",
+      "terms": "Terms of Service",
+      "and": "and",
+      "privacy": "Privacy Policy"
+    },
+    "forgotPassword": {
+      "title": "Forgot password.",
+      "subtitle": "Enter your account email and we will send you a reset link.",
+      "submit": "Send reset link",
+      "remembered": "Remembered your password?",
+      "backToSignIn": "Back to sign in",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "success": "If that email exists, we sent a password reset link. Check your inbox (or server logs in local dev).",
+      "error": "Unable to send reset email. Please try again."
+    },
+    "resetPassword": {
+      "title": "Reset password.",
+      "subtitle": "Set a new secure password for your account.",
+      "submit": "Reset password",
+      "success": "Password updated successfully.",
+      "successHint": "Password reset successfully.",
+      "signInCta": "Click here to sign in.",
+      "requestNewLink": "Need a new reset link?",
+      "requestAgain": "Request again",
+      "invalidToken": "This reset link is invalid or expired.",
+      "missingToken": "Missing reset token. Request a new reset email.",
+      "error": "Unable to reset password. Please try again.",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter your new password",
+      "confirmNewPassword": "Confirm new password",
+      "confirmNewPasswordPlaceholder": "Confirm your new password"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage integrations and notifications.",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose how the interface looks across the app.",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "active": "Active: {theme} ({mode} mode)",
+      "loading": "Loading theme preference..."
+    },
+    "adapters": {
+      "title": "Store Adapters",
+      "description": "Pulled from backend capabilities. Any URL can still use generic extraction.",
+      "empty": "No adapter metadata returned yet.",
+      "fallbackDescription": "Backend adapter available for this store."
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Configure global alert behavior.",
+      "dailySummary": "Daily price summary",
+      "dailySummaryDescription": "Receive a digest of all tracked prices at 9:00 AM.",
+      "muteWeekends": "Mute on weekends",
+      "muteWeekendsDescription": "Pause notifications on Saturday and Sunday.",
+      "minDrop": "Minimum drop to alert",
+      "minDropDescription": "Only notify when price drops at least this much."
+    },
+    "plan": {
+      "title": "Plan",
+      "subtitle": "{plan} plan · minimum interval {interval}",
+      "subtitleWithReset": "{plan} plan · minimum interval {interval} · credits reset {reset}",
+      "trackersUsed": "Trackers used",
+      "monthlyCredits": "Monthly credits"
+    },
+    "errors": {
+      "supportedSites": "Unable to load supported store adapters."
+    }
+  },
+  "telegram": {
+    "title": "Telegram alerts",
+    "connected": "Connected",
+    "notLinked": "Not linked",
+    "description": "Send deal alerts to your Telegram chat. Use the QR code on mobile or open the same secure link in Telegram.",
+    "entitlementMissing": "Current entitlement does not include Telegram channel.",
+    "waitingStart": "Waiting for Telegram start",
+    "unknownExpiry": "Unknown expiry",
+    "expires": "Expires {value}.",
+    "linkedTitle": "Telegram is linked",
+    "connectTitle": "Connect your Telegram chat",
+    "linkedDescription": "Alerts will be delivered to your linked bot chat. You can relink if you want to use another chat.",
+    "connectDescription": "Generate a one-time Telegram link and QR code. After the code appears, open Telegram from the same secure link.",
+    "unauthenticated": {
+      "description": "Sign in to link your Telegram bot chat and receive tracking notifications.",
+      "cta": "Sign in to link Telegram"
+    },
+    "linkReady": {
+      "title": "Connection link is ready",
+      "description": "Scan the QR code or open Telegram here. Both use the same one-time link."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "openTelegram": "Open Telegram",
+      "newLink": "New link",
+      "showRelinkQr": "Show relink QR",
+      "showQr": "Show QR code",
+      "openBot": "Open @{username}"
+    },
+    "flow": {
+      "qrReady": "QR code ready. Scan it or open Telegram below, then tap Start.",
+      "sessionExpired": "Connect session expired. Start a new link.",
+      "connected": "Telegram connected. Alerts now route to Telegram.",
+      "connectedAs": "Connected as @{username}. Alerts now route to Telegram."
+    },
+    "errors": {
+      "loadStatus": "Unable to load Telegram status.",
+      "fallback": "Request failed."
+    }
+  },
+  "tracking": {
+    "errors": {
+      "loadTrackers": "Unable to load trackers.",
+      "loadTrackedItems": "Unable to load tracked items."
+    },
+    "dashboard": {
+      "creditsExhausted": "Monthly credits exhausted. Scheduled checks resume at the next reset cycle.",
+      "header": {
+        "title": "Trackers",
+        "description": "Track price drops and receive Telegram alerts.",
+        "refresh": "Refresh",
+        "newTracker": "New Tracker"
+      },
+      "summary": {
+        "checksLeft": "Checks left this cycle",
+        "consumedSoFar": "{value} consumed so far",
+        "activeAlerts": "Active / alerts",
+        "trackersUsed": "Trackers used",
+        "estimatedSavings": "Estimated savings",
+        "planLabel": "{plan} plan",
+        "resets": " · resets {date}",
+        "moreCurrencies": "+{count} more"
+      },
+      "filters": {
+        "searchPlaceholder": "Search products...",
+        "statusLabel": "Status",
+        "statusAria": "Status filter",
+        "modeLabel": "Mode",
+        "modeAria": "Mode filter",
+        "status": {
+          "all": "All",
+          "active": "Active",
+          "paused": "Paused"
+        },
+        "mode": {
+          "all": "All",
+          "alert": "Price Alert",
+          "monitor": "Price Drop"
+        }
+      },
+      "telegram": {
+        "connectedChip": "Telegram connected",
+        "connectTitle": "Connect Telegram to receive alerts",
+        "connectDescription": "Without Telegram, price-drop, price-increase, and tracking status alerts cannot be delivered.",
+        "setup": "Set up"
+      },
+      "unauthenticated": {
+        "title": "Trackers",
+        "description": "Sign in to manage trackers and Telegram alerts.",
+        "cta": "Sign in to continue"
+      },
+      "list": {
+        "noFilteredItems": "No trackers match this search or filter.",
+        "noItems": "No trackers yet. Add your first tracker to start tracking price drops.",
+        "clearFilters": "Clear filters",
+        "newTracker": "New Tracker"
+      },
+      "row": {
+        "live": "Live",
+        "paused": "Paused",
+        "trackingLive": "Tracking live",
+        "trackingPaused": "Tracking paused",
+        "store": "Store",
+        "priceAlert": "Price Alert",
+        "priceDrop": "Price Drop",
+        "priceIncrease": "Price Increase",
+        "target": "Target: {value}",
+        "every": "every",
+        "checkedRecently": "Checked recently",
+        "checkedJustNow": "Checked just now",
+        "checkedMinutesAgo": "Checked {minutes}m ago",
+        "checkedHoursAgo": "Checked {hours}h ago",
+        "checkedDaysAgo": "Checked {days}d ago",
+        "atTarget": "At target",
+        "belowTarget": "{value} below target",
+        "belowTargetCompact": "Below target",
+        "aboveTarget": "{value} above target",
+        "aboveTargetCompact": "Above target"
+      },
+      "controller": {
+        "requestFailed": "Request failed.",
+        "trackerLimitReached": "Tracker limit reached ({maxTrackers}) for {plan} plan.",
+        "addValidProductUrl": "Add at least one valid product URL.",
+        "previewUrlFailed": "Could not preview this URL.",
+        "enterValidProductUrl": "Enter a valid product URL.",
+        "trackerNotFound": "Tracker not found.",
+        "targetPricePositive": "Target price must be a positive number.",
+        "selectValidTracker": "Select at least one valid tracker with complete settings.",
+        "createTrackerFailed": "Could not create this tracker."
+      },
+      "actions": {
+        "openProduct": "Go to product link",
+        "edit": "Edit tracker",
+        "pausing": "Pausing tracker",
+        "pausedSuccess": "Tracker paused successfully",
+        "pauseFailed": "Failed to pause tracker",
+        "pause": "Pause tracker",
+        "resuming": "Resuming tracker",
+        "resumedSuccess": "Tracker resumed successfully",
+        "resumeFailed": "Failed to resume tracker",
+        "resume": "Resume tracker",
+        "confirm": "OK",
+        "cancel": "Cancel",
+        "dismissError": "Dismiss action error"
+      },
+      "modePicker": {
+        "title": "Mode",
+        "ariaLabel": "Tracking mode",
+        "alert": {
+          "label": "Price Alert",
+          "description": "Sends one notification when price reaches your target."
+        },
+        "monitor": {
+          "label": "Price Drop",
+          "description": "Sends a notification only when price drops from the previous check."
+        }
+      },
+      "createModal": {
+        "titleStepOne": "Add Trackers",
+        "titleStepTwo": "Review & Configure",
+        "stepLabel": "Step {step} of 2 · {slots} slots available",
+        "close": "Close add tracker modal",
+        "productUrls": "Product URLs",
+        "productUrlsDescription": "Paste one or many links. Multi-url paste automatically fans out into rows.",
+        "urlPlaceholder": "https://amazon.com/dp/...",
+        "productUrlAria": "Product URL {index}",
+        "addUrlRow": "Add URL row",
+        "removeUrlRow": "Remove URL row",
+        "invalidUrl": "Enter a valid http/https URL.",
+        "reviewProducts": "Review Products",
+        "sharedDefaults": "Shared Defaults",
+        "mode": "Mode",
+        "checkEvery": "Check every",
+        "sharedDefaultsHint": "Applies to ready rows that were not manually overridden.",
+        "extraAlerts": "Extra alerts",
+        "notifyIncrease": "Notify when price increases",
+        "items": "Items",
+        "selected": "Selected {count}",
+        "untitledUrl": "Untitled URL",
+        "previewFailed": "Could not fetch this item.",
+        "slotLimitReached": "Slot limit reached. Deselect another ready row first.",
+        "selectItem": "Select an item to configure.",
+        "fixUrl": "Fix URL",
+        "fixUrlDescription": "Update this URL and retry preview. Failed rows are excluded from send.",
+        "retryPreview": "Retry Preview",
+        "targetPrice": "Target price",
+        "monitorBothDirectionsHint": "Price Drop mode ignores target price and notifies when prices move in either direction.",
+        "monitorHint": "Price Drop mode ignores target price and only notifies when price decreases.",
+        "alertHint": "Price Alert mode requires a positive target amount.",
+        "telegramNotConnected": "Telegram not connected",
+        "telegramNotConnectedDescription": "Price-drop, price-increase, and tracking status alerts will not be delivered until you link Telegram in Settings.",
+        "bulkPartial": "{success} tracker(s) created, {failure} failed. Fix the remaining rows and send again.",
+        "bulkSuccess": "{success} tracker(s) created successfully.",
+        "back": "Back",
+        "send": "Send"
+      },
+      "editModal": {
+        "title": "Edit Tracker",
+        "close": "Close edit tracker modal",
+        "targetPrice": "Target price",
+        "monitorBothDirectionsHint": "Price Drop mode ignores target price and notifies when prices move in either direction.",
+        "monitorHint": "Price Drop mode ignores target price and only notifies when price decreases.",
+        "alertHint": "We notify once the price drops to this amount or lower.",
+        "interval": "Interval",
+        "extraAlerts": "Extra alerts",
+        "notifyIncrease": "Notify when price increases",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
+    "itemsPanel": {
+      "title": "My tracked items",
+      "summary": "Total {total} • Active {active}",
+      "empty": "You do not have tracked items yet. Run a scrape and click Track item.",
+      "auth": {
+        "description": "Sign in to see your private tracked products and control alerts.",
+        "cta": "Sign in to manage tracking"
+      },
+      "errors": {
+        "requestFailed": "Request failed."
+      },
+      "status": {
+        "active": "Active",
+        "paused": "Paused"
+      },
+      "mode": {
+        "alert": "Price Alert",
+        "monitor": "Price Drop"
+      },
+      "chips": {
+        "priceIncrease": "Price Increase",
+        "every": "Every {value}"
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "openLink": "Go to link",
+        "pause": "Pause",
+        "resume": "Resume",
+        "delete": "Delete"
+      }
+    },
+    "trackResult": {
+      "title": "Tracking",
+      "primaryOffer": "Using primary offer for tracking.",
+      "primaryOfferWithSeller": "Using primary offer for tracking ({seller}).",
+      "startedWithId": "Tracking started ({itemId}). {detail}",
+      "started": "Tracking started. {detail}",
+      "mode": {
+        "ariaLabel": "Tracking mode",
+        "alert": "Price Alert",
+        "monitor": "Price Drop",
+        "monitorHint": "Price-drop mode (no target)"
+      },
+      "auth": {
+        "description": "Sign in to start tracking this product.",
+        "cta": "Go to sign in"
+      },
+      "fields": {
+        "targetAmount": "Target amount",
+        "targetAmountPlaceholder": "45000.00",
+        "mode": "Mode",
+        "interval": "Check interval (minutes, min {minInterval})",
+        "notifyIncrease": "Notify when price increases too"
+      },
+      "actions": {
+        "trackItem": "Track item"
+      },
+      "success": {
+        "alert": "We will notify you when price reaches your target.",
+        "alertWithIncrease": "We will notify you when price reaches your target and when it increases.",
+        "monitor": "We will notify you when price drops.",
+        "monitorWithIncrease": "We will notify you when price drops or increases."
+      },
+      "errors": {
+        "targetRequired": "Target amount is required for Price Alert mode.",
+        "createFailed": "Unable to create tracker. Please try again."
+      }
+    }
+  }
+}

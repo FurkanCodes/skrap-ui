@@ -1,0 +1,472 @@
+{
+  "common": {
+    "loading": {
+      "pageMessage": "Sayfa yukleniyor...",
+      "pageDetail": "Deneyiminiz hazirlaniyor",
+      "workspaceMessage": "Calisma alani yukleniyor...",
+      "workspaceDetail": "Takipler ve bildirimler hazirlaniyor"
+    },
+    "actions": {
+      "refresh": "Yenile",
+      "save": "Kaydet",
+      "cancel": "Iptal",
+      "back": "Geri"
+    }
+  },
+  "errors": {
+    "requestFailed": "Islem basarisiz oldu.",
+    "page": {
+      "title": "Bir seyler ters gitti",
+      "description": "Bu sayfayi goruntuleyemedik. Tekrar deneyin veya tarayiciyi yenileyin.",
+      "retry": "Tekrar dene"
+    }
+  },
+  "layout": {
+    "sidebar": {
+      "workspace": "Dealvinci Calisma Alani",
+      "goToDashboard": "Panele git",
+      "nav": {
+        "dashboard": "Panel",
+        "settings": "Ayarlar"
+      }
+    },
+    "language": {
+      "options": {
+        "en": "Ingilizce",
+        "tr": "Turkce"
+      }
+    },
+    "auth": {
+      "signedIn": "Giris yapildi",
+      "account": "Hesap",
+      "openMenu": "Hesap menusu",
+      "signOut": "Cikis yap",
+      "signIn": "Giris yap",
+      "signUp": "Kayit ol",
+      "errors": {
+        "requestFailed": "Islem basarisiz oldu. Lutfen tekrar deneyin."
+      }
+    }
+  },
+  "auth": {
+    "meta": {
+      "signIn": {
+        "title": "Giris Yap | Dealvinci",
+        "description": "Takip urunlerini ve bildirimleri yonetmek icin giris yapin."
+      },
+      "signUp": {
+        "title": "Kayit Ol | Dealvinci",
+        "description": "Takip sahipligi ve bildirimler icin bir hesap olusturun."
+      },
+      "forgotPassword": {
+        "title": "Sifreyi Unuttum | Dealvinci",
+        "description": "Dealvinci hesabi icin sifre sifirlama baglantisi isteyin."
+      },
+      "resetPassword": {
+        "title": "Sifreyi Sifirla | Dealvinci",
+        "description": "Dealvinci hesabi icin yeni bir sifre belirleyin."
+      }
+    },
+    "errors": {
+      "fallback": "Kimlik dogrulama basarisiz oldu. Lutfen tekrar deneyin."
+    },
+    "validation": {
+      "enterEmail": "Lutfen e-posta adresinizi girin.",
+      "validEmail": "Lutfen gecerli bir e-posta adresi girin.",
+      "enterPassword": "Lutfen sifrenizi girin.",
+      "fullName": "Lutfen ad soyad girin.",
+      "confirmPassword": "Lutfen sifrenizi dogrulayin.",
+      "passwordsMismatch": "Sifreler eslesmiyor."
+    },
+    "signIn": {
+      "title": "Giris yapin.",
+      "subtitle": "Panelinize, takiplerinize ve Telegram bildirim ayarlariniza erisin.",
+      "rememberDevice": "Bu cihazi hatirla",
+      "forgotPassword": "Sifrenizi mi unuttunuz?",
+      "submit": "Giris yap",
+      "sessionExpired": "Oturumunuz sona erdi. Lutfen tekrar giris yapin."
+    },
+    "signUp": {
+      "title": "Hesabinizi olusturun.",
+      "subtitle": "Panel erisimini acmak icin hesabinizi olusturun ve e-postanizi dogrulayin.",
+      "submit": "Hesap olustur",
+      "passwordHint": "En az 12 karakter, buyuk/kucuk harf, sayi ve sembol kullanin.",
+      "alreadyExistsNotice": "{email} icin zaten bir hesap var. Henuz dogrulanmadiysa yeni bir dogrulama baglantisi gonderdik.",
+      "verificationSentNotice": "{email} adresine dogrulama e-postasi gonderildi. Giris yapmadan once e-postanizi dogrulayin."
+    },
+    "social": {
+      "title": "Sununla devam et",
+      "subtitle": "Daha hizli erisim icin tercih ettiginiz saglayiciyi kullanin.",
+      "google": "Google ile devam et",
+      "github": "GitHub ile devam et"
+    },
+    "fields": {
+      "name": "Ad soyad",
+      "namePlaceholder": "Ayse Yilmaz",
+      "email": "E-posta",
+      "emailPlaceholder": "you@example.com",
+      "password": "Sifre",
+      "passwordPlaceholder": "Sifrenizi girin",
+      "confirmPassword": "Sifreyi dogrula",
+      "confirmPasswordPlaceholder": "Sifrenizi tekrar girin"
+    },
+    "links": {
+      "alreadyHaveAccount": "Zaten bir hesabin var mi?",
+      "dontHaveAccount": "Hesabin yok mu?",
+      "createAccount": "Hesap olustur",
+      "signIn": "Giris yap"
+    },
+    "legal": {
+      "prefix": "Devam ederek",
+      "terms": "Hizmet Sartlarini",
+      "and": "ve",
+      "privacy": "Gizlilik Politikasini"
+    },
+    "forgotPassword": {
+      "title": "Sifreyi unuttum.",
+      "subtitle": "Hesap e-postanizi girin, size sifre sifirlama baglantisi gonderelim.",
+      "submit": "Sifirlama baglantisi gonder",
+      "remembered": "Sifrenizi hatirladiniz mi?",
+      "backToSignIn": "Giris sayfasina don",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "you@example.com",
+      "success": "Bu e-posta varsa sifre sifirlama baglantisi gonderdik. Gelen kutunuzu (veya gelistirme loglarini) kontrol edin.",
+      "error": "Sifirlama e-postasi gonderilemedi. Lutfen tekrar deneyin."
+    },
+    "resetPassword": {
+      "title": "Sifreyi sifirla.",
+      "subtitle": "Hesabiniz icin yeni ve guvenli bir sifre belirleyin.",
+      "submit": "Sifreyi sifirla",
+      "success": "Sifre basariyla guncellendi.",
+      "successHint": "Sifre basariyla sifirlandi.",
+      "signInCta": "Giris yapmak icin tiklayin.",
+      "requestNewLink": "Yeni bir sifirlama baglantisina mi ihtiyaciniz var?",
+      "requestAgain": "Tekrar iste",
+      "invalidToken": "Bu sifirlama baglantisi gecersiz veya suresi dolmus.",
+      "missingToken": "Sifirlama tokeni eksik. Yeni bir sifirlama e-postasi isteyin.",
+      "error": "Sifre sifirlanamadi. Lutfen tekrar deneyin.",
+      "newPassword": "Yeni sifre",
+      "newPasswordPlaceholder": "Yeni sifrenizi girin",
+      "confirmNewPassword": "Yeni sifreyi dogrula",
+      "confirmNewPasswordPlaceholder": "Yeni sifrenizi tekrar girin"
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "subtitle": "Entegrasyonlari ve bildirimleri yonetin.",
+    "appearance": {
+      "title": "Gorunum",
+      "description": "Arayuzun uygulama genelinde nasil gorunecegini secin.",
+      "light": "Acik",
+      "dark": "Koyu",
+      "system": "Sistem",
+      "active": "Aktif: {theme} ({mode} modu)",
+      "loading": "Tema tercihi yukleniyor..."
+    },
+    "adapters": {
+      "title": "Magaza Adaptorlari",
+      "description": "Arka uc ozelliklerinden cekilir. Her URL yine de genel cikarma kullanabilir.",
+      "empty": "Henuz adaptor metaverisi donmedi.",
+      "fallbackDescription": "Bu magaza icin arka uc adaptoru mevcut."
+    },
+    "notifications": {
+      "title": "Bildirim Tercihleri",
+      "description": "Genel bildirim davranisini ayarlayin.",
+      "dailySummary": "Gunluk fiyat ozeti",
+      "dailySummaryDescription": "Takip edilen tum fiyatlarin ozetini her gun 09:00'da alin.",
+      "muteWeekends": "Hafta sonu sessize al",
+      "muteWeekendsDescription": "Cumartesi ve Pazar gunleri bildirimleri duraklat.",
+      "minDrop": "Bildirim icin minimum dusus",
+      "minDropDescription": "Yalnizca fiyat en az bu kadar dustugunde bildirim gonder."
+    },
+    "plan": {
+      "title": "Plan",
+      "subtitle": "{plan} plani · minimum aralik {interval}",
+      "subtitleWithReset": "{plan} plani · minimum aralik {interval} · kredi sifirlama {reset}",
+      "trackersUsed": "Kullanilan takipci",
+      "monthlyCredits": "Aylik kredi"
+    },
+    "errors": {
+      "supportedSites": "Desteklenen magazalar yuklenemedi."
+    }
+  },
+  "telegram": {
+    "title": "Telegram bildirimleri",
+    "connected": "Bagli",
+    "notLinked": "Bagli degil",
+    "description": "Firsat bildirimlerini Telegram sohbetinize gonderin. Mobilde QR kodu kullanin veya ayni guvenli baglantiyi Telegram'da acin.",
+    "entitlementMissing": "Mevcut haklar Telegram kanalini icermiyor.",
+    "waitingStart": "Telegram baslatmasi bekleniyor",
+    "unknownExpiry": "Bilinmeyen son kullanma",
+    "expires": "Sona erme: {value}.",
+    "linkedTitle": "Telegram baglandi",
+    "connectTitle": "Telegram sohbetinizi baglayin",
+    "linkedDescription": "Bildirimler bagli bot sohbetinize gonderilecek. Farkli bir sohbet icin yeniden baglayabilirsiniz.",
+    "connectDescription": "Tek kullanimlik Telegram baglantisi ve QR kodu olusturun. Kod olustuktan sonra ayni guvenli baglanti ile Telegram'i acin.",
+    "unauthenticated": {
+      "description": "Telegram bot sohbetinizi baglamak ve takip bildirimleri almak icin giris yapin.",
+      "cta": "Telegram baglamak icin giris yap"
+    },
+    "linkReady": {
+      "title": "Baglanti hazir",
+      "description": "QR kodu tarayin veya Telegram'i buradan acin. Ikisi de ayni tek kullanimlik baglantiyi kullanir."
+    },
+    "actions": {
+      "refresh": "Yenile",
+      "openTelegram": "Telegram'i ac",
+      "newLink": "Yeni baglanti",
+      "showRelinkQr": "Yeniden baglama QR goster",
+      "showQr": "QR kod goster",
+      "openBot": "@{username} ac"
+    },
+    "flow": {
+      "qrReady": "QR kod hazir. Tara veya Telegram'i asagidan ac, sonra botta Start'a dokun.",
+      "sessionExpired": "Baglanti oturumu suresi doldu. Yeni baglanti baslatin.",
+      "connected": "Telegram baglandi. Bildirimler artik Telegram'a gider.",
+      "connectedAs": "@{username} olarak baglandi. Bildirimler artik Telegram'a gider."
+    },
+    "errors": {
+      "loadStatus": "Telegram durumu yuklenemedi.",
+      "fallback": "Islem basarisiz oldu."
+    }
+  },
+  "tracking": {
+    "errors": {
+      "loadTrackers": "Takipler yuklenemedi.",
+      "loadTrackedItems": "Takip edilen urunler yuklenemedi."
+    },
+    "dashboard": {
+      "creditsExhausted": "Aylik krediler tukendi. Planli kontroller bir sonraki sifirlama doneminde devam eder.",
+      "header": {
+        "title": "Takipciler",
+        "description": "Fiyat dususlerini takip edin ve Telegram bildirimi alin.",
+        "refresh": "Yenile",
+        "newTracker": "Yeni Takipci"
+      },
+      "summary": {
+        "checksLeft": "Bu donemde kalan kontrol",
+        "consumedSoFar": "Simdiye kadar tuketilen: {value}",
+        "activeAlerts": "Aktif / uyari",
+        "trackersUsed": "Kullanilan takipci",
+        "estimatedSavings": "Tahmini tasarruf",
+        "planLabel": "{plan} plani",
+        "resets": " · sifirlama {date}",
+        "moreCurrencies": "+{count} daha"
+      },
+      "filters": {
+        "searchPlaceholder": "Urun ara...",
+        "statusLabel": "Durum",
+        "statusAria": "Durum filtresi",
+        "modeLabel": "Mod",
+        "modeAria": "Mod filtresi",
+        "status": {
+          "all": "Tum",
+          "active": "Aktif",
+          "paused": "Duraklatildi"
+        },
+        "mode": {
+          "all": "Tum",
+          "alert": "Fiyat Uyarisi",
+          "monitor": "Fiyat Dususu"
+        }
+      },
+      "telegram": {
+        "connectedChip": "Telegram bagli",
+        "connectTitle": "Bildirim almak icin Telegram baglayin",
+        "connectDescription": "Telegram bagli degilse fiyat dususu, fiyat artisi ve takip durumu bildirimleri gonderilemez.",
+        "setup": "Kurulum"
+      },
+      "unauthenticated": {
+        "title": "Takipciler",
+        "description": "Takipcileri ve Telegram bildirimlerini yonetmek icin giris yapin.",
+        "cta": "Devam etmek icin giris yap"
+      },
+      "list": {
+        "noFilteredItems": "Bu arama veya filtreyle eslesen takipci yok.",
+        "noItems": "Henuz takipci yok. Fiyat dususlerini izlemek icin ilk takipcinizi ekleyin.",
+        "clearFilters": "Filtreleri temizle",
+        "newTracker": "Yeni Takipci"
+      },
+      "row": {
+        "live": "Canli",
+        "paused": "Duraklatildi",
+        "trackingLive": "Takip aktif",
+        "trackingPaused": "Takip duraklatildi",
+        "store": "Magaza",
+        "priceAlert": "Fiyat Uyarisi",
+        "priceDrop": "Fiyat Dususu",
+        "priceIncrease": "Fiyat Artisi",
+        "target": "Hedef: {value}",
+        "every": "her",
+        "checkedRecently": "Az once kontrol edildi",
+        "checkedJustNow": "Simdi kontrol edildi",
+        "checkedMinutesAgo": "{minutes} dk once kontrol edildi",
+        "checkedHoursAgo": "{hours} sa once kontrol edildi",
+        "checkedDaysAgo": "{days} gun once kontrol edildi",
+        "atTarget": "Hedefte",
+        "belowTarget": "{value} hedefin altinda",
+        "belowTargetCompact": "Hedefin altinda",
+        "aboveTarget": "{value} hedefin ustunde",
+        "aboveTargetCompact": "Hedefin ustunde"
+      },
+      "controller": {
+        "requestFailed": "Islem basarisiz oldu.",
+        "trackerLimitReached": "{plan} plani icin takipci limiti doldu ({maxTrackers}).",
+        "addValidProductUrl": "En az bir gecerli urun URL'si ekleyin.",
+        "previewUrlFailed": "Bu URL icin onizleme alinamadi.",
+        "enterValidProductUrl": "Gecerli bir urun URL'si girin.",
+        "trackerNotFound": "Takipci bulunamadi.",
+        "targetPricePositive": "Hedef fiyat pozitif bir sayi olmali.",
+        "selectValidTracker": "Tum ayarlari tamamlanmis en az bir gecerli takipci secin.",
+        "createTrackerFailed": "Bu takipci olusturulamadi."
+      },
+      "actions": {
+        "openProduct": "Urun baglantisini ac",
+        "edit": "Takipciyi duzenle",
+        "pausing": "Takipci duraklatiliyor",
+        "pausedSuccess": "Takipci basariyla duraklatildi",
+        "pauseFailed": "Takipci duraklatilamadi",
+        "pause": "Duraklat",
+        "resuming": "Takipci surduruluyor",
+        "resumedSuccess": "Takipci basariyla surduruldu",
+        "resumeFailed": "Takipci surdurulemedi",
+        "resume": "Surdur",
+        "confirm": "Tamam",
+        "cancel": "Iptal",
+        "dismissError": "Hata mesajini kapat"
+      },
+      "modePicker": {
+        "title": "Mod",
+        "ariaLabel": "Takip modu",
+        "alert": {
+          "label": "Fiyat Uyarisi",
+          "description": "Fiyat hedefinize geldiginde tek bir bildirim gonderir."
+        },
+        "monitor": {
+          "label": "Fiyat Dususu",
+          "description": "Yalnizca fiyat onceki kontrole gore dustugunde bildirim gonderir."
+        }
+      },
+      "createModal": {
+        "titleStepOne": "Takipci Ekle",
+        "titleStepTwo": "Incele ve Yapilandir",
+        "stepLabel": "Adim {step}/2 · {slots} bos yuva",
+        "close": "Takipci ekleme modalini kapat",
+        "productUrls": "Urun URL'leri",
+        "productUrlsDescription": "Bir veya birden fazla baglanti yapistirin. Coklu yapistirma satirlara otomatik dagitilir.",
+        "urlPlaceholder": "https://amazon.com/dp/...",
+        "productUrlAria": "Urun URL {index}",
+        "addUrlRow": "URL satiri ekle",
+        "removeUrlRow": "URL satirini kaldir",
+        "invalidUrl": "Gecerli bir http/https URL girin.",
+        "reviewProducts": "Urunleri Incele",
+        "sharedDefaults": "Ortak Varsayilanlar",
+        "mode": "Mod",
+        "checkEvery": "Kontrol araligi",
+        "sharedDefaultsHint": "Elle degistirilmeyen hazir satirlara uygulanir.",
+        "extraAlerts": "Ek bildirimler",
+        "notifyIncrease": "Fiyat arttiginda bildir",
+        "items": "Ogeler",
+        "selected": "Secili {count}",
+        "untitledUrl": "Basliksiz URL",
+        "previewFailed": "Bu oge getirilemedi.",
+        "slotLimitReached": "Yuva sinirina ulasildi. Once baska bir hazir ogeyi secimden cikar.",
+        "selectItem": "Yapilandirmak icin bir oge secin.",
+        "fixUrl": "URL duzelt",
+        "fixUrlDescription": "Bu URL'yi guncelleyip onizlemeyi tekrar deneyin. Basarisiz satirlar gonderime dahil edilmez.",
+        "retryPreview": "Onizlemeyi Tekrar Dene",
+        "targetPrice": "Hedef fiyat",
+        "monitorBothDirectionsHint": "Fiyat Dususu modu hedef fiyati yok sayar ve fiyat her iki yone hareket ettiginde bildirim gonderir.",
+        "monitorHint": "Fiyat Dususu modu hedef fiyati yok sayar ve sadece fiyat dustugunde bildirim gonderir.",
+        "alertHint": "Fiyat Uyarisi modu pozitif hedef fiyat gerektirir.",
+        "telegramNotConnected": "Telegram bagli degil",
+        "telegramNotConnectedDescription": "Fiyat dususu, fiyat artisi ve takip durumu bildirimleri Ayarlar'dan Telegram baglanana kadar gonderilmez.",
+        "bulkPartial": "{success} takipci olusturuldu, {failure} basarisiz. Kalan satirlari duzeltip tekrar gonderin.",
+        "bulkSuccess": "{success} takipci basariyla olusturuldu.",
+        "back": "Geri",
+        "send": "Gonder"
+      },
+      "editModal": {
+        "title": "Takipciyi Duzenle",
+        "close": "Takipci duzenleme modalini kapat",
+        "targetPrice": "Hedef fiyat",
+        "monitorBothDirectionsHint": "Fiyat Dususu modu hedef fiyati yok sayar ve fiyat her iki yone hareket ettiginde bildirim gonderir.",
+        "monitorHint": "Fiyat Dususu modu hedef fiyati yok sayar ve sadece fiyat dustugunde bildirim gonderir.",
+        "alertHint": "Fiyat bu seviyeye veya altina indiginde bildirim gondeririz.",
+        "interval": "Aralik",
+        "extraAlerts": "Ek bildirimler",
+        "notifyIncrease": "Fiyat arttiginda bildir",
+        "cancel": "Iptal",
+        "save": "Kaydet"
+      }
+    },
+    "itemsPanel": {
+      "title": "Takip Ettiklerim",
+      "summary": "Toplam {total} • Aktif {active}",
+      "empty": "Henuz takip edilen urununuz yok. Bir scrape calistirin ve Takibe al'a basin.",
+      "auth": {
+        "description": "Ozel takip ettiginiz urunleri gormek ve bildirimleri yonetmek icin giris yapin.",
+        "cta": "Takip yonetimi icin giris yap"
+      },
+      "errors": {
+        "requestFailed": "Islem basarisiz oldu."
+      },
+      "status": {
+        "active": "Aktif",
+        "paused": "Duraklatildi"
+      },
+      "mode": {
+        "alert": "Fiyat Uyarisi",
+        "monitor": "Fiyat Dususu"
+      },
+      "chips": {
+        "priceIncrease": "Fiyat Artisi",
+        "every": "{value} arayla"
+      },
+      "actions": {
+        "refresh": "Yenile",
+        "openLink": "Baglantiyi ac",
+        "pause": "Duraklat",
+        "resume": "Surdur",
+        "delete": "Sil"
+      }
+    },
+    "trackResult": {
+      "title": "Takip",
+      "primaryOffer": "Takip icin ana teklif kullaniliyor.",
+      "primaryOfferWithSeller": "Takip icin ana teklif kullaniliyor ({seller}).",
+      "startedWithId": "Takip baslatildi ({itemId}). {detail}",
+      "started": "Takip baslatildi. {detail}",
+      "mode": {
+        "ariaLabel": "Takip modu",
+        "alert": "Fiyat Uyarisi",
+        "monitor": "Fiyat Dususu",
+        "monitorHint": "Fiyat dususu modu (hedef yok)"
+      },
+      "auth": {
+        "description": "Bu urunu takip etmeye baslamak icin giris yapin.",
+        "cta": "Giris sayfasina git"
+      },
+      "fields": {
+        "targetAmount": "Hedef fiyat",
+        "targetAmountPlaceholder": "45000.00",
+        "mode": "Mod",
+        "interval": "Kontrol araligi (dakika, min {minInterval})",
+        "notifyIncrease": "Fiyat artarsa da bildir"
+      },
+      "actions": {
+        "trackItem": "Takibe al"
+      },
+      "success": {
+        "alert": "Fiyat hedefinize geldiginde size bildirim gonderecegiz.",
+        "alertWithIncrease": "Fiyat hedefinize geldiginde ve fiyat artarsa size bildirim gonderecegiz.",
+        "monitor": "Fiyat dustugunde size bildirim gonderecegiz.",
+        "monitorWithIncrease": "Fiyat dustugunde veya arttiginda size bildirim gonderecegiz."
+      },
+      "errors": {
+        "targetRequired": "Fiyat Uyarisi modunda hedef fiyat zorunludur.",
+        "createFailed": "Takipci olusturulamadi. Lutfen tekrar deneyin."
+      }
+    }
+  }
+}

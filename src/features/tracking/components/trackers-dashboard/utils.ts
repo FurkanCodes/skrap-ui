@@ -9,7 +9,7 @@ import { formatCurrencyAmount } from "@/lib/currency";
 
 const OPTIMISTIC_ITEM_ID_PREFIX = "optimistic-";
 
-export function mapError(error: unknown): string {
+export function mapError(error: unknown, fallback = "Request failed."): string {
   if (typeof error === "string" && error.trim()) {
     return error;
   }
@@ -19,32 +19,39 @@ export function mapError(error: unknown): string {
       return maybe.message;
     }
   }
-  return "Request failed.";
+  return fallback;
 }
 
 export function normalizeBotUsername(value: string | null | undefined): string {
   return (value ?? "").trim().replace(/^@/, "");
 }
 
-export function formatInterval(value: number): string {
+export function formatInterval(
+  value: number,
+  options?: {
+    everyPrefix?: string;
+  }
+): string {
+  const everyPrefix = options?.everyPrefix ?? "every";
+
   if (value === TEST_INTERVAL_15_SECONDS_VALUE) {
-    return "every 15s";
+    return `${everyPrefix} 15s`;
   }
 
   if (value < 60) {
-    return `every ${value}m`;
+    return `${everyPrefix} ${value}m`;
   }
 
   const hours = value / 60;
   if (Number.isInteger(hours) && hours >= 1) {
-    return `every ${hours}h`;
+    return `${everyPrefix} ${hours}h`;
   }
 
   const days = value / 1440;
   if (Number.isInteger(days)) {
-    return `every ${days}d`;
+    return `${everyPrefix} ${days}d`;
   }
-  return `every ${value}m`;
+  return `${everyPrefix} ${value}m`;
 }
 
 export function parseNumberish(value: string | null): number | null {
@@ -100,24 +107,40 @@ export function getIntervalValidationError(
   return getTrackIntervalValidationError(parsed, minInterval);
 }
 
-export function formatPrice(value: string | null, currency: string | null): string {
+export function formatPrice(
+  value: string | null,
+  currency: string | null,
+  locale?: string | string[]
+): string {
   if (!value) {
     return "Price unavailable";
   }
-  return formatCurrencyAmount(value, currency, { fallback: "Price unavailable" });
+  return formatCurrencyAmount(value, currency, {
+    fallback: "Price unavailable",
+    locale,
+  });
 }
 
-export function formatTargetAmount(value: string | null, currency: string | null): string | null {
+export function formatTargetAmount(
+  value: string | null,
+  currency: string | null,
+  locale?: string | string[]
+): string | null {
   if (!value) {
     return null;
   }
-  return formatCurrencyAmount(value, currency, { fallback: value });
+  return formatCurrencyAmount(value, currency, { fallback: value, locale });
 }
 
-function formatDeltaAmount(value: number, currency: string | null): string {
+function formatDeltaAmount(
+  value: number,
+  currency: string | null,
+  locale?: string | string[]
+): string {
   return formatCurrencyAmount(value, currency, {
     fallback: "0",
     maximumFractionDigits: 2,
+    locale,
   });
 }
 
@@ -129,57 +152,92 @@ export function getDomainLabel(url: string): string {
   }
 }
 
-export function getRelativeCheckedLabel(updatedAt: string): string {
+export function getRelativeCheckedLabel(
+  updatedAt: string,
+  options?: {
+    checkedRecently?: string;
+    checkedJustNow?: string;
+    checkedMinutesAgo?: (minutes: number) => string;
+    checkedHoursAgo?: (hours: number) => string;
+    checkedDaysAgo?: (days: number) => string;
+  }
+): string {
+  const checkedRecently = options?.checkedRecently ?? "Checked recently";
+  const checkedJustNow = options?.checkedJustNow ?? "Checked just now";
+  const checkedMinutesAgo =
+    options?.checkedMinutesAgo ?? ((minutes: number) => `Checked ${minutes}m ago`);
+  const checkedHoursAgo = options?.checkedHoursAgo ?? ((hours: number) => `Checked ${hours}h ago`);
+  const checkedDaysAgo = options?.checkedDaysAgo ?? ((days: number) => `Checked ${days}d ago`);
   const timestamp = Date.parse(updatedAt);
   if (!Number.isFinite(timestamp)) {
-    return "Checked recently";
+    return checkedRecently;
   }
 
   const diffMs = Date.now() - timestamp;
   if (diffMs < 60_000) {
-    return "Checked just now";
+    return checkedJustNow;
   }
   if (diffMs < 3_600_000) {
     const minutes = Math.max(1, Math.floor(diffMs / 60_000));
-    return `Checked ${minutes}m ago`;
+    return checkedMinutesAgo(minutes);
   }
   if (diffMs < 86_400_000) {
     const hours = Math.max(1, Math.floor(diffMs / 3_600_000));
-    return `Checked ${hours}h ago`;
+    return checkedHoursAgo(hours);
   }
   const days = Math.max(1, Math.floor(diffMs / 86_400_000));
-  return `Checked ${days}d ago`;
+  return checkedDaysAgo(days);
 }
 
 export function getProgress(
-  item: TrackedItemSummary
+  item: TrackedItemSummary,
+  options?: {
+    locale?: string | string[];
+    intervalLabel?: (value: string) => string;
+    atTarget?: string;
+    belowTarget?: (value: string) => string;
+    belowTargetCompact?: string;
+    aboveTarget?: (value: string) => string;
+    aboveTargetCompact?: string;
+  }
 ): { percent: number | null; label: string; compactLabel: string } {
   const current = parseNumberish(item.last_amount);
   const target = parseNumberish(item.target_amount);
 
   if (current === null || target === null || target <= 0) {
+    const interval = formatInterval(item.check_interval_minutes);
+    const intervalLabel = options?.intervalLabel?.(interval) ?? interval;
     return {
       percent: null,
-      label: formatInterval(item.check_interval_minutes),
-      compactLabel: formatInterval(item.check_interval_minutes),
+      label: intervalLabel,
+      compactLabel: intervalLabel,
     };
   }
 
   if (current <= target) {
     const gap = target - current;
+    const delta = formatDeltaAmount(gap, item.currency, options?.locale);
+    const atTargetLabel = options?.atTarget ?? "At target";
+    const belowTargetLabel =
+      options?.belowTarget?.(delta) ?? `${delta} below target`;
+    const belowTargetCompact = options?.belowTargetCompact ?? "Below target";
     return {
       percent: 100,
-      label: gap < 0.01 ? "At target" : `${formatDeltaAmount(gap, item.currency)} below target`,
-      compactLabel: gap < 0.01 ? "At target" : "Below target",
+      label: gap < 0.01 ? atTargetLabel : belowTargetLabel,
+      compactLabel: gap < 0.01 ? atTargetLabel : belowTargetCompact,
     };
   }
 
   const gap = current - target;
+  const delta = formatDeltaAmount(gap, item.currency, options?.locale);
+  const aboveTargetLabel =
+    options?.aboveTarget?.(delta) ?? `${delta} above target`;
+  const aboveTargetCompact = options?.aboveTargetCompact ?? "Above target";
   const percent = Math.max(4, Math.min(100, (target / current) * 100));
   return {
     percent,
-    label: `${formatDeltaAmount(gap, item.currency)} above target`,
-    compactLabel: "Above target",
+    label: aboveTargetLabel,
+    compactLabel: aboveTargetCompact,
   };
 }
 

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -18,27 +17,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { clearViewerCache } from "@/features/tracking/viewer/viewer-cache";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 
-function mapAuthError(error: unknown): string {
-  if (typeof error === "string" && error.trim()) {
-    return error;
-  }
-  if (error && typeof error === "object") {
-    const maybe = error as { message?: unknown };
-    if (typeof maybe.message === "string" && maybe.message.trim()) {
-      return maybe.message;
-    }
-  }
-  return "Request failed. Please try again.";
-}
-
 export default function AuthControls() {
+  const t = useTranslations("layout.auth");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const { isAuthenticated, sessionPending, sessionUser } = useViewer();
-  const identityLabel = sessionUser?.email ?? sessionUser?.name ?? "Signed in";
+  const identityLabel = sessionUser?.email ?? sessionUser?.name ?? t("signedIn");
   const avatarLabel = identityLabel.trim().slice(0, 1).toUpperCase() || "U";
 
   const signOut = () => {
@@ -48,13 +36,21 @@ export default function AuthControls() {
         clearViewerCache();
         const response = await authClient.signOut();
         if (response.error) {
-          setStatusMessage(mapAuthError(response.error.message));
+          setStatusMessage(
+            typeof response.error.message === "string" && response.error.message.trim()
+              ? response.error.message
+              : t("errors.requestFailed")
+          );
           return;
         }
         router.push("/auth/sign-in");
         router.refresh();
       } catch (error) {
-        setStatusMessage(mapAuthError(error));
+        setStatusMessage(
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : t("errors.requestFailed")
+        );
       }
     });
   };
@@ -67,7 +63,7 @@ export default function AuthControls() {
             <DropdownMenuTrigger
               className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50"
               disabled={isPending || sessionPending}
-              aria-label="Open account menu"
+              aria-label={t("openMenu")}
             >
               <Avatar size="sm">
                 <AvatarFallback>{avatarLabel}</AvatarFallback>
@@ -90,7 +86,7 @@ export default function AuthControls() {
                     </Avatar>
                     <div className="min-w-0">
                       <p className="truncate text-sm text-foreground">{identityLabel}</p>
-                      <p className="text-xs text-muted-foreground">Account</p>
+                      <p className="text-xs text-muted-foreground">{t("account")}</p>
                     </div>
                   </div>
                 </DropdownMenuLabel>
@@ -104,7 +100,7 @@ export default function AuthControls() {
                   variant="destructive"
                 >
                   <LogOut className="size-4" />
-                  Sign out
+                  {t("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
@@ -117,11 +113,11 @@ export default function AuthControls() {
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             <LogIn className="size-3.5" />
-            Sign in
+            {t("signIn")}
           </Link>
           <Link href="/auth/sign-up" className={buttonVariants({ size: "sm" })}>
             <UserPlus className="size-3.5" />
-            Sign up
+            {t("signUp")}
           </Link>
         </>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { extractUrls } from "@/features/scraper/utils";
 import {
@@ -46,6 +46,7 @@ import {
   resumeTrackedItemAction,
 } from "@/features/tracking/server/actions";
 import type { TrackedItemSummary } from "@/features/tracking/types";
+import { useRouter } from "@/i18n/navigation";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 
 interface UseTrackersDashboardControllerParams {
@@ -89,6 +90,7 @@ export function useTrackersDashboardController({
   telegramBotUsername,
 }: UseTrackersDashboardControllerParams) {
   const router = useRouter();
+  const t = useTranslations("tracking.dashboard.controller");
   const { me } = useViewer();
 
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
@@ -520,7 +522,10 @@ export function useTrackersDashboardController({
   const openModal = useCallback(() => {
     if (trackersLimitReached) {
       setPageError(
-        `Tracker limit reached (${maxTrackers}) for ${(me?.entitlement.plan_key ?? "current").toUpperCase()} plan.`
+        t("trackerLimitReached", {
+          maxTrackers,
+          plan: (me?.entitlement.plan_key ?? "current").toUpperCase(),
+        })
       );
       return;
     }
@@ -528,7 +533,7 @@ export function useTrackersDashboardController({
     setPageError(null);
     resetModal();
     setIsModalOpen(true);
-  }, [maxTrackers, me?.entitlement.plan_key, resetModal, trackersLimitReached]);
+  }, [maxTrackers, me?.entitlement.plan_key, resetModal, t, trackersLimitReached]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -615,7 +620,7 @@ export function useTrackersDashboardController({
   const reviewUrlRows = useCallback(() => {
     const normalizedUrls = dedupeNormalizedUrls(urlRows.map((row) => row.value));
     if (normalizedUrls.length === 0) {
-      setModalError("Add at least one valid product URL.");
+      setModalError(t("addValidProductUrl"));
       return;
     }
 
@@ -649,7 +654,7 @@ export function useTrackersDashboardController({
             previewStatus: isReady ? "ready" : "failed",
             selected: shouldSelect,
             overLimit: false,
-            previewError: isReady ? null : (result.error ?? "Could not preview this URL."),
+            previewError: isReady ? null : (result.error ?? t("previewUrlFailed")),
             submitError: null,
             productName: isReady ? (result.product_name ?? result.url) : null,
             imageUrl: result.image_url,
@@ -671,7 +676,7 @@ export function useTrackersDashboardController({
         setActiveDraftId(getInitialBulkDraftId(syncedDrafts));
         setModalStep(2);
       } catch (error) {
-        setModalError(mapError(error));
+        setModalError(mapError(error, t("requestFailed")));
       }
     });
   }, [
@@ -680,6 +685,7 @@ export function useTrackersDashboardController({
     sharedNotifyOnPriceIncrease,
     sharedTrackingMode,
     startPreviewTransition,
+    t,
     urlRows,
   ]);
 
@@ -880,7 +886,7 @@ export function useTrackersDashboardController({
               ? {
                   ...entry,
                   previewStatus: "failed" as const,
-                  previewError: "Enter a valid product URL.",
+                  previewError: t("enterValidProductUrl"),
                 }
               : entry
           )
@@ -912,7 +918,7 @@ export function useTrackersDashboardController({
                   previewStatus: "failed" as const,
                   selected: false,
                   overLimit: false,
-                  previewError: result.error ?? "Could not preview this URL.",
+                  previewError: result.error ?? t("previewUrlFailed"),
                   submitError: null,
                   productName: null,
                   imageUrl: result.image_url,
@@ -944,11 +950,11 @@ export function useTrackersDashboardController({
           });
           setActiveDraftId(clientId);
         } catch (error) {
-          setModalError(mapError(error));
+          setModalError(mapError(error, t("requestFailed")));
         }
       });
     },
-    [drafts, remainingSlots, startPreviewTransition]
+    [drafts, remainingSlots, startPreviewTransition, t]
   );
 
   useEffect(() => {
@@ -1019,7 +1025,7 @@ export function useTrackersDashboardController({
               setResumeFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
-            setTimedRowActionError(itemId, mapError(error));
+            setTimedRowActionError(itemId, mapError(error, t("requestFailed")));
             const elapsed = Date.now() - resumeActionStartedAt;
             if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
               await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -1059,7 +1065,7 @@ export function useTrackersDashboardController({
               setPauseFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
-            setTimedRowActionError(itemId, mapError(error));
+            setTimedRowActionError(itemId, mapError(error, t("requestFailed")));
             const elapsed = Date.now() - pauseActionStartedAt;
             if (elapsed < ACTION_LOADING_MIN_DURATION_MS) {
               await sleep(ACTION_LOADING_MIN_DURATION_MS - elapsed);
@@ -1096,7 +1102,7 @@ export function useTrackersDashboardController({
           }, DELETE_ROW_EXIT_DURATION_MS);
           deleteExitTimersRef.current.set(itemId, exitTimer);
         } catch (error) {
-          setTimedRowActionError(itemId, mapError(error));
+          setTimedRowActionError(itemId, mapError(error, t("requestFailed")));
           setDeleteExiting(itemId, false);
           setItemActionPending(itemId, false);
           setDeletePending(itemId, false);
@@ -1119,6 +1125,7 @@ export function useTrackersDashboardController({
       setResumeFeedbackState,
       setTimedRowActionError,
       startActionTransition,
+      t,
     ]
   );
 
@@ -1158,7 +1165,7 @@ export function useTrackersDashboardController({
     (itemId: string) => {
       const item = items.find((entry) => entry.item_id === itemId);
       if (!item) {
-        setPageError("Tracker not found.");
+        setPageError(t("trackerNotFound"));
         return;
       }
 
@@ -1173,7 +1180,7 @@ export function useTrackersDashboardController({
       setEditNotifyOnPriceIncrease(Boolean(item.notify_on_price_increase));
       setIsEditModalOpen(true);
     },
-    [items, setRowActionError]
+    [items, setRowActionError, t]
   );
 
   const saveEditedTracker = useCallback(() => {
@@ -1183,7 +1190,7 @@ export function useTrackersDashboardController({
 
     const currentItem = items.find((item) => item.item_id === editingItemId);
     if (!currentItem) {
-      setEditModalError("Tracker not found.");
+      setEditModalError(t("trackerNotFound"));
       return;
     }
 
@@ -1199,7 +1206,7 @@ export function useTrackersDashboardController({
         ? normalizePositiveTargetAmount(editTargetAmount)
         : null;
     if (editTrackingMode === "alert" && normalizedTargetAmount === null) {
-      setEditModalError("Target price must be a positive number.");
+      setEditModalError(t("targetPricePositive"));
       return;
     }
 
@@ -1226,7 +1233,7 @@ export function useTrackersDashboardController({
         });
         closeEditModal();
       } catch (error) {
-        setEditModalError(mapError(error));
+        setEditModalError(mapError(error, t("requestFailed")));
       } finally {
         setIsEditSavePending(false);
         setItemActionPending(itemId, false);
@@ -1243,11 +1250,12 @@ export function useTrackersDashboardController({
     items,
     minInterval,
     setItemActionPending,
+    t,
   ]);
 
   const saveTracker = useCallback(() => {
     if (!canSaveDrafts) {
-      setModalError("Select at least one valid tracker with complete settings.");
+      setModalError(t("selectValidTracker"));
       return;
     }
 
@@ -1316,7 +1324,7 @@ export function useTrackersDashboardController({
           failedDraftIds.add(draft.clientId);
           failureMessageByDraftId.set(
             draft.clientId,
-            result.error ?? "Could not create this tracker."
+            result.error ?? t("createTrackerFailed")
           );
         }
 
@@ -1341,7 +1349,7 @@ export function useTrackersDashboardController({
                 selected: draft.previewStatus === "ready",
                 overLimit: false,
                 submitError:
-                  failureMessageByDraftId.get(draft.clientId) ?? "Could not create this tracker.",
+                  failureMessageByDraftId.get(draft.clientId) ?? t("createTrackerFailed"),
               };
             });
           return syncBulkDraftSelectionLimits(nextDrafts, updatedRemainingSlots);
@@ -1358,12 +1366,12 @@ export function useTrackersDashboardController({
 
         setModalStep(2);
       } catch (error) {
-        setModalError(mapError(error));
+        setModalError(mapError(error, t("requestFailed")));
       } finally {
         setIsSavePending(false);
       }
     })();
-  }, [canSaveDrafts, closeModal, remainingSlots, selectedReadyDrafts]);
+  }, [canSaveDrafts, closeModal, remainingSlots, selectedReadyDrafts, t]);
 
   return {
     botUsername,

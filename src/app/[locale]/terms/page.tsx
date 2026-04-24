@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+
+import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Dealvinci",
