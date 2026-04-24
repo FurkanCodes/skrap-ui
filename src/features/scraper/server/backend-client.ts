@@ -80,6 +80,41 @@ function getErrorMessage(payload: unknown): string {
   return "Request failed.";
 }
 
+function getJwtDiagnostics(token: string): Record<string, unknown> | null {
+  const [, payload] = token.split(".");
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+      aud?: unknown;
+      exp?: unknown;
+      iat?: unknown;
+      iss?: unknown;
+      sub?: unknown;
+    };
+
+    return {
+      aud: claims.aud,
+      exp: claims.exp,
+      iat: claims.iat,
+      iss: claims.iss,
+      sub: typeof claims.sub === "string" ? claims.sub.slice(0, 8) : claims.sub,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function logBackendAuthFailure(path: string, token: string): void {
+  console.warn("[backend-auth] Backend rejected bearer token", {
+    path,
+    backendBaseUrl: getBackendBaseUrl(),
+    jwt: getJwtDiagnostics(token),
+  });
+}
+
 export async function postBackendJson<TResponse, TRequest>(
   path: string,
   payload: TRequest,
@@ -106,6 +141,10 @@ export async function postBackendJson<TResponse, TRequest>(
   const parsed = parseJson(responseText);
 
   if (!response.ok) {
+    if (response.status === 401 && options.auth) {
+      logBackendAuthFailure(path, headers.Authorization.replace(/^Bearer\s+/i, ""));
+    }
+
     throw new BackendApiError(
       getErrorMessage(parsed),
       response.status,
@@ -146,6 +185,10 @@ export async function patchBackendJson<TResponse, TRequest>(
   const parsed = parseJson(responseText);
 
   if (!response.ok) {
+    if (response.status === 401 && options.auth) {
+      logBackendAuthFailure(path, headers.Authorization.replace(/^Bearer\s+/i, ""));
+    }
+
     throw new BackendApiError(
       getErrorMessage(parsed),
       response.status,
@@ -198,6 +241,10 @@ export async function getBackendJson<TResponse>(
   const parsed = parseJson(responseText);
 
   if (!response.ok) {
+    if (response.status === 401 && options.auth) {
+      logBackendAuthFailure(path, headers.Authorization.replace(/^Bearer\s+/i, ""));
+    }
+
     throw new BackendApiError(
       getErrorMessage(parsed),
       response.status,
@@ -233,6 +280,10 @@ export async function deleteBackend(path: string, options: BackendCallOptions = 
   const responseText = await response.text();
   const parsed = parseJson(responseText);
   if (!response.ok) {
+    if (response.status === 401 && options.auth) {
+      logBackendAuthFailure(path, headers.Authorization.replace(/^Bearer\s+/i, ""));
+    }
+
     throw new BackendApiError(
       getErrorMessage(parsed),
       response.status,
