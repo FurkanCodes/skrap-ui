@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Link2, Loader2, RefreshCw } from "lucide-react";
+import { CheckCircle2, ExternalLink, Link2, Loader2, MessageCircle, RefreshCw } from "lucide-react";
 import QRCode from "qrcode";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -87,6 +87,7 @@ export function TelegramLinkCard({
   const [flowMessage, setFlowMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"connect" | "refresh" | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const allowedChannels = me?.entitlement.allowed_channels ?? "";
@@ -107,13 +108,15 @@ export function TelegramLinkCard({
   const qrCodeDataUrl =
     qrTargetUrl && qrCode?.target === qrTargetUrl && qrCode.dataUrl ? qrCode.dataUrl : null;
   const isConnected = Boolean(status?.connected);
-  const isRefreshing = isPending && !pendingSession;
+  const isRefreshing = isPending && pendingAction === "refresh";
+  const isCreatingLink = isPending && pendingAction === "connect";
   const displayError = actionError ?? baseError;
 
   const startConnect = () => {
     setFlowMessage(null);
     setActionError(null);
     setBaseError(null);
+    setPendingAction("connect");
 
     startTransition(async () => {
       try {
@@ -126,7 +129,7 @@ export function TelegramLinkCard({
         };
 
         setPendingSession(nextSession);
-        setFlowMessage("Connect link ready. Open bot and tap Start.");
+        setFlowMessage("Link ready. Scan the QR code or open Telegram, then tap Start.");
 
         const popup = window.open(response.deep_link_url, "_blank", "noopener,noreferrer");
         if (!popup) {
@@ -134,6 +137,8 @@ export function TelegramLinkCard({
         }
       } catch (error) {
         setActionError(mapError(error));
+      } finally {
+        setPendingAction(null);
       }
     });
   };
@@ -142,6 +147,7 @@ export function TelegramLinkCard({
     setFlowMessage(null);
     setActionError(null);
     setBaseError(null);
+    setPendingAction("refresh");
 
     startTransition(async () => {
       try {
@@ -152,6 +158,8 @@ export function TelegramLinkCard({
         }
       } catch (error) {
         setActionError(mapError(error));
+      } finally {
+        setPendingAction(null);
       }
     });
   };
@@ -279,15 +287,28 @@ export function TelegramLinkCard({
   }
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-start justify-between gap-4">
+    <Card className="rounded-2xl bg-card/95">
+      <CardHeader className="gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
         <div className="space-y-1">
-          <CardTitle>Telegram alerts</CardTitle>
-          <CardDescription>
-            Link your Telegram chat. Scheduler delivers alert notifications to linked bot chat.
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle>Telegram alerts</CardTitle>
+            <Chip tone={isConnected ? "success" : "muted"}>
+              {isConnected ? "Connected" : "Not linked"}
+            </Chip>
+          </div>
+          <CardDescription className="max-w-2xl">
+            Send deal alerts to your Telegram chat. Use the QR code on mobile or open the same
+            secure link in Telegram.
           </CardDescription>
         </div>
-        <Button type="button" size="sm" variant="outline" onClick={refreshStatus} disabled={isPending}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={refreshStatus}
+          disabled={isPending}
+          className="justify-self-start sm:justify-self-end"
+        >
           {isRefreshing ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (
@@ -297,23 +318,20 @@ export function TelegramLinkCard({
         </Button>
       </CardHeader>
 
-      <CardContent className="grid gap-3">
+      <CardContent className="grid gap-4">
         {displayError ? (
-          <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+          <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
             {displayError}
           </p>
         ) : null}
 
         {allowsTelegram === false ? (
-          <p className="rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          <p className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
             Current entitlement does not include Telegram channel.
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip tone={isConnected ? "success" : "muted"}>
-            {isConnected ? "Connected" : "Not linked"}
-          </Chip>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
           {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
           {isPolling ? (
@@ -324,21 +342,9 @@ export function TelegramLinkCard({
           ) : null}
         </div>
 
-        {pendingSession ? (
-          <p className="text-xs text-muted-foreground">
-            Connect session expires at {formatExpiry(pendingSession.expiresAt)}.
-          </p>
-        ) : null}
-
-        {!pendingSession ? (
-          <p className="text-xs text-muted-foreground">
-            Click <strong>Link Telegram</strong> to generate one-time QR code with connect state.
-          </p>
-        ) : null}
-
         {qrTargetUrl ? (
-          <div className="grid gap-2 rounded-md border bg-muted/10 p-3 md:grid-cols-[auto_1fr] md:items-center">
-            <div className="grid place-items-center rounded-md border bg-background p-2">
+          <div className="grid gap-5 rounded-2xl bg-muted/20 p-4 md:grid-cols-[auto_1fr] md:items-center">
+            <div className="grid place-items-center rounded-2xl bg-background p-3 shadow-sm ring-1 ring-foreground/10">
               {qrCodeDataUrl ? (
                 <Image
                   src={qrCodeDataUrl}
@@ -353,46 +359,92 @@ export function TelegramLinkCard({
                 </div>
               )}
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Scan QR on mobile</p>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">Connection link is ready</p>
+                <p className="max-w-md text-sm text-muted-foreground">
+                  Scan the QR code or open Telegram here. Both use the same one-time link. Tap
+                  <span className="font-medium text-foreground"> Start</span> in the bot to finish.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={qrTargetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  <ExternalLink className="size-3.5" />
+                  Open Telegram
+                </Link>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={startConnect}
+                  disabled={isPending || allowsTelegram === false}
+                >
+                  {isCreatingLink ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  New link
+                </Button>
+              </div>
+
               <p className="text-xs text-muted-foreground">
-                Opens Telegram bot chat directly. Then tap Start to finish link.
+                Expires {formatExpiry(pendingSession?.expiresAt ?? null)}.
               </p>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="grid gap-4 rounded-2xl bg-muted/20 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background text-foreground shadow-sm ring-1 ring-foreground/10">
+                {isConnected ? <CheckCircle2 className="size-5" /> : <MessageCircle className="size-5" />}
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {isConnected ? "Telegram is linked" : "Connect your Telegram chat"}
+                </p>
+                <p className="max-w-lg text-sm text-muted-foreground">
+                  {isConnected
+                    ? "Alerts will be delivered to your linked bot chat. You can relink if you want to use another chat."
+                    : "Generate a one-time Telegram link. We will show a QR code and open Telegram from the same link."}
+                </p>
+              </div>
+            </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" onClick={startConnect} disabled={isPending || allowsTelegram === false}>
-            {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Link2 className="size-3.5" />}
-            {isConnected ? "Relink Telegram" : "Link Telegram"}
-          </Button>
+            <div className="flex flex-wrap gap-2 sm:justify-end">
+              <Button
+                type="button"
+                size="sm"
+                onClick={startConnect}
+                disabled={isPending || allowsTelegram === false}
+              >
+                {isCreatingLink ? <Loader2 className="size-3.5 animate-spin" /> : <Link2 className="size-3.5" />}
+                {isConnected ? "Relink Telegram" : "Link Telegram"}
+              </Button>
 
-          {pendingSession?.deepLinkUrl ? (
-            <Link
-              href={pendingSession.deepLinkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              <ExternalLink className="size-3.5" />
-              Open connect link
-            </Link>
-          ) : botDeepLink ? (
-            <Link
-              href={botDeepLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              <ExternalLink className="size-3.5" />
-              Open @{botUsername}
-            </Link>
-          ) : null}
-        </div>
+              {botDeepLink ? (
+                <Link
+                  href={botDeepLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  <ExternalLink className="size-3.5" />
+                  Open @{botUsername}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         {flowMessage ? (
-          <p className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          <p className="rounded-xl bg-muted/20 px-3 py-2 text-xs text-muted-foreground ring-1 ring-foreground/10">
             {flowMessage}
           </p>
         ) : null}
