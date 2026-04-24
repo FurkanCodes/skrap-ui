@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Copy, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
+import { ChevronDown, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -40,23 +40,6 @@ export default function AuthControls() {
   const { isAuthenticated, sessionPending, sessionUser } = useViewer();
   const identityLabel = sessionUser?.email ?? sessionUser?.name ?? "Signed in";
   const avatarLabel = identityLabel.trim().slice(0, 1).toUpperCase() || "U";
-
-  const copyJwt = () => {
-    setStatusMessage(null);
-    startTransition(async () => {
-      try {
-        const response = await authClient.token();
-        if (response.error || !response.data?.token) {
-          setStatusMessage(mapAuthError(response.error?.message));
-          return;
-        }
-        await navigator.clipboard.writeText(response.data.token);
-        setStatusMessage("JWT copied. Paste it into FastAPI Swagger Authorize.");
-      } catch (error) {
-        setStatusMessage(mapAuthError(error));
-      }
-    });
-  };
 
   const signOut = () => {
     setStatusMessage(null);
@@ -114,14 +97,6 @@ export default function AuthControls() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup className="space-y-1 px-1 py-1">
-                <DropdownMenuItem
-                  className="min-h-9 px-2 py-1.5"
-                  onClick={copyJwt}
-                  disabled={isPending || sessionPending}
-                >
-                  <Copy className="size-4" />
-                  Developer token
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   className="min-h-9 px-2 py-1.5"
                   onClick={signOut}
