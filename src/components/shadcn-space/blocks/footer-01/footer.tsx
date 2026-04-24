@@ -80,6 +80,19 @@ const footerSections: FooterData[] = [
       },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      {
+        title: "Terms of Service",
+        href: "/terms",
+      },
+      {
+        title: "Privacy Policy",
+        href: "/privacy",
+      },
+    ],
+  },
 ];
 
 const Footer = () => {
@@ -125,8 +138,6 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="col-span-1 lg:block hidden"></div>
-
             {footerSections.map(({ title, links }, index) => (
               <div key={index} className="col-span-2">
                 <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
@@ -149,7 +160,7 @@ const Footer = () => {
               </div>
             ))}
 
-            <div className="col-span-3">
+            <div className="col-span-2">
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
                 <p className="text-base font-medium text-foreground">
                   Contact
