@@ -82,7 +82,8 @@ export const jwks = pgTable("auth_jwks", {
 });
 
 export const rateLimit = pgTable("auth_rate_limits", {
-  key: text("key").primaryKey(),
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
