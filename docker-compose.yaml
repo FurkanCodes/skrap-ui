@@ -1,8 +1,7 @@
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/furkancodes/skrap-ui:main
+    pull_policy: always
     env_file:
       - .env
     environment:
