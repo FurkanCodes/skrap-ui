@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("auth_users", {
   id: text("id").primaryKey(),
@@ -81,6 +81,12 @@ export const jwks = pgTable("auth_jwks", {
   expiresAt: timestamp("expires_at"),
 });
 
+export const rateLimit = pgTable("auth_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
@@ -106,6 +112,7 @@ export const schema = {
   account,
   verification,
   jwks,
+  rateLimit,
   userRelations,
   sessionRelations,
   accountRelations,

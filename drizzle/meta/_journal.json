@@ -15,6 +15,13 @@
       "when": 1776550000000,
       "tag": "0001_auth_table_renames",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777051200000,
+      "tag": "0002_auth_rate_limits",
+      "breakpoints": true
     }
   ]
 }
