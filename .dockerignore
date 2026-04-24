@@ -1,0 +1,14 @@
+.git
+.github
+.next
+.pnpm-store
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+.env
+.env.*
+.DS_Store
+*.tsbuildinfo
+README.md
+list.txt
