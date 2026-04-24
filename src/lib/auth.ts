@@ -82,10 +82,10 @@ function resolveTrustedOrigins(baseUrl: string): string[] {
 
 type RateLimitStorage = "memory" | "database" | "secondary-storage";
 
-function resolveRateLimitStorage(): RateLimitStorage | undefined {
+function resolveRateLimitStorage(): RateLimitStorage {
   const value = process.env.BETTER_AUTH_RATE_LIMIT_STORAGE?.trim();
   if (!value) {
-    return undefined;
+    return "memory";
   }
 
   if (value === "memory" || value === "database" || value === "secondary-storage") {
@@ -95,7 +95,7 @@ function resolveRateLimitStorage(): RateLimitStorage | undefined {
   console.warn(
     `[auth-config] Invalid BETTER_AUTH_RATE_LIMIT_STORAGE: ${value}. Expected memory|database|secondary-storage.`
   );
-  return undefined;
+  return "memory";
 }
 
 function isHttpsUrl(url: string): boolean {
@@ -336,7 +336,7 @@ function buildAuth() {
       enabled: true,
       window: 10,
       max: 100,
-      ...(rateLimitStorage ? { storage: rateLimitStorage } : {}),
+      storage: rateLimitStorage,
       customRules: {
         "/sign-in/email": {
           window: 60,
