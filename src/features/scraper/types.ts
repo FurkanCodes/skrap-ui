@@ -51,6 +51,26 @@ export interface DiscoverResponse extends ScrapesResponse {
   discovery_stats: DiscoveryStats;
 }
 
+export type ScrapeJobStatus = "queued" | "running" | "succeeded" | "failed" | "expired";
+
+export interface ScrapeJobCreateResponse {
+  job_id: string;
+  request_id: string;
+  status: ScrapeJobStatus;
+}
+
+export interface ScrapeJobStatusResponse {
+  job_id: string;
+  request_id: string;
+  kind: EndpointMode;
+  status: ScrapeJobStatus;
+  progress: number;
+  result: ScrapesResponse | DiscoverResponse | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SiteInfoResponse {
   key: string;
   description: string;

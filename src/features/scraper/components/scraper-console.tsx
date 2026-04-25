@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 
 import { cn } from "@/lib/utils";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
@@ -18,8 +18,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_FORM_VALUES, FETCH_MODES, INITIAL_SCRAPER_STATE } from "@/features/scraper/constants";
 import { ScraperResults } from "@/features/scraper/components/scraper-results";
 import { SubmitButton } from "@/features/scraper/components/submit-button";
-import { runScraperAction } from "@/features/scraper/server/actions";
-import type { EndpointMode, FetchMode } from "@/features/scraper/types";
+import type {
+  DiscoverRequest,
+  EndpointMode,
+  FetchMode,
+  ScrapeJobCreateResponse,
+  ScrapeJobStatus,
+  ScrapeJobStatusResponse,
+  ScraperActionState,
+  ScraperFormValues,
+  ScrapesRequest,
+} from "@/features/scraper/types";
 import { extractUrls } from "@/features/scraper/utils";
 
 const JOB_TYPES: Array<{
@@ -50,14 +59,21 @@ function endpointLabel(endpointMode: EndpointMode): string {
   return endpointMode === "discover" ? "Discover" : "Scrape";
 }
 
-function PendingRunStatus({ mode }: { mode: EndpointMode }) {
-  const { pending } = useFormStatus();
-
-  if (!pending) {
+function PendingRunStatus({
+  mode,
+  jobId,
+  status,
+}: {
+  mode: EndpointMode;
+  jobId: string | null;
+  status: "idle" | "submitting" | ScrapeJobStatus;
+}) {
+  if (status === "idle" || status === "succeeded" || status === "failed" || status === "expired") {
     return null;
   }
 
   const label = endpointLabel(mode);
+  const statusLabel = status === "submitting" ? "Starting" : status;
 
   return (
     <div
@@ -65,13 +81,102 @@ function PendingRunStatus({ mode }: { mode: EndpointMode }) {
       aria-live="polite"
       className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-foreground"
     >
-      Running {label.toLowerCase()} job. This can take a few seconds depending on URL depth.
+      {statusLabel} {label.toLowerCase()} job{jobId ? ` (${jobId})` : ""}.
     </div>
   );
 }
 
+function parseBoundedInteger(
+  value: string,
+  options: { min: number; max: number }
+): number | null {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+  if (parsed < options.min || parsed > options.max) {
+    return null;
+  }
+  return parsed;
+}
+
+function extractErrorMessage(payload: unknown, fallback: string): string {
+  if (payload && typeof payload === "object" && "detail" in payload) {
+    const detail = (payload as { detail?: unknown }).detail;
+    if (typeof detail === "string" && detail.trim()) {
+      return detail;
+    }
+  }
+  return fallback;
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function buildScrapesPayload(
+  urls: string[],
+  sites: string[],
+  timeoutSeconds: number | undefined,
+  fetchMode: FetchMode
+): ScrapesRequest {
+  const payload: ScrapesRequest = {
+    urls,
+    fetch_mode: fetchMode,
+  };
+  if (sites.length > 0) {
+    payload.sites = sites;
+  }
+  if (timeoutSeconds !== undefined) {
+    payload.timeout_seconds = timeoutSeconds;
+  }
+  return payload;
+}
+
+function buildDiscoverPayload(
+  urls: string[],
+  sites: string[],
+  timeoutSeconds: number | undefined,
+  fetchMode: FetchMode,
+  maxPages: string,
+  maxDepth: string
+): DiscoverRequest {
+  const parsedMaxPages = parseBoundedInteger(maxPages, { min: 1, max: 300 });
+  const parsedMaxDepth = parseBoundedInteger(maxDepth, { min: 0, max: 5 });
+  if (parsedMaxPages === null) {
+    throw new Error("Max pages must be an integer between 1 and 300.");
+  }
+  if (parsedMaxDepth === null) {
+    throw new Error("Max depth must be an integer between 0 and 5.");
+  }
+  const payload: DiscoverRequest = {
+    start_urls: urls,
+    fetch_mode: fetchMode,
+    max_pages: parsedMaxPages,
+    max_depth: parsedMaxDepth,
+  };
+  if (sites.length > 0) {
+    payload.sites = sites;
+  }
+  if (timeoutSeconds !== undefined) {
+    payload.timeout_seconds = timeoutSeconds;
+  }
+  return payload;
+}
+
 export function ScraperConsole() {
-  const [state, formAction] = useActionState(runScraperAction, INITIAL_SCRAPER_STATE);
+  const [state, setState] = useState<ScraperActionState>(INITIAL_SCRAPER_STATE);
+  const [jobStatus, setJobStatus] = useState<"idle" | "submitting" | ScrapeJobStatus>("idle");
+  const [jobId, setJobId] = useState<string | null>(null);
+  const runIdRef = useRef(0);
 
   const [endpointMode, setEndpointMode] = useState<EndpointMode>(DEFAULT_FORM_VALUES.endpointMode);
   const [urls, setUrls] = useState(DEFAULT_FORM_VALUES.urls);
@@ -84,6 +189,96 @@ export function ScraperConsole() {
   const parsedUrlCount = useMemo(() => extractUrls(urls).length, [urls]);
   const currentJobLabel = endpointLabel(endpointMode);
   const isUrlError = state.error?.toLowerCase().includes("url") ?? false;
+  const isPending = jobStatus !== "idle" && jobStatus !== "succeeded" && jobStatus !== "failed" && jobStatus !== "expired";
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form: ScraperFormValues = {
+      endpointMode,
+      urls,
+      sites,
+      timeoutSeconds,
+      fetchMode,
+      maxPages,
+      maxDepth,
+    };
+    const requestUrls = extractUrls(urls);
+    if (requestUrls.length === 0) {
+      setState({ form, response: null, error: "Add at least one URL." });
+      return;
+    }
+
+    const timeoutValue = timeoutSeconds.trim();
+    const parsedTimeout = timeoutValue
+      ? parseBoundedInteger(timeoutValue, { min: 1, max: 120 })
+      : undefined;
+    if (parsedTimeout === null) {
+      setState({ form, response: null, error: "Timeout must be an integer between 1 and 120 seconds." });
+      return;
+    }
+
+    const siteFilters = sites
+      .split(/\s+/)
+      .map((site) => site.trim().toLowerCase())
+      .filter(Boolean);
+    const runId = runIdRef.current + 1;
+    runIdRef.current = runId;
+    setState({ form, response: null, error: null });
+    setJobStatus("submitting");
+    setJobId(null);
+
+    try {
+      const payload =
+        endpointMode === "discover"
+          ? buildDiscoverPayload(requestUrls, siteFilters, parsedTimeout, fetchMode, maxPages, maxDepth)
+          : buildScrapesPayload(requestUrls, siteFilters, parsedTimeout, fetchMode);
+      const createResponse = await fetch("/api/scraper/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpointMode, payload }),
+      });
+      const createPayload = await readJson(createResponse);
+      if (!createResponse.ok) {
+        throw new Error(extractErrorMessage(createPayload, "Could not start scrape job."));
+      }
+      const createdJob = createPayload as ScrapeJobCreateResponse;
+      setJobId(createdJob.job_id);
+      setJobStatus(createdJob.status);
+
+      while (runIdRef.current === runId) {
+        await wait(2000);
+        const pollResponse = await fetch(`/api/scraper/jobs/${encodeURIComponent(createdJob.job_id)}`, {
+          cache: "no-store",
+        });
+        const pollPayload = await readJson(pollResponse);
+        if (!pollResponse.ok) {
+          throw new Error(extractErrorMessage(pollPayload, "Could not load scrape job."));
+        }
+        const job = pollPayload as ScrapeJobStatusResponse;
+        setJobStatus(job.status);
+
+        if (job.status === "succeeded" && job.result) {
+          setState({ form, response: job.result, error: null });
+          return;
+        }
+        if (job.status === "failed" || job.status === "expired") {
+          setState({ form, response: null, error: job.error ?? `Scrape job ${job.status}.` });
+          return;
+        }
+      }
+    } catch (error) {
+      if (runIdRef.current !== runId) {
+        return;
+      }
+      setJobStatus("failed");
+      setState({
+        form,
+        response: null,
+        error: error instanceof Error ? error.message : "Unexpected error while contacting backend.",
+      });
+    }
+  }
 
   return (
     <>
@@ -95,7 +290,7 @@ export function ScraperConsole() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-6" action={formAction} noValidate>
+          <form className="grid gap-6" onSubmit={handleSubmit} noValidate>
             <input type="hidden" name="endpointMode" value={endpointMode} />
             <input type="hidden" name="fetchMode" value={fetchMode} />
 
@@ -135,7 +330,7 @@ export function ScraperConsole() {
               </div>
             ) : null}
 
-            <PendingRunStatus mode={endpointMode} />
+            <PendingRunStatus mode={endpointMode} jobId={jobId} status={jobStatus} />
 
             <div className="grid gap-2">
               <Label htmlFor="urls">Product URLs</Label>
@@ -258,6 +453,7 @@ export function ScraperConsole() {
               <SubmitButton
                 idleLabel={`Run ${currentJobLabel}`}
                 pendingLabel={`Running ${currentJobLabel}...`}
+                pending={isPending}
               />
             </div>
           </form>
