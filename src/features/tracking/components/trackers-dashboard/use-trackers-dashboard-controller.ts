@@ -181,7 +181,27 @@ export function useTrackersDashboardController({
     Number(me?.usage?.remaining_check_units ?? monthlyCredits - consumedCredits) || 0
   );
   const trackersLimitReached = items.length >= maxTrackers;
-  const canCreateTracker = !trackersLimitReached;
+  const createTrackerDisabledReason = useMemo(() => {
+    if (trackersLimitReached) {
+      return t("trackerLimitReached", {
+        maxTrackers,
+        plan: (me?.entitlement.plan_key ?? "current").toUpperCase(),
+      });
+    }
+
+    if (telegramConnected === false) {
+      return t("telegramRequiredToCreate");
+    }
+
+    return null;
+  }, [
+    maxTrackers,
+    me?.entitlement.plan_key,
+    t,
+    telegramConnected,
+    trackersLimitReached,
+  ]);
+  const canCreateTracker = createTrackerDisabledReason === null;
   const creditsExhausted = monthlyCredits > 0 && remainingCredits <= 0;
   const creditsResetAt = me?.usage?.period_end ?? null;
   const displayError = pageError ?? initialError;
@@ -520,20 +540,18 @@ export function useTrackersDashboardController({
   }, [defaultInterval]);
 
   const openModal = useCallback(() => {
-    if (trackersLimitReached) {
-      setPageError(
-        t("trackerLimitReached", {
-          maxTrackers,
-          plan: (me?.entitlement.plan_key ?? "current").toUpperCase(),
-        })
-      );
+    if (createTrackerDisabledReason) {
+      setPageError(createTrackerDisabledReason);
       return;
     }
 
     setPageError(null);
     resetModal();
     setIsModalOpen(true);
-  }, [maxTrackers, me?.entitlement.plan_key, resetModal, t, trackersLimitReached]);
+  }, [
+    createTrackerDisabledReason,
+    resetModal,
+  ]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -1389,6 +1407,7 @@ export function useTrackersDashboardController({
     isEditSavePending,
     items,
     canCreateTracker,
+    createTrackerDisabledReason,
     creditsExhausted,
     creditsResetAt,
     maxTrackers,

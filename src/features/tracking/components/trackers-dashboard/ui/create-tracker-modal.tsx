@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
+  ChevronDown,
   CircleAlert,
   Loader2,
   Plus,
@@ -154,7 +155,7 @@ export function CreateTrackerModal({
         aria-labelledby="create-tracker-title"
         className={cn(
           "w-full max-w-[920px] rounded-xl border border-border/70 bg-card shadow-xl",
-          modalStep === 1 ? "max-h-[90vh] overflow-y-auto" : "overflow-visible"
+          "max-h-[90vh] overflow-y-auto"
         )}
       >
         <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
@@ -265,47 +266,54 @@ export function CreateTrackerModal({
           ) : (
             <div className="space-y-4">
               {!isSingleDraft ? (
-                <div className="rounded-lg bg-muted/30 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("sharedDefaults")}
-                  </p>
-                  <div className="mt-2 grid gap-3 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground">{t("mode")}</Label>
-                      <TrackingModePicker
-                        trackingMode={sharedTrackingMode}
-                        setTrackingMode={setSharedTrackingMode}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
-                      <AnimatedDropdown
-                        options={intervalOptions}
-                        value={sharedInterval}
-                        onValueChange={setSharedInterval}
-                        disabled={isSavePending || isPreviewPending}
-                      />
-                      <p className="text-[11px] text-muted-foreground">
-                        {t("sharedDefaultsHint")}
+                <details className="group rounded-lg border border-border/60 bg-muted/20">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-left">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {t("sharedDefaults")}
                       </p>
+                      <p className="text-[11px] text-muted-foreground">{t("sharedDefaultsHint")}</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground">
-                        {t("extraAlerts")}
-                      </Label>
-                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
-                        <Checkbox
-                          checked={sharedNotifyOnPriceIncrease}
-                          onCheckedChange={(checked) =>
-                            setSharedNotifyOnPriceIncrease(Boolean(checked))
-                          }
+                    <ChevronDown
+                      className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
+                    />
+                  </summary>
+                  <div className="overflow-hidden border-t border-border/60 px-3 py-3">
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">{t("mode")}</Label>
+                        <TrackingModePicker
+                          trackingMode={sharedTrackingMode}
+                          setTrackingMode={setSharedTrackingMode}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
+                        <AnimatedDropdown
+                          options={intervalOptions}
+                          value={sharedInterval}
+                          onValueChange={setSharedInterval}
                           disabled={isSavePending || isPreviewPending}
                         />
-                        {t("notifyIncrease")}
-                      </Label>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">
+                          {t("extraAlerts")}
+                        </Label>
+                        <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
+                          <Checkbox
+                            checked={sharedNotifyOnPriceIncrease}
+                            onCheckedChange={(checked) =>
+                              setSharedNotifyOnPriceIncrease(Boolean(checked))
+                            }
+                            disabled={isSavePending || isPreviewPending}
+                          />
+                          {t("notifyIncrease")}
+                        </Label>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </details>
               ) : null}
 
               <div
@@ -400,6 +408,9 @@ export function CreateTrackerModal({
                     isSingleDraft ? "p-4" : "p-3"
                   )}
                 >
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("configuration")}
+                  </p>
                   {!activeDraft ? (
                     <div className="grid min-h-[240px] place-items-center text-center">
                       <div className="space-y-2">

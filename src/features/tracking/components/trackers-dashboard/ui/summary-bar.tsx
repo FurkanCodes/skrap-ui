@@ -74,7 +74,7 @@ export function SummaryBar({
   const hasLiveTracking = active > 0;
 
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-3">
+    <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
           <p className="text-[11px] font-semibold text-muted-foreground">{t("checksLeft")}</p>

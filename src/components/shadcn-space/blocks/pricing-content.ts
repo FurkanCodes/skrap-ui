@@ -18,7 +18,7 @@ export const MARKETING_PRICING_PLANS: readonly MarketingPricingPlan[] = [
     price: 0,
     ctaLabel: "Start free",
     features: [
-      "500 credits / month",
+      "100 credits / month",
       "Up to 5 active trackers",
       "Check as often as every 12 hours",
       "Telegram alerts",

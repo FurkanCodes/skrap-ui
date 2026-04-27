@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ExternalLink, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,6 +9,7 @@ import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/component
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface TrackerActionButtonsProps {
@@ -53,30 +55,45 @@ export function TrackerActionButtons({
   const confirmTransition = shouldReduceMotion
     ? { duration: 0 }
     : { duration: 0.22, ease: smoothEase };
+  const renderIconButtonWithTooltip = (
+    label: string,
+    button: ReactNode
+  ) => (
+    <Tooltip>
+      <TooltipTrigger render={<span className="inline-flex">{button}</span>} />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-end gap-1.5 md:w-full">
-        <a
-          href={item.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
-          aria-label={t("openProduct")}
-        >
-          <ExternalLink className="size-3.5" />
-        </a>
+        {renderIconButtonWithTooltip(
+          t("openProduct"),
+          <a
+            href={item.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
+            aria-label={t("openProduct")}
+          >
+            <ExternalLink className="size-3.5" />
+          </a>
+        )}
 
-        <Button
-          type="button"
-          size="icon-sm"
-          variant="ghost"
-          disabled={controlsDisabled}
-          aria-label={t("edit")}
-          onClick={() => openEditModal(item.item_id)}
-        >
-          <Pencil className="size-3.5" />
-        </Button>
+        {renderIconButtonWithTooltip(
+          t("edit"),
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            disabled={controlsDisabled}
+            aria-label={t("edit")}
+            onClick={() => openEditModal(item.item_id)}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
+        )}
 
         <AnimatePresence mode="wait" initial={false}>
           {item.status === "active" ? (
@@ -88,33 +105,36 @@ export function TrackerActionButtons({
               exit={{ opacity: 0, scale: 0.88 }}
               transition={quickTransition}
             >
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                disabled={controlsDisabled}
-                aria-busy={pauseFeedbackState === "loading" ? true : undefined}
-                aria-label={
-                  pauseFeedbackState === "loading"
-                    ? t("pausing")
-                    : pauseFeedbackState === "success"
-                      ? t("pausedSuccess")
-                      : pauseFeedbackState === "error"
-                        ? t("pauseFailed")
-                        : t("pause")
-                }
-                className={cn(
-                  "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
-                  pauseFeedbackState === "loading" && "bg-muted text-foreground",
-                  pauseFeedbackState === "success" &&
-                    "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
-                  pauseFeedbackState === "error" &&
-                    "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
-                )}
-                onClick={() => runItemAction(item.item_id, "pause")}
-              >
-                <PauseActionIcon state={pauseFeedbackState} />
-              </Button>
+              {renderIconButtonWithTooltip(
+                t("pause"),
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  disabled={controlsDisabled}
+                  aria-busy={pauseFeedbackState === "loading" ? true : undefined}
+                  aria-label={
+                    pauseFeedbackState === "loading"
+                      ? t("pausing")
+                      : pauseFeedbackState === "success"
+                        ? t("pausedSuccess")
+                        : pauseFeedbackState === "error"
+                          ? t("pauseFailed")
+                          : t("pause")
+                  }
+                  className={cn(
+                    "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
+                    pauseFeedbackState === "loading" && "bg-muted text-foreground",
+                    pauseFeedbackState === "success" &&
+                      "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
+                    pauseFeedbackState === "error" &&
+                      "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
+                  )}
+                  onClick={() => runItemAction(item.item_id, "pause")}
+                >
+                  <PauseActionIcon state={pauseFeedbackState} />
+                </Button>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -125,33 +145,36 @@ export function TrackerActionButtons({
               exit={{ opacity: 0, scale: 0.8 }}
               transition={quickTransition}
             >
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                disabled={controlsDisabled}
-                aria-busy={resumeFeedbackState === "loading" ? true : undefined}
-                aria-label={
-                  resumeFeedbackState === "loading"
-                    ? t("resuming")
-                    : resumeFeedbackState === "success"
-                      ? t("resumedSuccess")
-                      : resumeFeedbackState === "error"
-                        ? t("resumeFailed")
-                        : t("resume")
-                }
-                className={cn(
-                  "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
-                  resumeFeedbackState === "loading" && "bg-muted text-foreground",
-                  resumeFeedbackState === "success" &&
-                    "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
-                  resumeFeedbackState === "error" &&
-                    "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
-                )}
-                onClick={() => runItemAction(item.item_id, "resume")}
-              >
-                <ResumeActionIcon state={resumeFeedbackState} />
-              </Button>
+              {renderIconButtonWithTooltip(
+                t("resume"),
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  disabled={controlsDisabled}
+                  aria-busy={resumeFeedbackState === "loading" ? true : undefined}
+                  aria-label={
+                    resumeFeedbackState === "loading"
+                      ? t("resuming")
+                      : resumeFeedbackState === "success"
+                        ? t("resumedSuccess")
+                        : resumeFeedbackState === "error"
+                          ? t("resumeFailed")
+                          : t("resume")
+                  }
+                  className={cn(
+                    "relative overflow-hidden transition-[background-color,border-color,color,transform] duration-300",
+                    resumeFeedbackState === "loading" && "bg-muted text-foreground",
+                    resumeFeedbackState === "success" &&
+                      "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-500",
+                    resumeFeedbackState === "error" &&
+                      "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive dark:border-destructive dark:bg-destructive dark:hover:bg-destructive"
+                  )}
+                  onClick={() => runItemAction(item.item_id, "resume")}
+                >
+                  <ResumeActionIcon state={resumeFeedbackState} />
+                </Button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -187,7 +210,7 @@ export function TrackerActionButtons({
                   className="inline-flex min-w-[52px] items-center justify-center gap-1.5 border-r border-border bg-destructive/10 px-3 text-[11px] font-semibold text-destructive transition hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isDeletePending ? <Loader2 className="size-3 animate-spin" /> : null}
-                  {t("confirm")}
+                  {t("delete")}
                 </button>
                 <button
                   type="button"
@@ -208,20 +231,24 @@ export function TrackerActionButtons({
               exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, x: 4 }}
               transition={quickTransition}
             >
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                disabled={controlsDisabled}
-                aria-busy={isDeletePending ? true : undefined}
-                onClick={() => requestDeleteAction(item.item_id)}
-              >
-                {isDeletePending ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="size-3.5" />
-                )}
-              </Button>
+              {renderIconButtonWithTooltip(
+                t("delete"),
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  disabled={controlsDisabled}
+                  aria-busy={isDeletePending ? true : undefined}
+                  aria-label={t("delete")}
+                  onClick={() => requestDeleteAction(item.item_id)}
+                >
+                  {isDeletePending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-3.5" />
+                  )}
+                </Button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

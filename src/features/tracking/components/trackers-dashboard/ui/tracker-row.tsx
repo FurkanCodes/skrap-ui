@@ -2,7 +2,6 @@
 
 import { memo } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
@@ -56,7 +55,6 @@ export const TrackerRow = memo(function TrackerRow({
 }: TrackerRowProps) {
   const t = useTranslations("tracking.dashboard.row");
   const locale = useLocale();
-  const shouldReduceMotion = useReducedMotion();
   const visibleActionFeedbackState =
     item.status === "active" ? pauseFeedbackState : resumeFeedbackState;
   const visibleActionFeedbackActive = visibleActionFeedbackState !== "idle";
@@ -87,16 +85,8 @@ export const TrackerRow = memo(function TrackerRow({
   const isTrackingLive = item.status === "active";
   const trackingStatusChipLabel = isTrackingLive ? t("live") : t("paused");
   const trackingStatusLineLabel = isTrackingLive ? t("trackingLive") : t("trackingPaused");
-  const glowTransition = shouldReduceMotion
-    ? { duration: 0 }
-    : {
-        type: "spring" as const,
-        stiffness: 170,
-        damping: 26,
-        mass: 0.85,
-      };
   const trackingStatusChipClassName = isTrackingLive
-    ? "text-emerald-700 ring-1 ring-emerald-500/35 shadow-[0_0_16px_-10px_rgba(16,185,129,0.9)] transition-shadow dark:text-emerald-300 dark:ring-emerald-400/30 dark:shadow-[0_0_20px_-12px_rgba(16,185,129,0.8)]"
+    ? "text-emerald-700 ring-1 ring-emerald-500/30 dark:text-emerald-300 dark:ring-emerald-400/30"
     : undefined;
   const imageFallbackText = productName.slice(0, 1).toUpperCase() || "P";
   const productImageUrl =
@@ -108,17 +98,9 @@ export const TrackerRow = memo(function TrackerRow({
   return (
     <article
       className={cn(
-        "relative grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-[minmax(0,1fr)_172px]"
+        "relative grid gap-3 rounded-lg border border-border/80 bg-card p-4 shadow-[0_1px_0_0_hsl(var(--border)/0.4)] md:grid-cols-[minmax(0,1fr)_172px]"
       )}
     >
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-lg border border-emerald-500/35 ring-1 ring-emerald-500/20 shadow-[0_0_28px_-18px_rgba(16,185,129,0.7)] dark:border-emerald-400/30 dark:ring-emerald-400/15 dark:shadow-[0_0_32px_-20px_rgba(16,185,129,0.65)]"
-        initial={false}
-        animate={isTrackingLive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.986 }}
-        transition={glowTransition}
-      />
-
       <div className="flex gap-3">
         <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
           {productImageUrl ? (

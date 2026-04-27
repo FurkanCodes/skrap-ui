@@ -47,6 +47,7 @@ export function TrackersDashboardAuthenticatedView({
     <section className="space-y-4 md:space-y-5">
       <DashboardHeader
         canCreateTracker={controller.canCreateTracker}
+        createTrackerDisabledReason={controller.createTrackerDisabledReason}
         isMutating={controller.isMutating}
         isRefreshPending={controller.isRefreshPending}
         telegramConnected={controller.telegramConnected}
@@ -103,6 +104,7 @@ export function TrackersDashboardAuthenticatedView({
         hasAnyItems={controller.items.length > 0}
         hasActiveFilters={hasActiveFilters}
         canCreateTracker={controller.canCreateTracker}
+        createTrackerDisabledReason={controller.createTrackerDisabledReason}
         onClearFilters={controller.clearFilters}
         onOpenModal={controller.openModal}
       />

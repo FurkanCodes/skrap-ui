@@ -312,6 +312,7 @@
       "controller": {
         "requestFailed": "Request failed.",
         "trackerLimitReached": "Tracker limit reached ({maxTrackers}) for {plan} plan.",
+        "telegramRequiredToCreate": "Connect Telegram in Settings before creating trackers.",
         "addValidProductUrl": "Add at least one valid product URL.",
         "previewUrlFailed": "Could not preview this URL.",
         "enterValidProductUrl": "Enter a valid product URL.",
@@ -331,7 +332,8 @@
         "resumedSuccess": "Tracker resumed successfully",
         "resumeFailed": "Failed to resume tracker",
         "resume": "Resume tracker",
-        "confirm": "OK",
+        "confirm": "Confirm",
+        "delete": "Delete",
         "cancel": "Cancel",
         "dismissError": "Dismiss action error"
       },
@@ -368,6 +370,7 @@
         "notifyIncrease": "Notify when price increases",
         "items": "Items",
         "selected": "Selected {count}",
+        "configuration": "Configuration",
         "untitledUrl": "Untitled URL",
         "previewFailed": "Could not fetch this item.",
         "slotLimitReached": "Slot limit reached. Deselect another ready row first.",

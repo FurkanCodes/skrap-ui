@@ -1,0 +1,215 @@
+{
+  "nodes": [
+    {
+      "id": "fast_loading_illustration",
+      "label": "Fast Loading Illustration",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "svg#freepik_stories-fast-loading",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_laptop_device",
+      "label": "Laptop Device",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Device--inject-309",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_progress_bar",
+      "label": "Loading Progress Bar",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "rects inside g#freepik--Device--inject-309",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_car",
+      "label": "Delivery Car",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Car--inject-309",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_clouds",
+      "label": "Clouds",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Clouds--inject-309",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_animated_svg_groups",
+      "label": "Animated SVG Groups",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "style keyframes and animated group selectors",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fast_loading_green_monochrome_palette",
+      "label": "Green Monochrome Palette",
+      "file_type": "image",
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "style fill rgb(146, 227, 169)",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "fast_loading_illustration",
+      "target": "fast_loading_laptop_device",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Device--inject-309",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_illustration",
+      "target": "fast_loading_car",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Car--inject-309",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_illustration",
+      "target": "fast_loading_clouds",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Clouds--inject-309",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_laptop_device",
+      "target": "fast_loading_progress_bar",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "rects inside g#freepik--Device--inject-309",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_progress_bar",
+      "target": "fast_loading_illustration",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "progress segments within laptop screen",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_car",
+      "target": "fast_loading_illustration",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.76,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "g#freepik--Car--inject-309",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_animated_svg_groups",
+      "target": "fast_loading_clouds",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "selector #freepik--Clouds--inject-309 uses lightSpeedLeft",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_animated_svg_groups",
+      "target": "fast_loading_laptop_device",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "selector #freepik--Device--inject-309 uses zoomIn",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_animated_svg_groups",
+      "target": "fast_loading_car",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "selector #freepik--Car--inject-309 uses slideUp",
+      "weight": 1.0
+    },
+    {
+      "source": "fast_loading_green_monochrome_palette",
+      "target": "fast_loading_illustration",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg",
+      "source_location": "multiple shapes use fill rgb(146, 227, 169)",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "fast_loading_visual_scene",
+      "label": "Fast Loading Visual Scene",
+      "nodes": [
+        "fast_loading_laptop_device",
+        "fast_loading_progress_bar",
+        "fast_loading_car",
+        "fast_loading_clouds"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg"
+    },
+    {
+      "id": "fast_loading_intro_animation_sequence",
+      "label": "Fast Loading Intro Animation Sequence",
+      "nodes": [
+        "fast_loading_animated_svg_groups",
+        "fast_loading_laptop_device",
+        "fast_loading_car",
+        "fast_loading_clouds"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "public/illustrations/fast-loading.svg"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

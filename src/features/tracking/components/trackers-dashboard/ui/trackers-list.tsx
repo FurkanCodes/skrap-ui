@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TrackerRow } from "@/features/tracking/components/trackers-dashboard/ui/tracker-row";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import type { TrackedItemSummary } from "@/features/tracking/types";
@@ -30,6 +31,7 @@ interface TrackersListProps {
   hasAnyItems: boolean;
   hasActiveFilters: boolean;
   canCreateTracker: boolean;
+  createTrackerDisabledReason: string | null;
   onClearFilters: () => void;
   onOpenModal: () => void;
 }
@@ -53,6 +55,7 @@ export function TrackersList({
   hasAnyItems,
   hasActiveFilters,
   canCreateTracker,
+  createTrackerDisabledReason,
   onClearFilters,
   onOpenModal,
 }: TrackersListProps) {
@@ -86,14 +89,34 @@ export function TrackersList({
                 </Button>
               ) : null}
               {!hasAnyItems ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={onOpenModal}
-                  disabled={!canCreateTracker}
-                >
-                  {t("newTracker")}
-                </Button>
+                createTrackerDisabledReason ? (
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <span className="inline-flex">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={onOpenModal}
+                            disabled={!canCreateTracker}
+                          >
+                            {t("newTracker")}
+                          </Button>
+                        </span>
+                      }
+                    />
+                    <TooltipContent>{createTrackerDisabledReason}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={onOpenModal}
+                    disabled={!canCreateTracker}
+                  >
+                    {t("newTracker")}
+                  </Button>
+                )
               ) : null}
             </div>
           </Card>

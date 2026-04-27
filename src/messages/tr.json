@@ -312,6 +312,7 @@
       "controller": {
         "requestFailed": "Islem basarisiz oldu.",
         "trackerLimitReached": "{plan} plani icin takipci limiti doldu ({maxTrackers}).",
+        "telegramRequiredToCreate": "Takipci olusturmadan once Ayarlar'dan Telegram baglayin.",
         "addValidProductUrl": "En az bir gecerli urun URL'si ekleyin.",
         "previewUrlFailed": "Bu URL icin onizleme alinamadi.",
         "enterValidProductUrl": "Gecerli bir urun URL'si girin.",
@@ -331,7 +332,8 @@
         "resumedSuccess": "Takipci basariyla surduruldu",
         "resumeFailed": "Takipci surdurulemedi",
         "resume": "Surdur",
-        "confirm": "Tamam",
+        "confirm": "Onayla",
+        "delete": "Sil",
         "cancel": "Iptal",
         "dismissError": "Hata mesajini kapat"
       },
@@ -368,6 +370,7 @@
         "notifyIncrease": "Fiyat arttiginda bildir",
         "items": "Ogeler",
         "selected": "Secili {count}",
+        "configuration": "Yapilandirma",
         "untitledUrl": "Basliksiz URL",
         "previewFailed": "Bu oge getirilemedi.",
         "slotLimitReached": "Yuva sinirina ulasildi. Once baska bir hazir ogeyi secimden cikar.",
