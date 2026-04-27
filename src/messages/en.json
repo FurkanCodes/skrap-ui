@@ -246,6 +246,7 @@
       "summary": {
         "checksLeft": "Checks left this cycle",
         "consumedSoFar": "{value} consumed so far",
+        "creditsUsage": "Credits usage",
         "activeAlerts": "Active / alerts",
         "trackersUsed": "Trackers used",
         "estimatedSavings": "Estimated savings",
@@ -255,10 +256,13 @@
       },
       "filters": {
         "searchPlaceholder": "Search products...",
+        "searchAria": "Search trackers",
         "statusLabel": "Status",
         "statusAria": "Status filter",
         "modeLabel": "Mode",
         "modeAria": "Mode filter",
+        "showing": "Showing {filtered} of {total}",
+        "clearAll": "Clear all",
         "status": {
           "all": "All",
           "active": "Active",

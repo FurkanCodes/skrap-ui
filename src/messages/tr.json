@@ -246,6 +246,7 @@
       "summary": {
         "checksLeft": "Bu donemde kalan kontrol",
         "consumedSoFar": "Simdiye kadar tuketilen: {value}",
+        "creditsUsage": "Kredi kullanimi",
         "activeAlerts": "Aktif / uyari",
         "trackersUsed": "Kullanilan takipci",
         "estimatedSavings": "Tahmini tasarruf",
@@ -255,10 +256,13 @@
       },
       "filters": {
         "searchPlaceholder": "Urun ara...",
+        "searchAria": "Takipcileri ara",
         "statusLabel": "Durum",
         "statusAria": "Durum filtresi",
         "modeLabel": "Mod",
         "modeAria": "Mod filtresi",
+        "showing": "{total} takipciden {filtered} gosteriliyor",
+        "clearAll": "Tumunu temizle",
         "status": {
           "all": "Tum",
           "active": "Aktif",
