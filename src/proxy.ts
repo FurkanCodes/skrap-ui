@@ -22,6 +22,10 @@ const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
 const SESSION_COOKIE_CACHE_VERSION = "skrap-auth-v1";
 const handleI18nRouting = createMiddleware(routing);
 
+function isExtensionConnectRoute(pathname: string): boolean {
+  return pathname === "/extension/connect" || pathname === "/extension/connect/";
+}
+
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
@@ -72,6 +76,10 @@ async function hasValidSessionCache(request: NextRequest): Promise<boolean> {
 }
 
 export async function proxy(request: NextRequest) {
+  if (isExtensionConnectRoute(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const i18nResponse = handleI18nRouting(request);
   if (i18nResponse.status >= 300 && i18nResponse.status < 400) {
     return i18nResponse;

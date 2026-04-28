@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dealvinci Tracker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Dealvinci</p>
+          <h1>Track this page</h1>
+        </div>
+        <div class="header-actions">
+          <span id="connectionBadge" class="badge">Disconnected</span>
+        </div>
+      </header>
+
+      <section id="status" class="status" hidden></section>
+
+      <section id="signedOut" class="panel" hidden>
+        <div class="empty-icon" aria-hidden="true"></div>
+        <h2>Connect to add trackers</h2>
+        <p class="muted">Authorize the extension, then add the current product page without copying links.</p>
+        <button id="connectButton" type="button">Connect Dealvinci</button>
+      </section>
+
+      <section id="trackerPanel" class="panel" hidden>
+        <div class="current-tab">
+          <div id="pageInitial" class="page-icon" aria-hidden="true">D</div>
+          <div class="tab-copy">
+            <p id="tabTitle" class="tab-title">Current page</p>
+            <div class="tab-meta">
+              <span id="tabUrl" class="tab-url"></span>
+              <span id="tabPrice" class="price-chip" hidden></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="label">Type</span>
+          <div class="segments">
+            <button class="segment active" data-type="monitor" type="button">Price Drop</button>
+            <button class="segment" data-type="alert" type="button">Price Alert</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="label">Movement</span>
+          <div class="segments">
+            <button class="segment active" data-direction="drop" type="button">Drop only</button>
+            <button class="segment" data-direction="drop-increase" type="button">Drop + increase</button>
+          </div>
+        </div>
+
+        <label id="targetField" class="field" hidden>
+          <span>Target</span>
+          <input id="targetInput" inputmode="decimal" placeholder="99.99" />
+          <small>Required for Price Alert.</small>
+        </label>
+
+        <div class="actions">
+          <button id="addButton" type="button">Add tracker</button>
+          <button id="disconnectButton" class="link-button" type="button">Disconnect</button>
+        </div>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

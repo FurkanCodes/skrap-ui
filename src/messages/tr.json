@@ -27,6 +27,7 @@
       "goToDashboard": "Panele git",
       "nav": {
         "dashboard": "Panel",
+        "extensions": "Eklentiler",
         "settings": "Ayarlar"
       }
     },
@@ -188,6 +189,42 @@
     },
     "errors": {
       "supportedSites": "Desteklenen magazalar yuklenemedi."
+    }
+  },
+  "extensions": {
+    "eyebrow": "Tarayici eklentisi",
+    "title": "Urunleri tarayicinizdan takip edin.",
+    "subtitle": "Dealvinci eklentisini kurun, bir kez giris yapin ve mevcut urun sayfasini panele link kopyalamadan takip listenize ekleyin.",
+    "chrome": {
+      "title": "Chrome eklentisi",
+      "description": "Dealvinci'yi Chrome, Edge, Brave ve diger Chromium tarayicilarinda kullanin.",
+      "cta": "Chrome icin kur"
+    },
+    "firefox": {
+      "title": "Firefox eklentisi",
+      "description": "Ayni takip akisini Firefox'a ozel paketle kullanin.",
+      "cta": "Firefox icin kur"
+    },
+    "howItWorks": "Nasil calisir",
+    "howItWorksDescription": "Eklenti gezinmeyi tarayicida tutar ve yalnizca takip etmeyi sectiginiz sayfayi gonderir.",
+    "steps": {
+      "install": {
+        "title": "Kur",
+        "description": "Eklenti paketini tarayiciniza ekleyin ve adres cubugunun yanina sabitleyin."
+      },
+      "connect": {
+        "title": "Baglan",
+        "description": "Dealvinci web girisiyle kimlik dogrulayin. Giris yapmadan takipci olusturulamaz."
+      },
+      "track": {
+        "title": "Takip et",
+        "description": "Herhangi bir urun sayfasini acin, eklentiye tiklayin, takip ayarlarini secin ve ekleyin."
+      }
+    },
+    "auth": {
+      "title": "Kimlik dogrulama zorunlu",
+      "description": "Eklenti istekleri ozel bir eklenti tokeni kullanir. Token suresi dolarsa veya iptal edilirse kullanici takipten once Dealvinci ile yeniden baglanir.",
+      "dashboard": "Paneli ac"
     }
   },
   "telegram": {

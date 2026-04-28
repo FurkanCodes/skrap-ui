@@ -27,6 +27,7 @@
       "goToDashboard": "Go to dashboard",
       "nav": {
         "dashboard": "Dashboard",
+        "extensions": "Extensions",
         "settings": "Settings"
       }
     },
@@ -188,6 +189,42 @@
     },
     "errors": {
       "supportedSites": "Unable to load supported store adapters."
+    }
+  },
+  "extensions": {
+    "eyebrow": "Browser extension",
+    "title": "Track products from your browser.",
+    "subtitle": "Install the Dealvinci extension, sign in once, and add the current product page to your tracker without copying links into the dashboard.",
+    "chrome": {
+      "title": "Chrome extension",
+      "description": "Use Dealvinci from Chrome, Edge, Brave, and other Chromium browsers.",
+      "cta": "Install for Chrome"
+    },
+    "firefox": {
+      "title": "Firefox extension",
+      "description": "Use the same tracker flow from Firefox with a Firefox-specific build.",
+      "cta": "Install for Firefox"
+    },
+    "howItWorks": "How it works",
+    "howItWorksDescription": "The extension keeps browsing native and sends only the page you choose to track.",
+    "steps": {
+      "install": {
+        "title": "Install",
+        "description": "Add the extension package to your browser and pin it near the address bar."
+      },
+      "connect": {
+        "title": "Connect",
+        "description": "Authenticate through Dealvinci web login. No tracker can be created before sign-in."
+      },
+      "track": {
+        "title": "Track",
+        "description": "Open any product page, click the extension, choose tracker options, and add it."
+      }
+    },
+    "auth": {
+      "title": "Authentication required",
+      "description": "Extension requests use a dedicated extension token. If the token expires or is revoked, users reconnect through Dealvinci before tracking again.",
+      "dashboard": "Open dashboard"
     }
   },
   "telegram": {

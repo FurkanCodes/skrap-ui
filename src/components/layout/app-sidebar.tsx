@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { LayoutDashboard, Settings2 } from "lucide-react";
+import { LayoutDashboard, Puzzle, Settings2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
@@ -30,6 +30,11 @@ const navItems = [
     titleKey: "dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    titleKey: "extensions",
+    href: "/extensions",
+    icon: Puzzle,
   },
   {
     titleKey: "settings",
