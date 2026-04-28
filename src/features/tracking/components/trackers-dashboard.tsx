@@ -45,7 +45,7 @@ export async function TrackersDashboard({
   let telegramBotUsername: string | null = null;
 
   const [trackedResult, telegramResult] = await Promise.allSettled([
-    listTrackedItemsQuery({ userId: auth.userId }),
+    listTrackedItemsQuery(),
     getTelegramStatusQuery(),
   ]);
 

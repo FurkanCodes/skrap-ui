@@ -35,7 +35,7 @@ export async function TrackedItemsPanel() {
   let initialError: string | null = null;
 
   try {
-    const response = await listTrackedItemsQuery({ userId: auth.userId });
+    const response = await listTrackedItemsQuery();
     initialItems = response.items;
   } catch (error) {
     initialError = mapError(error, t("loadTrackedItems"));

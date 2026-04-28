@@ -44,7 +44,7 @@ export default async function SettingsPage() {
   if (auth) {
     const [telegramResult, trackedResult] = await Promise.allSettled([
       getTelegramStatusQuery(),
-      listTrackedItemsQuery({ userId: auth.userId }),
+      listTrackedItemsQuery(),
     ]);
 
     if (telegramResult.status === "fulfilled") {
