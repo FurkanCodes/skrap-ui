@@ -23,6 +23,7 @@ const manifests = {
     permissions: ["activeTab", "identity", "scripting", "storage", "tabs", "webNavigation"],
     host_permissions: [
       "https://*.chromiumapp.org/*",
+      "https://*.extensions.allizom.org/*",
       "https://api.dealvinci.com/*",
       "https://dealvinci.com/*",
       "https://www.dealvinci.com/*"
@@ -44,6 +45,7 @@ const manifests = {
     permissions: ["activeTab", "identity", "scripting", "storage", "tabs", "webNavigation"],
     host_permissions: [
       "https://*.chromiumapp.org/*",
+      "https://*.extensions.allizom.org/*",
       "https://api.dealvinci.com/*",
       "https://dealvinci.com/*",
       "https://www.dealvinci.com/*"
