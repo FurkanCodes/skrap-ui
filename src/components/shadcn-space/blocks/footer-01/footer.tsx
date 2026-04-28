@@ -91,6 +91,10 @@ const footerSections: FooterData[] = [
         title: "Privacy Policy",
         href: "/privacy",
       },
+      {
+        title: "Refund Policy",
+        href: "/refund-policy",
+      },
     ],
   },
 ];

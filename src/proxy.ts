@@ -12,6 +12,7 @@ const PUBLIC_ROUTES = [
   "/auth/forgot-password",
   "/auth/reset-password",
   "/privacy",
+  "/refund-policy",
   "/terms",
   "/verify-email",
   "/reset-password",
@@ -84,7 +85,7 @@ export async function proxy(request: NextRequest) {
     return buildRedirectToSignIn(request, locale, normalizedPathname);
   }
 
-  if (hasSessionCookie && (normalizedPathname === "/" || isAuthRoute(normalizedPathname))) {
+  if (hasSessionCookie && isAuthRoute(normalizedPathname)) {
     const hasValidSession = await hasValidSessionCache(request);
     if (hasValidSession) {
       return buildRedirectToDashboard(request, locale);

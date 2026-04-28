@@ -155,7 +155,8 @@ const sections: LegalSection[] = [
           If you purchase a paid plan or paid credits, you authorize us and our payment providers to
           charge applicable fees, taxes, and renewals according to the plan terms presented at
           checkout or in an applicable order form. Except where required by law or expressly stated,
-          fees are non-refundable and credits have no cash value.
+          fees are non-refundable and credits have no cash value, except where required by law or
+          expressly stated in our Refund Policy.
         </p>
       </>
     ),
