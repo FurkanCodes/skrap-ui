@@ -4,6 +4,7 @@ import {
   extensionOptionsResponse,
 } from "@/features/extension/server/responses";
 import { postExtensionBackendJson } from "@/features/extension/server/backend";
+import { verifyExtensionSessionToken } from "@/features/extension/server/auth-code";
 
 export const runtime = "nodejs";
 
@@ -30,14 +31,28 @@ function normalizeUrl(value: string | undefined): string | null {
   }
 }
 
+function getBearerToken(authorization: string | null): string | null {
+  if (!authorization?.startsWith("Bearer ")) {
+    return null;
+  }
+  return authorization.slice("Bearer ".length).trim() || null;
+}
+
 export function OPTIONS() {
   return extensionOptionsResponse();
 }
 
 export async function POST(request: Request) {
-  const authorization = request.headers.get("authorization");
-  if (!authorization) {
+  const extensionToken = getBearerToken(request.headers.get("authorization"));
+  if (!extensionToken) {
     return extensionJson({ detail: "Missing extension token." }, { status: 401 });
+  }
+
+  let upstreamAccessToken: string;
+  try {
+    upstreamAccessToken = verifyExtensionSessionToken(extensionToken).accessToken;
+  } catch {
+    return extensionJson({ detail: "Session expired. Connect Dealvinci again." }, { status: 401 });
   }
 
   let body: ExtensionTrackedItemBody;
@@ -73,7 +88,7 @@ export async function POST(request: Request) {
         notify_on_price_increase: body.direction === "drop-increase",
         fetch_mode: "auto",
       },
-      { authorization }
+      { authorization: `Bearer ${upstreamAccessToken}` }
     );
     return extensionJson(result, { status: 201 });
   } catch (error) {

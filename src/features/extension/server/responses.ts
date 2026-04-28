@@ -37,7 +37,7 @@ export function extensionErrorResponse(error: unknown, fallback: string): NextRe
     }
 
     return extensionJson(
-      { detail: error.message, backend_detail: error.detail ?? null },
+      { detail: error.message },
       { status: error.status }
     );
   }

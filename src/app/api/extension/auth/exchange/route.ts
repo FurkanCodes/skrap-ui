@@ -3,7 +3,10 @@ import {
   extensionJson,
   extensionOptionsResponse,
 } from "@/features/extension/server/responses";
-import { exchangeExtensionAuthCode } from "@/features/extension/server/auth-code";
+import {
+  createExtensionSessionToken,
+  exchangeExtensionAuthCode,
+} from "@/features/extension/server/auth-code";
 
 export const runtime = "nodejs";
 
@@ -30,9 +33,10 @@ export async function POST(request: Request) {
 
   try {
     const result = exchangeExtensionAuthCode(body.code, body.redirect_uri);
+    const session = createExtensionSessionToken(result.accessToken, body.redirect_uri);
     return extensionJson({
-      access_token: result.accessToken,
-      expires_at: new Date(result.expiresAt).toISOString(),
+      access_token: session.token,
+      expires_at: new Date(session.expiresAt).toISOString(),
     });
   } catch (error) {
     if (error instanceof Error) {

@@ -11,7 +11,7 @@ const manifests = {
     manifest_version: 3,
     name: "Dealvinci",
     description: "Add the current product page to Dealvinci.",
-    version: "0.1.0",
+    version: "0.1.1",
     action: {
       default_popup: "popup.html",
       default_title: "Dealvinci"
@@ -22,18 +22,16 @@ const manifests = {
     },
     permissions: ["activeTab", "identity", "scripting", "storage", "tabs", "webNavigation"],
     host_permissions: [
-      "https://*.chromiumapp.org/*",
-      "https://*.extensions.allizom.org/*",
-      "https://api.dealvinci.com/*",
       "https://dealvinci.com/*",
-      "https://www.dealvinci.com/*"
+      "https://www.dealvinci.com/*",
+      "https://pjihdkpbepamoaomgiegbbcdkkcnlnjk.chromiumapp.org/*"
     ]
   },
   firefox: {
     manifest_version: 3,
     name: "Dealvinci",
     description: "Add the current product page to Dealvinci.",
-    version: "0.1.0",
+    version: "0.1.1",
     action: {
       default_popup: "popup.html",
       default_title: "Dealvinci"
@@ -44,16 +42,22 @@ const manifests = {
     },
     permissions: ["activeTab", "identity", "scripting", "storage", "tabs", "webNavigation"],
     host_permissions: [
-      "https://*.chromiumapp.org/*",
-      "https://*.extensions.allizom.org/*",
-      "https://api.dealvinci.com/*",
       "https://dealvinci.com/*",
-      "https://www.dealvinci.com/*"
+      "https://www.dealvinci.com/*",
+      "https://67c41b859dabf7e02c3ffd9daa31960e35b9c954.extensions.allizom.org/*"
     ],
     browser_specific_settings: {
       gecko: {
         id: "tracker@dealvinci.com",
-        strict_min_version: "109.0"
+        strict_min_version: "142.0",
+        data_collection_permissions: {
+          required: [
+            "personallyIdentifyingInfo",
+            "authenticationInfo",
+            "browsingActivity",
+            "websiteContent"
+          ]
+        }
       }
     }
   }

@@ -10,15 +10,46 @@ import { getAccessTokenForFastApi } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
+const DEFAULT_PUBLIC_APP_ORIGIN = "https://dealvinci.com";
+
+const ALLOWED_EXTENSION_REDIRECT_URIS = new Set([
+  "https://pjihdkpbepamoaomgiegbbcdkkcnlnjk.chromiumapp.org/dealvinci",
+  "https://67c41b859dabf7e02c3ffd9daa31960e35b9c954.extensions.allizom.org/dealvinci",
+]);
+
+function getPublicAppOrigin(): string {
+  const candidates = [
+    process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+    process.env.BETTER_AUTH_URL,
+    DEFAULT_PUBLIC_APP_ORIGIN,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    try {
+      const url = new URL(candidate);
+      if (
+        url.protocol === "https:" &&
+        url.hostname !== "0.0.0.0" &&
+        url.hostname !== "localhost" &&
+        url.hostname !== "127.0.0.1"
+      ) {
+        return url.origin;
+      }
+    } catch {
+      // Ignore invalid environment values.
+    }
+  }
+
+  return DEFAULT_PUBLIC_APP_ORIGIN;
+}
+
 function isAllowedExtensionRedirectUri(value: string): boolean {
   try {
-    const parsed = new URL(value);
-    return (
-      parsed.protocol === "chrome-extension:" ||
-      parsed.protocol === "moz-extension:" ||
-      parsed.hostname.endsWith(".chromiumapp.org") ||
-      parsed.hostname.endsWith(".extensions.allizom.org")
-    );
+    return ALLOWED_EXTENSION_REDIRECT_URIS.has(new URL(value).toString());
   } catch {
     return false;
   }
@@ -214,7 +245,7 @@ async function getSignedInOrRedirect(requestUrl: URL) {
   }
 
   const next = `${requestUrl.pathname}${requestUrl.search}`;
-  const signInUrl = new URL("/auth/sign-in", requestUrl.origin);
+  const signInUrl = new URL("/auth/sign-in", getPublicAppOrigin());
   signInUrl.searchParams.set("next", next);
   return NextResponse.redirect(signInUrl);
 }

@@ -4,8 +4,11 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypt
 
 const AUTH_CODE_TTL_MS = 2 * 60 * 1000;
 const AUTHORIZE_CHALLENGE_TTL_MS = 5 * 60 * 1000;
+const EXTENSION_SESSION_MAX_TTL_MS = 24 * 60 * 60 * 1000;
 const AUTH_CODE_VERSION = "v1";
 const AUTHORIZE_CHALLENGE_VERSION = "ac1";
+const EXTENSION_SESSION_VERSION = "est1";
+const EXTENSION_SESSION_SCOPE = "tracked-items:create";
 
 interface ExtensionAuthCodePayload {
   accessToken: string;
@@ -18,6 +21,14 @@ interface ExtensionAuthorizeChallengePayload {
   expiresAt: number;
   redirectUri: string;
   state: string;
+  nonce: string;
+}
+
+interface ExtensionSessionTokenPayload {
+  accessToken: string;
+  expiresAt: number;
+  redirectUri: string;
+  scope: typeof EXTENSION_SESSION_SCOPE;
   nonce: string;
 }
 
@@ -161,5 +172,80 @@ export function exchangeExtensionAuthCode(code: string, redirectUri: string): {
   return {
     accessToken: payload.accessToken,
     expiresAt: parseJwtExpiryMs(payload.accessToken) ?? payload.expiresAt,
+  };
+}
+
+export function createExtensionSessionToken(
+  accessToken: string,
+  redirectUri: string
+): {
+  token: string;
+  expiresAt: number;
+} {
+  const upstreamExpiresAt = parseJwtExpiryMs(accessToken) ?? Date.now() + EXTENSION_SESSION_MAX_TTL_MS;
+  const expiresAt = Math.min(upstreamExpiresAt, Date.now() + EXTENSION_SESSION_MAX_TTL_MS);
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
+  const payload: ExtensionSessionTokenPayload = {
+    accessToken,
+    expiresAt,
+    redirectUri,
+    scope: EXTENSION_SESSION_SCOPE,
+    nonce: randomBytes(16).toString("hex"),
+  };
+
+  const encrypted = Buffer.concat([
+    cipher.update(JSON.stringify(payload), "utf8"),
+    cipher.final(),
+  ]);
+  const tag = cipher.getAuthTag();
+
+  return {
+    token: [
+      EXTENSION_SESSION_VERSION,
+      toBase64Url(iv),
+      toBase64Url(tag),
+      toBase64Url(encrypted),
+    ].join("."),
+    expiresAt,
+  };
+}
+
+export function verifyExtensionSessionToken(token: string): {
+  accessToken: string;
+  expiresAt: number;
+  redirectUri: string;
+  scope: typeof EXTENSION_SESSION_SCOPE;
+} {
+  const [version, rawIv, rawTag, rawEncrypted] = token.split(".");
+  if (version !== EXTENSION_SESSION_VERSION || !rawIv || !rawTag || !rawEncrypted) {
+    throw new Error("Invalid extension token.");
+  }
+
+  const decipher = createDecipheriv("aes-256-gcm", getEncryptionKey(), fromBase64Url(rawIv));
+  decipher.setAuthTag(fromBase64Url(rawTag));
+  const decrypted = Buffer.concat([
+    decipher.update(fromBase64Url(rawEncrypted)),
+    decipher.final(),
+  ]);
+  const payload = JSON.parse(decrypted.toString("utf8")) as ExtensionSessionTokenPayload;
+
+  if (payload.scope !== EXTENSION_SESSION_SCOPE) {
+    throw new Error("Invalid extension token scope.");
+  }
+
+  if (!payload.redirectUri || !payload.nonce || !payload.accessToken) {
+    throw new Error("Invalid extension token payload.");
+  }
+
+  if (payload.expiresAt <= Date.now()) {
+    throw new Error("Extension token expired.");
+  }
+
+  return {
+    accessToken: payload.accessToken,
+    expiresAt: payload.expiresAt,
+    redirectUri: payload.redirectUri,
+    scope: payload.scope,
   };
 }
