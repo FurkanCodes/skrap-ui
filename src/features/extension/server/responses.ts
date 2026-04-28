@@ -5,7 +5,7 @@ import { BackendApiError } from "@/features/scraper/server/backend-client";
 export function extensionCorsHeaders(): HeadersInit {
   return {
     "Access-Control-Allow-Headers": "authorization, content-type",
-    "Access-Control-Allow-Methods": "DELETE, OPTIONS, POST",
+    "Access-Control-Allow-Methods": "DELETE, GET, OPTIONS, POST",
     "Access-Control-Allow-Origin": "*",
   };
 }

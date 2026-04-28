@@ -8,6 +8,8 @@ const state = {
   trackerType: "monitor",
   direction: "drop",
   pageMeta: null,
+  duplicate: null,
+  duplicateCheckPending: false,
 };
 
 const elements = {
@@ -331,11 +333,14 @@ function isTokenExpired(expiresAt) {
 function updateSegmentButtons() {
   document.querySelectorAll("[data-type]").forEach((button) => {
     button.classList.toggle("active", button.dataset.type === state.trackerType);
+    button.disabled = Boolean(state.duplicate);
   });
   document.querySelectorAll("[data-direction]").forEach((button) => {
     button.classList.toggle("active", button.dataset.direction === state.direction);
+    button.disabled = Boolean(state.duplicate);
   });
   elements.targetField.hidden = state.trackerType !== "alert";
+  elements.targetInput.disabled = Boolean(state.duplicate);
 }
 
 function render() {
@@ -356,6 +361,15 @@ function render() {
 
   const canTrack = authenticated && state.tab?.url && isTrackableUrl(state.tab.url);
   elements.addButton.disabled = !canTrack;
+  if (state.duplicateCheckPending) {
+    elements.addButton.disabled = true;
+    elements.addButton.textContent = "Checking...";
+  } else if (state.duplicate) {
+    elements.addButton.disabled = false;
+    elements.addButton.textContent = "Open tracker";
+  } else if (elements.addButton.textContent !== "Adding..." && elements.addButton.textContent !== "Added") {
+    elements.addButton.textContent = "Add to Dealvinci";
+  }
   updateSegmentButtons();
 }
 
@@ -416,6 +430,60 @@ async function handleExpiredSession() {
   showStatus("Session expired. Connect Dealvinci again to continue.", "error");
 }
 
+function getTrackerDashboardUrl(itemId) {
+  const dashboardUrl = new URL("/dashboard", state.appUrl);
+  if (itemId) {
+    dashboardUrl.searchParams.set("tracker", itemId);
+  }
+  return dashboardUrl.toString();
+}
+
+function openDuplicateTracker() {
+  api.tabs.create({ url: getTrackerDashboardUrl(state.duplicate?.item_id) });
+}
+
+async function getDuplicateTracker() {
+  return fetch(new URL(`/api/extension/tracked-items?url=${encodeURIComponent(state.tab.url)}`, state.appUrl), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${state.token}`,
+    },
+  });
+}
+
+async function checkDuplicateTracker() {
+  if (!state.token || !state.tab?.url || !isTrackableUrl(state.tab.url)) {
+    state.duplicate = null;
+    return;
+  }
+
+  state.duplicateCheckPending = true;
+  render();
+  try {
+    let response = await getDuplicateTracker();
+    if (response.status === 401 && (await refreshToken())) {
+      response = await getDuplicateTracker();
+    }
+    const payload = await response.json();
+    if (!response.ok) {
+      if (response.status === 401 || isAuthExpiredMessage(payload.detail || "")) {
+        await handleExpiredSession();
+      }
+      return;
+    }
+
+    state.duplicate = payload.duplicate ?? null;
+    if (state.duplicate) {
+      showStatus("Already tracking this product.", "success");
+    }
+  } catch {
+    state.duplicate = null;
+  } finally {
+    state.duplicateCheckPending = false;
+    render();
+  }
+}
+
 async function postTracker() {
   return fetch(new URL("/api/extension/tracked-items", state.appUrl), {
     method: "POST",
@@ -434,6 +502,11 @@ async function postTracker() {
 }
 
 async function addTracker() {
+  if (state.duplicate) {
+    openDuplicateTracker();
+    return;
+  }
+
   clearStatus();
   if (!state.token || !state.tab?.url || !isTrackableUrl(state.tab.url)) {
     showStatus("Open a supported product page first.", "error");
@@ -456,6 +529,12 @@ async function addTracker() {
     if (!response.ok) {
       if (response.status === 401 || isAuthExpiredMessage(payload.detail || "")) {
         await handleExpiredSession();
+        return;
+      }
+      if (response.status === 409 && payload.duplicate) {
+        state.duplicate = payload.duplicate;
+        showStatus("Already tracking this product.", "success");
+        render();
         return;
       }
       throw new Error(payload.detail || "Could not add this product.");
@@ -517,6 +596,7 @@ async function init() {
   state.tab = await queryActiveTab();
   await readPageMetadata();
   render();
+  await checkDuplicateTracker();
 
   if (state.tab?.url && !isTrackableUrl(state.tab.url)) {
     showStatus("This browser page cannot be tracked.", "error");

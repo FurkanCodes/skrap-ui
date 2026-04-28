@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -34,6 +34,7 @@ interface TrackerRowProps {
   openEditModal: (itemId: string) => void;
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
+  isHighlighted: boolean;
 }
 
 export const TrackerRow = memo(function TrackerRow({
@@ -52,9 +53,12 @@ export const TrackerRow = memo(function TrackerRow({
   openEditModal,
   runItemAction,
   requestDeleteAction,
+  isHighlighted,
 }: TrackerRowProps) {
   const t = useTranslations("tracking.dashboard.row");
   const locale = useLocale();
+  const rowRef = useRef<HTMLElement | null>(null);
+  const [highlightVisible, setHighlightVisible] = useState(false);
   const visibleActionFeedbackState =
     item.status === "active" ? pauseFeedbackState : resumeFeedbackState;
   const visibleActionFeedbackActive = visibleActionFeedbackState !== "idle";
@@ -95,10 +99,24 @@ export const TrackerRow = memo(function TrackerRow({
       : null;
   const faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(item.source_url)}`;
 
+  useEffect(() => {
+    if (!isHighlighted) {
+      return;
+    }
+
+    rowRef.current?.scrollIntoView({ block: "center" });
+    setHighlightVisible(true);
+    const timer = setTimeout(() => setHighlightVisible(false), 3200);
+    return () => clearTimeout(timer);
+  }, [isHighlighted]);
+
   return (
     <article
+      ref={rowRef}
       className={cn(
-        "relative grid gap-3 rounded-lg border border-border/80 bg-card p-4 shadow-[0_1px_0_0_hsl(var(--border)/0.4)] md:grid-cols-[minmax(0,1fr)_172px]"
+        "relative grid gap-3 rounded-lg border border-border/80 bg-card p-4 shadow-[0_1px_0_0_hsl(var(--border)/0.4)] transition-[border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        highlightVisible &&
+          "border-primary/55 ring-2 ring-primary/25 ring-offset-2 ring-offset-background"
       )}
     >
       <div className="flex gap-3">

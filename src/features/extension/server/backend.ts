@@ -65,7 +65,37 @@ export async function postExtensionBackendJson<TResponse, TPayload>(
     throw new BackendApiError(
       getErrorMessage(parsed),
       response.status,
-      (parsed as { detail?: unknown } | null)?.detail
+      parsed
+    );
+  }
+
+  return parsed as TResponse;
+}
+
+export async function getExtensionBackendJson<TResponse>(
+  path: string,
+  options: { authorization?: string | null } = {}
+): Promise<TResponse> {
+  const headers: Record<string, string> = {
+    "X-Request-ID": randomUUID().replace(/-/g, ""),
+  };
+  if (options.authorization) {
+    headers.Authorization = options.authorization;
+  }
+
+  const response = await fetch(buildBackendUrl(path), {
+    method: "GET",
+    headers,
+    cache: "no-store",
+  });
+  const responseText = await response.text();
+  const parsed = parseJson(responseText);
+
+  if (!response.ok) {
+    throw new BackendApiError(
+      getErrorMessage(parsed),
+      response.status,
+      parsed
     );
   }
 

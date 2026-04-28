@@ -19,7 +19,11 @@ function mapError(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export async function TrackersDashboard() {
+export async function TrackersDashboard({
+  highlightedTrackerId = null,
+}: {
+  highlightedTrackerId?: string | null;
+}) {
   const t = await getTranslations("tracking.errors");
   const auth = await getAuthContext();
   if (!auth) {
@@ -30,6 +34,7 @@ export async function TrackersDashboard() {
         initialError={null}
         telegramConnected={null}
         telegramBotUsername={null}
+        highlightedTrackerId={null}
       />
     );
   }
@@ -65,6 +70,7 @@ export async function TrackersDashboard() {
       initialError={initialError}
       telegramConnected={telegramConnected}
       telegramBotUsername={telegramBotUsername}
+      highlightedTrackerId={highlightedTrackerId}
     />
   );
 }

@@ -34,6 +34,7 @@ interface TrackersListProps {
   createTrackerDisabledReason: string | null;
   onClearFilters: () => void;
   onOpenModal: () => void;
+  highlightedTrackerId: string | null;
 }
 
 export function TrackersList({
@@ -58,6 +59,7 @@ export function TrackersList({
   createTrackerDisabledReason,
   onClearFilters,
   onOpenModal,
+  highlightedTrackerId,
 }: TrackersListProps) {
   const t = useTranslations("tracking.dashboard.list");
   const shouldReduceMotion = useReducedMotion();
@@ -166,6 +168,7 @@ export function TrackersList({
               openEditModal={openEditModal}
               runItemAction={runItemAction}
               requestDeleteAction={requestDeleteAction}
+              isHighlighted={highlightedTrackerId === item.item_id}
             />
           </motion.div>
         ))}

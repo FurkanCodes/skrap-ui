@@ -9,6 +9,7 @@ interface AuthenticatedTrackersDashboardClientProps {
   initialError: TrackersDashboardClientProps["initialError"];
   telegramConnected: TrackersDashboardClientProps["telegramConnected"];
   telegramBotUsername: TrackersDashboardClientProps["telegramBotUsername"];
+  highlightedTrackerId: TrackersDashboardClientProps["highlightedTrackerId"];
 }
 
 function AuthenticatedTrackersDashboardClient({
@@ -16,12 +17,14 @@ function AuthenticatedTrackersDashboardClient({
   initialError,
   telegramConnected,
   telegramBotUsername,
+  highlightedTrackerId,
 }: AuthenticatedTrackersDashboardClientProps) {
   const controller = useTrackersDashboardController({
     initialItems,
     initialError,
     telegramConnected,
     telegramBotUsername,
+    highlightedTrackerId,
   });
 
   return <TrackersDashboardAuthenticatedView controller={controller} />;
@@ -33,6 +36,7 @@ export function TrackersDashboardClient({
   initialError,
   telegramConnected,
   telegramBotUsername,
+  highlightedTrackerId,
 }: TrackersDashboardClientProps) {
   if (!isAuthenticated) {
     return <TrackersDashboardUnauthenticated />;
@@ -44,6 +48,7 @@ export function TrackersDashboardClient({
       initialError={initialError}
       telegramConnected={telegramConnected}
       telegramBotUsername={telegramBotUsername}
+      highlightedTrackerId={highlightedTrackerId}
     />
   );
 }

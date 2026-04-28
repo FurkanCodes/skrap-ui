@@ -54,6 +54,7 @@ interface UseTrackersDashboardControllerParams {
   initialError: string | null;
   telegramConnected: boolean | null;
   telegramBotUsername: string | null;
+  highlightedTrackerId: string | null;
 }
 
 const ROW_ACTION_ERROR_DURATION_MS = 4000;
@@ -88,6 +89,7 @@ export function useTrackersDashboardController({
   initialError,
   telegramConnected,
   telegramBotUsername,
+  highlightedTrackerId,
 }: UseTrackersDashboardControllerParams) {
   const router = useRouter();
   const t = useTranslations("tracking.dashboard.controller");
@@ -1444,6 +1446,7 @@ export function useTrackersDashboardController({
     resumeFeedbackByItemId,
     summary,
     telegramConnected,
+    highlightedTrackerId,
     consumedCredits,
     cancelDeleteAction,
     closeModal,

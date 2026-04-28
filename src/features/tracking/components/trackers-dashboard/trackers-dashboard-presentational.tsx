@@ -107,6 +107,7 @@ export function TrackersDashboardAuthenticatedView({
         createTrackerDisabledReason={controller.createTrackerDisabledReason}
         onClearFilters={controller.clearFilters}
         onOpenModal={controller.openModal}
+        highlightedTrackerId={controller.highlightedTrackerId}
       />
 
       {controller.creditsExhausted ? (

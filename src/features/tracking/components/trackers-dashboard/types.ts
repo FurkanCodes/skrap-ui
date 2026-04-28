@@ -6,6 +6,7 @@ export interface TrackersDashboardClientProps {
   initialError: string | null;
   telegramConnected: boolean | null;
   telegramBotUsername: string | null;
+  highlightedTrackerId: string | null;
 }
 
 export type ItemAction = "pause" | "resume" | "delete";
