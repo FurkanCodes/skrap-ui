@@ -237,15 +237,15 @@ function getErrorMessage(error, fallback) {
   }
 
   if (message.includes("fetch_failed") || message.includes("Failed to fetch")) {
-    return "Could not read this product page yet. Try another product URL or use the dashboard tracker.";
+    return "Could not read this product page yet. Try another product URL or use the dashboard.";
   }
 
   if (message.includes("tracker limit")) {
-    return "Tracker limit reached. Remove a tracker or upgrade your plan.";
+    return "Limit reached. Remove an item or upgrade your plan.";
   }
 
   if (message.toLowerCase().includes("telegram")) {
-    return "Connect Telegram in Dealvinci before adding trackers.";
+    return "Connect Telegram in Dealvinci before adding items.";
   }
 
   return message;
@@ -413,7 +413,7 @@ async function refreshToken() {
 async function handleExpiredSession() {
   await clearExtensionSession();
   render();
-  showStatus("Session expired. Connect Dealvinci again to keep tracking.", "error");
+  showStatus("Session expired. Connect Dealvinci again to continue.", "error");
 }
 
 async function postTracker() {
@@ -458,15 +458,15 @@ async function addTracker() {
         await handleExpiredSession();
         return;
       }
-      throw new Error(payload.detail || "Could not add tracker.");
+      throw new Error(payload.detail || "Could not add this product.");
     }
-    showStatus("Added to tracker.", "success");
+    showStatus("Added to Dealvinci.", "success");
     elements.addButton.textContent = "Added";
     setTimeout(() => {
-      elements.addButton.textContent = "Add tracker";
+      elements.addButton.textContent = "Add to Dealvinci";
     }, 1200);
   } catch (error) {
-    const message = getErrorMessage(error, "Could not add tracker.");
+    const message = getErrorMessage(error, "Could not add this product.");
     if (isAuthExpiredMessage(message)) {
       await handleExpiredSession();
       return;
@@ -474,7 +474,7 @@ async function addTracker() {
     showStatus(message, "error");
   } finally {
     if (elements.addButton.textContent !== "Added") {
-      elements.addButton.textContent = "Add tracker";
+      elements.addButton.textContent = "Add to Dealvinci";
     }
     render();
   }
@@ -509,7 +509,7 @@ async function init() {
   }
   if (stored.dealvinciToken && isTokenExpired(stored.dealvinciTokenExpiresAt)) {
     await clearExtensionSession();
-    showStatus("Session expired. Connect Dealvinci again to keep tracking.", "error");
+    showStatus("Session expired. Connect Dealvinci again to continue.", "error");
   } else {
     state.token = stored.dealvinciToken || null;
     state.refreshToken = stored.dealvinciRefreshToken || null;

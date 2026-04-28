@@ -9,12 +9,12 @@ const targets = target === "all" ? ["chrome", "firefox"] : [target];
 const manifests = {
   chrome: {
     manifest_version: 3,
-    name: "Dealvinci Tracker",
-    description: "Add the current product page to Dealvinci tracking.",
+    name: "Dealvinci",
+    description: "Add the current product page to Dealvinci.",
     version: "0.1.0",
     action: {
       default_popup: "popup.html",
-      default_title: "Dealvinci Tracker"
+      default_title: "Dealvinci"
     },
     background: {
       service_worker: "background.js",
@@ -31,12 +31,12 @@ const manifests = {
   },
   firefox: {
     manifest_version: 3,
-    name: "Dealvinci Tracker",
-    description: "Add the current product page to Dealvinci tracking.",
+    name: "Dealvinci",
+    description: "Add the current product page to Dealvinci.",
     version: "0.1.0",
     action: {
       default_popup: "popup.html",
-      default_title: "Dealvinci Tracker"
+      default_title: "Dealvinci"
     },
     background: {
       scripts: ["background.js"],
