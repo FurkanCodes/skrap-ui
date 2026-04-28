@@ -1,5 +1,6 @@
 export type FetchMode = "auto" | "http" | "dynamic" | "stealth";
 export type TrackingStatus = "active" | "paused";
+export type TrackingCreatedVia = "dashboard" | "extension";
 
 export interface TrackedItemRequest {
   url: string;
@@ -9,6 +10,7 @@ export interface TrackedItemRequest {
   check_interval_minutes?: number;
   target_amount?: string | null;
   notify_on_price_increase?: boolean;
+  created_via?: TrackingCreatedVia | null;
 }
 
 export interface TrackedItemBulkRequestItem {
@@ -67,6 +69,7 @@ export interface TrackedItemSummary {
   check_interval_minutes: number;
   target_amount: string | null;
   notify_on_price_increase: boolean;
+  created_via: TrackingCreatedVia | null;
   last_amount: string | null;
   currency: string | null;
   next_check_at: string | null;

@@ -295,6 +295,12 @@ export function toTrackedItemSummary(
     record.tracking_mode === "monitor" || record.tracking_mode === "alert"
       ? record.tracking_mode
       : fallback.tracking_mode;
+  const createdVia =
+    record.created_via === "dashboard" || record.created_via === "extension"
+      ? record.created_via
+      : record.created_via === null
+        ? null
+        : fallback.created_via;
   const interval =
     typeof record.check_interval_minutes === "number" &&
     Number.isInteger(record.check_interval_minutes) &&
@@ -325,6 +331,7 @@ export function toTrackedItemSummary(
         : (toOptionalString(record.target_amount) ?? fallback.target_amount),
     notify_on_price_increase:
       toOptionalBoolean(record.notify_on_price_increase) ?? fallback.notify_on_price_increase,
+    created_via: createdVia,
     last_amount:
       record.last_amount === null
         ? null

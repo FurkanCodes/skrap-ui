@@ -25,6 +25,7 @@ interface ExtensionDuplicateItem {
   source_url: string;
   product_name: string | null;
   status: "active" | "paused";
+  created_via: "dashboard" | "extension" | null;
 }
 
 interface TrackedItemLookupResponse {
@@ -72,6 +73,10 @@ function toDuplicateItem(value: unknown): ExtensionDuplicateItem | null {
     product_name:
       typeof record.product_name === "string" ? record.product_name : null,
     status,
+    created_via:
+      record.created_via === "dashboard" || record.created_via === "extension"
+        ? record.created_via
+        : null,
   };
 }
 
@@ -163,6 +168,7 @@ export async function POST(request: Request) {
         notify_on_price_increase: body.direction === "drop-increase",
         fetch_mode: "auto",
         duplicate_policy: "reject",
+        created_via: "extension",
       },
       { authorization: `Bearer ${upstreamAccessToken}` }
     );

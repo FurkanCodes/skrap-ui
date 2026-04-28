@@ -1332,6 +1332,7 @@ export function useTrackersDashboardController({
               check_interval_minutes: parsedInterval,
               target_amount: normalizedTargetAmount,
               notify_on_price_increase: draft.notifyOnPriceIncrease,
+              created_via: "dashboard",
               last_amount: draft.amount,
               currency: draft.currency,
               next_check_at: null,
