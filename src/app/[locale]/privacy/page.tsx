@@ -56,6 +56,12 @@ const sections: LegalSection[] = [
             tracker status, notification preferences, and recent check state.
           </li>
           <li>
+            Affiliate redirect information, when applicable, such as tracker identifier, account
+            identifier, redirect surface, merchant domain, affiliate rule identifier, affiliate
+            status, and click timestamp. We do not store IP address, user agent, or referrer in this
+            affiliate click log.
+          </li>
+          <li>
             Notification integration information, including Telegram connection state, bot username,
             chat identifier, Telegram username if available, connection expiry, and connection
             timestamps.
@@ -91,6 +97,7 @@ const sections: LegalSection[] = [
           <li>process product URLs, create previews, run price checks, and maintain trackers;</li>
           <li>send service emails, verification emails, password reset emails, and alerts;</li>
           <li>connect supported notification channels, including Telegram, at your request;</li>
+          <li>operate affiliate redirects, disclose affiliate links, and audit outbound clicks;</li>
           <li>apply plan limits, credits, usage controls, and abuse prevention rules;</li>
           <li>debug errors, preserve service reliability, prevent fraud, and enforce our Terms;</li>
           <li>respond to support requests and administrative inquiries;</li>
@@ -141,6 +148,10 @@ const sections: LegalSection[] = [
           <li>
             Retailers, marketplaces, or public websites to the limited extent necessary to request
             product pages or price data for URLs you submit.
+          </li>
+          <li>
+            Affiliate networks or merchants when you open an affiliate link, so the destination can
+            process the redirect and any eligible attribution according to its own policies.
           </li>
           <li>
             Payment processors and billing providers if you purchase a paid plan or paid credits.

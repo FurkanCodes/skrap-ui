@@ -178,6 +178,11 @@ const sections: LegalSection[] = [
           provide the functionality you request, such as sending verification emails, issuing
           password resets, fetching product pages, or delivering Telegram alerts.
         </p>
+        <p>
+          Some product links may be affiliate links. If you open or purchase through those links,
+          Dealvinci may receive compensation from the merchant or affiliate network at no extra cost
+          to you. We may record minimal click events to operate and audit affiliate redirects.
+        </p>
       </>
     ),
   },

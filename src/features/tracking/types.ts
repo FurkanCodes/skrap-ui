@@ -70,6 +70,8 @@ export interface TrackedItemSummary {
   target_amount: string | null;
   notify_on_price_increase: boolean;
   created_via: TrackingCreatedVia | null;
+  outbound_url: string | null;
+  outbound_is_affiliate: boolean;
   last_amount: string | null;
   currency: string | null;
   next_check_at: string | null;

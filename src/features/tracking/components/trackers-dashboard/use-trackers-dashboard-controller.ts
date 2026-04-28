@@ -1333,6 +1333,8 @@ export function useTrackersDashboardController({
               target_amount: normalizedTargetAmount,
               notify_on_price_increase: draft.notifyOnPriceIncrease,
               created_via: "dashboard",
+              outbound_url: null,
+              outbound_is_affiliate: false,
               last_amount: draft.amount,
               currency: draft.currency,
               next_check_at: null,

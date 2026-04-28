@@ -47,7 +47,7 @@ function getBackendBaseUrl(): string {
   );
 }
 
-function buildBackendUrl(path: string): string {
+export function buildBackendUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${getBackendBaseUrl()}${normalizedPath}`;
 }

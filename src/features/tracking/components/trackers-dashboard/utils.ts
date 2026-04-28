@@ -301,6 +301,10 @@ export function toTrackedItemSummary(
       : record.created_via === null
         ? null
         : fallback.created_via;
+  const outboundUrl =
+    record.outbound_url === null
+      ? null
+      : (toOptionalString(record.outbound_url) ?? fallback.outbound_url);
   const interval =
     typeof record.check_interval_minutes === "number" &&
     Number.isInteger(record.check_interval_minutes) &&
@@ -332,6 +336,9 @@ export function toTrackedItemSummary(
     notify_on_price_increase:
       toOptionalBoolean(record.notify_on_price_increase) ?? fallback.notify_on_price_increase,
     created_via: createdVia,
+    outbound_url: outboundUrl,
+    outbound_is_affiliate:
+      toOptionalBoolean(record.outbound_is_affiliate) ?? fallback.outbound_is_affiliate,
     last_amount:
       record.last_amount === null
         ? null

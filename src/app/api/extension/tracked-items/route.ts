@@ -26,6 +26,8 @@ interface ExtensionDuplicateItem {
   product_name: string | null;
   status: "active" | "paused";
   created_via: "dashboard" | "extension" | null;
+  outbound_url: string | null;
+  outbound_is_affiliate: boolean;
 }
 
 interface TrackedItemLookupResponse {
@@ -77,6 +79,8 @@ function toDuplicateItem(value: unknown): ExtensionDuplicateItem | null {
       record.created_via === "dashboard" || record.created_via === "extension"
         ? record.created_via
         : null,
+    outbound_url: typeof record.outbound_url === "string" ? record.outbound_url : null,
+    outbound_is_affiliate: record.outbound_is_affiliate === true,
   };
 }
 

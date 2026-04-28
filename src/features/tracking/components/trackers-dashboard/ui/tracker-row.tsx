@@ -85,6 +85,7 @@ export const TrackerRow = memo(function TrackerRow({
   const productName = item.product_name ?? item.source_url;
   const showDomainBadge = domain.toLowerCase() !== productName.trim().toLowerCase();
   const showExtensionBadge = item.created_via === "extension";
+  const showAffiliateBadge = item.outbound_is_affiliate;
   const formattedTargetAmount = formatTargetAmount(item.target_amount, item.currency, locale);
   const formattedCurrentAmount = formatTargetAmount(item.last_amount, item.currency, locale);
   const isTrackingLive = item.status === "active";
@@ -152,6 +153,11 @@ export const TrackerRow = memo(function TrackerRow({
             {showExtensionBadge ? (
               <Chip tone="muted">
                 {t("extension")}
+              </Chip>
+            ) : null}
+            {showAffiliateBadge ? (
+              <Chip tone="muted">
+                {t("affiliateLink")}
               </Chip>
             ) : null}
             <Chip

@@ -48,6 +48,7 @@ export function TrackerActionButtons({
   const t = useTranslations("tracking.dashboard.actions");
   const controlsDisabled = busy || isRefreshPending;
   const shouldReduceMotion = useReducedMotion();
+  const productHref = item.outbound_url ?? item.source_url;
   const smoothEase = [0.22, 1, 0.36, 1] as const;
   const quickTransition = shouldReduceMotion
     ? { duration: 0 }
@@ -71,7 +72,7 @@ export function TrackerActionButtons({
         {renderIconButtonWithTooltip(
           t("openProduct"),
           <a
-            href={item.source_url}
+            href={productHref}
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
