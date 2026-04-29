@@ -2,28 +2,8 @@ import HeroSection from "@/components/shadcn-space/blocks/hero-01/hero";
 import type { NavigationSection } from "@/components/shadcn-space/blocks/hero-01/header";
 import Header from "@/components/shadcn-space/blocks/hero-01/header";
 import BrandSlider, { BrandList } from "@/components/shadcn-space/blocks/hero-01/brand-slider";
-import type { AvatarList } from "@/components/shadcn-space/blocks/hero-01/hero";
 
 export default function AgencyHeroSection() {
-  const avatarList: AvatarList[] = [
-    {
-      name: "Sourcing lead",
-      initials: "SL",
-    },
-    {
-      name: "Marketplace operator",
-      initials: "MO",
-    },
-    {
-      name: "Deal analyst",
-      initials: "DA",
-    },
-    {
-      name: "Pricing manager",
-      initials: "PM",
-    },
-  ];
-
   const navigationData: NavigationSection[] = [
     {
       title: "Home",
@@ -71,7 +51,7 @@ export default function AgencyHeroSection() {
     <div id="home" className="relative">
       <Header navigationData={navigationData} />
       <main>
-        <HeroSection avatarList={avatarList} />
+        <HeroSection />
         <BrandSlider brandList={brandList} />
       </main>
     </div>

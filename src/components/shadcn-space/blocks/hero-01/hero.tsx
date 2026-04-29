@@ -3,10 +3,9 @@
 import { Instrument_Serif } from "next/font/google";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowUpRight, Star } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -14,16 +13,7 @@ const instrumentSerif = Instrument_Serif({
   style: ["italic"],
 });
 
-export type AvatarList = {
-  name: string;
-  initials: string;
-};
-
-type HeroSectionProps = {
-  avatarList: AvatarList[];
-};
-
-function HeroSection({ avatarList }: HeroSectionProps) {
+function HeroSection() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
 
@@ -74,7 +64,7 @@ function HeroSection({ avatarList }: HeroSectionProps) {
                       ? { duration: 0 }
                       : { duration: 1, delay: 0.2, ease: "easeInOut" }
                   }
-                  className="flex items-center flex-col md:flex-row lg:justify-start justify-center gap-8"
+                  className="flex items-center justify-center lg:justify-start"
                 >
                   <Button
                     onClick={() => router.push("/auth/sign-up?next=/dashboard")}
@@ -87,33 +77,6 @@ function HeroSection({ avatarList }: HeroSectionProps) {
                       <ArrowUpRight size={16} />
                     </span>
                   </Button>
-                  <div className="flex items-center sm:gap-7 gap-3">
-                    <ul className="avatar flex flex-row items-center">
-                      {avatarList.map((avatar) => (
-                        <li key={avatar.name} className="-mr-2 z-1 avatar-hover:ml-2">
-                          <Avatar className="size-10 border-2 border-background">
-                            <AvatarFallback aria-label={avatar.name}>
-                              {avatar.initials}
-                            </AvatarFallback>
-                          </Avatar>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="gap-1 flex flex-col items-start">
-                      <div className="flex gap-1">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <Star
-                            key={index}
-                            aria-hidden="true"
-                            className="h-4 w-4 fill-primary text-primary"
-                          />
-                        ))}
-                      </div>
-                      <p className="sm:text-sm text-xs font-normal text-muted-foreground">
-                        Trusted by deal hunters and sourcing teams
-                      </p>
-                    </div>
-                  </div>
                 </motion.div>
               </div>
 
