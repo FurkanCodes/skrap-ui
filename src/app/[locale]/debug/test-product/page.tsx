@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 
+import {
+  getDebugTrackerFixture,
+  normalizeFixtureId,
+} from "@/features/debug/tracker-fixtures/fixtures";
+
 type SearchParamValue = string | string[] | undefined;
 type SearchParams = Promise<Record<string, SearchParamValue>>;
 
@@ -150,12 +155,50 @@ function buildProduct(searchParams: Record<string, SearchParamValue>) {
   };
 }
 
+async function resolveFixtureParams(
+  searchParams: Record<string, SearchParamValue>
+): Promise<Record<string, SearchParamValue>> {
+  const fixtureId = normalizeFixtureId(firstParam(searchParams.fixture));
+  if (!fixtureId) {
+    return searchParams;
+  }
+
+  try {
+    const fixture = await getDebugTrackerFixture(fixtureId);
+    if (!fixture) {
+      return searchParams;
+    }
+
+    return {
+      ...searchParams,
+      name: fixture.name,
+      price: fixture.basePrice,
+      changed_price: fixture.changedPrice,
+      currency: fixture.currency,
+      stock: fixture.baseStock,
+      changed_stock: fixture.changedStock,
+      scenario: fixture.scenario,
+      change_after_seconds: String(fixture.changeAfterSeconds),
+      cycle_seconds: String(fixture.cycleSeconds),
+      starts_at: fixture.startsAt?.toISOString(),
+      include_noise: String(fixture.includeNoise),
+    };
+  } catch (error) {
+    console.error("[debug-test-product] Could not load fixture", error);
+    return searchParams;
+  }
+}
+
+async function resolveProduct(searchParams: Record<string, SearchParamValue>) {
+  return buildProduct(await resolveFixtureParams(searchParams));
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const product = buildProduct(await searchParams);
+  const product = await resolveProduct(await searchParams);
 
   return {
     title: `${product.name} | Dealvinci Test Product`,
@@ -186,7 +229,7 @@ export default async function TestProductPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const product = buildProduct(await searchParams);
+  const product = await resolveProduct(await searchParams);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
