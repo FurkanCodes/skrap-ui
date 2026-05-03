@@ -28,10 +28,37 @@ interface BillingCheckoutClientProps {
 
 type CheckoutState = "preparing" | "ready" | "completed" | "paused" | "error";
 
-function formatPlanName(plan: BillingPlanKey | null): string {
-  if (!plan) return "Dealvinci";
-  return plan.charAt(0).toUpperCase() + plan.slice(1);
-}
+type CheckoutTotals = {
+  subtotal?: number | string | null;
+  discount?: number | string | null;
+  tax?: number | string | null;
+  total?: number | string | null;
+  credit?: number | string | null;
+  balance?: number | string | null;
+};
+
+type CheckoutBillingCycle = {
+  interval?: "day" | "week" | "month" | "year" | string | null;
+  frequency?: number | string | null;
+};
+
+type CheckoutSummaryItem = {
+  quantity?: number | string | null;
+  price_name?: string | null;
+  product?: {
+    name?: string | null;
+  } | null;
+  billing_cycle?: CheckoutBillingCycle | null;
+  totals?: CheckoutTotals | null;
+  recurring_totals?: CheckoutTotals | null;
+};
+
+type CheckoutSummaryData = {
+  currency_code?: string | null;
+  items?: CheckoutSummaryItem[] | null;
+  totals?: CheckoutTotals | null;
+  recurring_totals?: CheckoutTotals | null;
+};
 
 export function BillingCheckoutClient({
   locale,
@@ -54,11 +81,38 @@ export function BillingCheckoutClient({
   const returnPath = localizePathname("/billing/return", locale);
   const settingsPath = localizePathname("/settings", locale);
 
+  const summaryData = readCheckoutSummaryData(checkoutData);
+
+  const currencyCode = summaryData?.currency_code ?? null;
+
+  const subtotal = formatCheckoutMoney(summaryData?.totals?.subtotal, currencyCode, locale);
+  const tax = formatCheckoutMoney(summaryData?.totals?.tax, currencyCode, locale);
+  const dueToday = formatCheckoutMoney(summaryData?.totals?.total, currencyCode, locale);
+
+  const recurringTotal = formatCheckoutMoney(
+    summaryData?.recurring_totals?.total,
+    currencyCode,
+    locale
+  );
+
+  const quantity = readCheckoutQuantity(summaryData?.items);
+  const recurringPeriod = readRecurringPeriod(summaryData?.items);
+  const selectedPlanLabel = readSelectedPlanLabel(summaryData?.items, plan);
+
+  const recurringDescription = recurringTotal
+    ? recurringPeriod
+      ? t("summary.thenRecurring", {
+          amount: recurringTotal,
+          period: formatRecurringPeriod(t, recurringPeriod),
+        })
+      : t("summary.thenRecurringDefault", { amount: recurringTotal })
+    : t("summary.description");
+
+  const checkoutStateLabel = formatCheckoutState(t, checkoutState);
+
   const hasCheckoutData = Boolean(checkoutData);
   const isLoadingCheckout =
     !hasCheckoutData && checkoutState !== "error" && checkoutState !== "paused";
-
-  const planName = useMemo(() => formatPlanName(plan), [plan]);
 
   const buildReturnUrl = useCallback(
     (targetTransactionId: string) => {
@@ -267,8 +321,12 @@ export function BillingCheckoutClient({
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground leading-none">Dealvinci</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Secure checkout</p>
+            <p className="text-sm font-semibold text-foreground leading-none">
+              {t("brand.name")}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {t("brand.tagline")}
+            </p>
           </div>
         </div>
       </header>
@@ -306,19 +364,27 @@ export function BillingCheckoutClient({
 
           <div className="flex items-baseline gap-1">
             <span className="text-[42px] font-semibold text-foreground leading-none tracking-tight">
-              {t("summary.awaitingPrice")}
+              {dueToday ?? t("summary.awaitingPrice")}
             </span>
+
+            {dueToday && (
+              <span className="text-base text-muted-foreground ml-1">
+                {t("summary.incTax")}
+              </span>
+            )}
           </div>
 
           <p className="text-[13px] text-muted-foreground mt-2">
-            {t("summary.description")}
+            {recurringDescription}
           </p>
 
           <div className="mt-7 rounded-2xl border border-border bg-background p-4 shadow-sm">
             <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
               {t("summary.selectedPlan")}
             </p>
-            <p className="mt-1 text-lg font-semibold text-foreground">{planName}</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">
+              {selectedPlanLabel}
+            </p>
 
             {transactionId && (
               <p className="mt-2 text-xs text-muted-foreground break-all">
@@ -328,26 +394,28 @@ export function BillingCheckoutClient({
           </div>
 
           <p className="text-[13px] text-muted-foreground mt-7 mb-3">
-            {t("summary.credits")}
+            {t("summary.seatLabel")}
           </p>
 
           <div className="flex items-center w-fit rounded-lg border border-border bg-background overflow-hidden">
             <button
               type="button"
               disabled
+              aria-label={t("quantity.decrease")}
               className="flex items-center justify-center w-10 h-10 text-muted-foreground opacity-60"
-              aria-label="Decrease quantity"
             >
               <Minus className="size-3.5" />
             </button>
+
             <div className="w-10 h-10 flex items-center justify-center text-sm font-medium text-foreground border-x border-border">
-              1
+              {quantity ?? "—"}
             </div>
+
             <button
               type="button"
               disabled
+              aria-label={t("quantity.increase")}
               className="flex items-center justify-center w-10 h-10 text-muted-foreground opacity-60"
-              aria-label="Increase quantity"
             >
               <Plus className="size-3.5" />
             </button>
@@ -355,18 +423,38 @@ export function BillingCheckoutClient({
 
           <div className="mt-8 pt-6 border-t border-border space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-[13px] text-muted-foreground">{t("summary.status")}</span>
+              <span className="text-[13px] text-muted-foreground">
+                {t("summary.subtotal")}
+              </span>
               <span className="text-[13px] font-medium text-foreground">
-                {t(`states.${checkoutState}`)}
+                {subtotal ?? t("summary.confirmInCheckout")}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-muted-foreground">
-                {t("summary.confirmInCheckout")}
+                {t("summary.tax")}
               </span>
               <span className="text-[13px] font-medium text-foreground">
-                {t("summary.awaitingPrice")}
+                {tax ?? t("summary.confirmInCheckout")}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 mt-2 border-t border-border">
+              <span className="text-[13px] text-muted-foreground">
+                {t("summary.dueToday")}
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {dueToday ?? t("summary.confirmInCheckout")}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 mt-2 border-t border-border">
+              <span className="text-[13px] text-muted-foreground">
+                {t("summary.status")}
+              </span>
+              <span className="text-[13px] font-medium text-foreground">
+                {checkoutStateLabel}
               </span>
             </div>
 
@@ -383,7 +471,9 @@ export function BillingCheckoutClient({
             <p className="text-[13px] font-medium text-muted-foreground tracking-wide">
               {t("payment.title")}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("payment.description")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("payment.description")}
+            </p>
           </div>
 
           <div className="relative min-h-[640px]">
@@ -435,14 +525,17 @@ function CheckoutSkeleton({ label }: { label: string }) {
           <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
           <div className="h-11 w-full animate-pulse rounded-lg bg-muted" />
         </div>
+
         <div className="space-y-1.5">
           <div className="h-3.5 w-28 animate-pulse rounded bg-muted" />
           <div className="h-11 w-full animate-pulse rounded-lg bg-muted" />
         </div>
+
         <div className="space-y-1.5">
           <div className="h-3.5 w-20 animate-pulse rounded bg-muted" />
           <div className="h-24 w-full animate-pulse rounded-lg bg-muted" />
         </div>
+
         <div className="space-y-1.5">
           <div className="h-3.5 w-16 animate-pulse rounded bg-muted" />
           <div className="h-11 w-full animate-pulse rounded-lg bg-muted" />
@@ -456,6 +549,103 @@ function CheckoutSkeleton({ label }: { label: string }) {
       <div className="h-12 w-full animate-pulse rounded-lg bg-muted mt-2" />
     </div>
   );
+}
+
+function readCheckoutSummaryData(data: CheckoutEventsData | null): CheckoutSummaryData | null {
+  return data as unknown as CheckoutSummaryData | null;
+}
+
+function formatCheckoutMoney(
+  amount: number | string | null | undefined,
+  currencyCode: string | null | undefined,
+  locale: AppLocale
+): string | null {
+  if (amount === null || amount === undefined || !currencyCode) return null;
+
+  const numericAmount = Number(amount);
+
+  if (!Number.isFinite(numericAmount)) return null;
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currencyCode,
+    currencyDisplay: "code",
+  }).format(numericAmount);
+}
+
+function readCheckoutQuantity(items: CheckoutSummaryItem[] | null | undefined): number | null {
+  if (!items?.length) return null;
+
+  const quantity = items.reduce((total, item) => {
+    const itemQuantity = Number(item.quantity ?? 0);
+    return Number.isFinite(itemQuantity) ? total + itemQuantity : total;
+  }, 0);
+
+  return quantity > 0 ? quantity : null;
+}
+
+function readRecurringPeriod(
+  items: CheckoutSummaryItem[] | null | undefined
+): CheckoutBillingCycle | null {
+  if (!items?.length) return null;
+
+  return items.find((item) => item.billing_cycle)?.billing_cycle ?? null;
+}
+
+function readSelectedPlanLabel(
+  items: CheckoutSummaryItem[] | null | undefined,
+  plan: BillingPlanKey | null
+): string {
+  const firstItem = items?.[0];
+
+  const paddleProductName = firstItem?.product?.name?.trim();
+  if (paddleProductName) return paddleProductName;
+
+  const paddlePriceName = firstItem?.price_name?.trim();
+  if (paddlePriceName) return paddlePriceName;
+
+  if (!plan) return "—";
+
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
+}
+
+function formatRecurringPeriod(
+  t: ReturnType<typeof useTranslations<"billingCheckout">>,
+  billingCycle: CheckoutBillingCycle
+): string {
+  const frequency = Number(billingCycle.frequency ?? 1);
+  const safeFrequency = Number.isFinite(frequency) && frequency > 0 ? frequency : 1;
+
+  switch (billingCycle.interval) {
+    case "day":
+      return t("intervals.day", { count: safeFrequency });
+    case "week":
+      return t("intervals.week", { count: safeFrequency });
+    case "month":
+      return t("intervals.month", { count: safeFrequency });
+    case "year":
+      return t("intervals.year", { count: safeFrequency });
+    default:
+      return t("intervals.billingPeriod");
+  }
+}
+
+function formatCheckoutState(
+  t: ReturnType<typeof useTranslations<"billingCheckout">>,
+  state: CheckoutState
+): string {
+  switch (state) {
+    case "preparing":
+      return t("states.preparing");
+    case "ready":
+      return t("states.ready");
+    case "completed":
+      return t("states.completed");
+    case "paused":
+      return t("states.paused");
+    case "error":
+      return t("states.error");
+  }
 }
 
 async function readJson(response: Response): Promise<unknown> {
