@@ -52,6 +52,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         outcome: "pending",
         detail: "Payment has not completed yet.",
         status: transaction.status,
+        checkoutUrl: transaction.checkout?.url ?? null,
       };
       return NextResponse.json(
         response,
@@ -67,6 +68,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         ok: false,
         outcome: "transaction_incomplete",
         detail: "Paddle has not attached a subscription to this transaction yet.",
+        checkoutUrl: transaction.checkout?.url ?? null,
       };
       return NextResponse.json(
         response,

@@ -19,6 +19,7 @@ export interface BillingSyncResponse {
   detail?: string;
   status?: string;
   reason?: string | null;
+  checkoutUrl?: string | null;
 }
 
 export interface BillingPortalResponse {

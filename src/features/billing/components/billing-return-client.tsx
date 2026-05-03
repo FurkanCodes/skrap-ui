@@ -162,14 +162,24 @@ export function BillingReturnClient({
       }
 
       if (response.status === 409) {
-        const outcome = isSyncResponse(payload) ? payload.outcome : null;
+        const syncPayload = isSyncResponse(payload) ? payload : null;
+        const outcome = syncPayload?.outcome ?? null;
+        const checkoutUrl = syncPayload?.checkoutUrl ?? null;
         if (
           allowReopen &&
           outcome === "pending" &&
           !openedFromPaymentLinkRef.current
         ) {
           openedFromPaymentLinkRef.current = true;
-          await openCheckout(targetTransactionId);
+          const opened = await openCheckout(targetTransactionId);
+          if (!opened) {
+            if (checkoutUrl) {
+              window.location.assign(checkoutUrl);
+              return;
+            }
+            setFlowState("delayed");
+            return;
+          }
         }
         setFlowState(outcome === "pending" ? "checkout_open" : "syncing");
         await wait(delayMs);
@@ -262,7 +272,6 @@ export function BillingReturnClient({
               variant="outline"
               onClick={() => {
                 void openCheckout(transactionId);
-                setFlowState("checkout_open");
               }}
             >
               <ExternalLink className="size-4" />
