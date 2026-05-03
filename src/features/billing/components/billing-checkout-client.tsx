@@ -424,7 +424,7 @@ function formatCheckoutAmount(value: number, currency: string, locale: string): 
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-  }).format(value / 100);
+  }).format(value);
 }
 
 function statusClassName(state: CheckoutState): string {
