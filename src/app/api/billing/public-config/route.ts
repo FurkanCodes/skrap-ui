@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type PaddleEnvironment = "sandbox" | "production";
 
@@ -10,10 +12,10 @@ interface PaddlePublicConfigResponse {
 }
 
 export async function GET(): Promise<NextResponse> {
-  const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN?.trim();
+  const token = readEnv("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", "PADDLE_CLIENT_TOKEN");
   if (!token) {
     return NextResponse.json(
-      { detail: "Paddle client token is not configured on the server." },
+      { detail: "Paddle client token is not configured on the server. Set NEXT_PUBLIC_PADDLE_CLIENT_TOKEN or PADDLE_CLIENT_TOKEN for the running Next.js container." },
       { status: 500 }
     );
   }
@@ -32,15 +34,25 @@ export async function GET(): Promise<NextResponse> {
 }
 
 function resolveEnvironment(): PaddleEnvironment {
-  const publicEnv = process.env.NEXT_PUBLIC_PADDLE_ENV?.trim().toLowerCase();
+  const publicEnv = readEnv("NEXT_PUBLIC_PADDLE_ENV")?.toLowerCase();
   if (publicEnv === "production") {
     return "production";
   }
 
-  const serverEnv = process.env.PADDLE_ENV?.trim().toLowerCase();
+  const serverEnv = readEnv("PADDLE_ENV")?.toLowerCase();
   if (serverEnv === "production") {
     return "production";
   }
 
   return "sandbox";
+}
+
+function readEnv(...names: string[]): string | null {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return null;
 }
