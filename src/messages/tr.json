@@ -262,6 +262,7 @@
       "title": "Odeme hatasi",
       "planRequired": "Odeme oncesi gecerli bir ucretli plan secin.",
       "openCheckout": "Paddle odeme ekrani acilamadi.",
+      "hostedCheckoutUnavailable": "Paddle bu islem icin odeme baglantisi dondurmedi.",
       "startCheckout": "Odeme baslatilamadi.",
       "syncFailed": "Odeme durumu esitlenemedi."
     }

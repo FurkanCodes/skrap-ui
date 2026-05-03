@@ -262,6 +262,7 @@
       "title": "Billing error",
       "planRequired": "Select a valid paid plan before checkout.",
       "openCheckout": "Could not open Paddle checkout.",
+      "hostedCheckoutUnavailable": "Paddle did not return a checkout link for this transaction.",
       "startCheckout": "Could not start checkout.",
       "syncFailed": "Could not sync billing state."
     }

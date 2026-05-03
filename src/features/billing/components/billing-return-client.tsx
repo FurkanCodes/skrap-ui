@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { loadPaddle } from "@/features/billing/client/paddle-js";
 import type {
   BillingCheckoutResponse,
   BillingPlanKey,
@@ -68,24 +67,32 @@ export function BillingReturnClient({
   const openCheckout = useCallback(async (nextTransactionId: string): Promise<boolean> => {
     setErrorMessage(null);
     setFlowState("opening_checkout");
-    try {
-      const paddle = await loadPaddle();
-      const successPath = buildReturnQuery(nextTransactionId);
-      const successUrl = `${window.location.origin}${successPath}`;
-      paddle.Checkout.open({
-        transactionId: nextTransactionId,
-        settings: {
-          displayMode: "overlay",
-          successUrl,
-        },
-      });
-      setFlowState("checkout_open");
+
+    const response = await fetch("/api/billing/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ transactionId: nextTransactionId }),
+    });
+    const payload = await readJson(response);
+    if (isSyncResponse(payload) && payload.checkoutUrl) {
+      window.location.assign(payload.checkoutUrl);
       return true;
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : t("errors.openCheckout"));
-      setFlowState("error");
-      return false;
     }
+
+    const returnUrl = `${window.location.origin}${buildReturnQuery(nextTransactionId)}`;
+    setErrorMessage(
+      response.status === 409
+        ? t("errors.hostedCheckoutUnavailable")
+        : readError(payload, t("errors.openCheckout"))
+    );
+    setFlowState("error");
+    console.warn("[billing-return]", {
+      outcome: "hosted_checkout_unavailable",
+      transactionId: nextTransactionId,
+      returnUrl,
+    });
+    return false;
   }, [buildReturnQuery, t]);
 
   const startCheckout = useCallback(async () => {
@@ -122,10 +129,11 @@ export function BillingReturnClient({
       }
       checkoutPayload = payload;
       setTransactionId(payload.transactionId);
-      const opened = await openCheckout(payload.transactionId);
-      if (!opened && payload.checkoutUrl) {
+      if (payload.checkoutUrl) {
         window.location.assign(payload.checkoutUrl);
+        return;
       }
+      await openCheckout(payload.transactionId);
     } catch (error) {
       if (checkoutPayload?.checkoutUrl) {
         window.location.assign(checkoutPayload.checkoutUrl);
@@ -171,15 +179,12 @@ export function BillingReturnClient({
           !openedFromPaymentLinkRef.current
         ) {
           openedFromPaymentLinkRef.current = true;
-          const opened = await openCheckout(targetTransactionId);
-          if (!opened) {
-            if (checkoutUrl) {
-              window.location.assign(checkoutUrl);
-              return;
-            }
-            setFlowState("delayed");
+          if (checkoutUrl) {
+            window.location.assign(checkoutUrl);
             return;
           }
+          await openCheckout(targetTransactionId);
+          return;
         }
         setFlowState(outcome === "pending" ? "checkout_open" : "syncing");
         await wait(delayMs);
