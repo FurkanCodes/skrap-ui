@@ -11,6 +11,12 @@ RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 FROM base AS builder
 
+ARG NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+ARG NEXT_PUBLIC_PADDLE_ENV
+
+ENV NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=$NEXT_PUBLIC_PADDLE_CLIENT_TOKEN \
+    NEXT_PUBLIC_PADDLE_ENV=$NEXT_PUBLIC_PADDLE_ENV
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
