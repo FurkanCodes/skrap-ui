@@ -335,6 +335,8 @@ export function toTrackedItemSummary(
         : (toOptionalString(record.target_amount) ?? fallback.target_amount),
     notify_on_price_increase:
       toOptionalBoolean(record.notify_on_price_increase) ?? fallback.notify_on_price_increase,
+    notify_on_stock_change:
+      toOptionalBoolean(record.notify_on_stock_change) ?? fallback.notify_on_stock_change,
     created_via: createdVia,
     outbound_url: outboundUrl,
     outbound_is_affiliate:
@@ -347,6 +349,10 @@ export function toTrackedItemSummary(
       record.currency === null
         ? null
         : (toOptionalString(record.currency) ?? fallback.currency),
+    availability:
+      record.availability === null
+        ? null
+        : (toOptionalString(record.availability) ?? fallback.availability),
     next_check_at:
       record.next_check_at === null
         ? null
@@ -411,6 +417,13 @@ function hasSamePriceIncreasePreference(
   return left.notify_on_price_increase === right.notify_on_price_increase;
 }
 
+function hasSameStockChangePreference(
+  left: TrackedItemSummary,
+  right: TrackedItemSummary
+): boolean {
+  return left.notify_on_stock_change === right.notify_on_stock_change;
+}
+
 function isLikelySameTracker(
   optimisticItem: TrackedItemSummary,
   candidate: TrackedItemSummary
@@ -420,7 +433,8 @@ function isLikelySameTracker(
     optimisticItem.tracking_mode === candidate.tracking_mode &&
     optimisticItem.check_interval_minutes === candidate.check_interval_minutes &&
     hasSameTargetAmount(optimisticItem, candidate) &&
-    hasSamePriceIncreasePreference(optimisticItem, candidate)
+    hasSamePriceIncreasePreference(optimisticItem, candidate) &&
+    hasSameStockChangePreference(optimisticItem, candidate)
   );
 }
 

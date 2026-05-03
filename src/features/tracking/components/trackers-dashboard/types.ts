@@ -61,7 +61,9 @@ export interface BulkTrackerDraft {
   interval: string;
   targetAmount: string;
   notifyOnPriceIncrease: boolean;
+  notifyOnStockChange: boolean;
   modeOverridden: boolean;
   intervalOverridden: boolean;
   notifyOnPriceIncreaseOverridden: boolean;
+  notifyOnStockChangeOverridden: boolean;
 }

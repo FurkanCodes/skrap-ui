@@ -88,6 +88,21 @@ export const TrackerRow = memo(function TrackerRow({
   const showAffiliateBadge = item.outbound_is_affiliate;
   const formattedTargetAmount = formatTargetAmount(item.target_amount, item.currency, locale);
   const formattedCurrentAmount = formatTargetAmount(item.last_amount, item.currency, locale);
+  const availability = (item.availability ?? "").trim().toLowerCase();
+  const isNotInStock =
+    availability === "out_of_stock" ||
+    availability === "preorder" ||
+    availability === "discontinued";
+  const availabilityLabel =
+    availability === "in_stock"
+      ? t("availabilityInStock")
+      : availability === "out_of_stock"
+        ? t("availabilityOutOfStock")
+        : availability === "preorder"
+          ? t("availabilityPreorder")
+          : availability === "discontinued"
+            ? t("availabilityDiscontinued")
+            : null;
   const isTrackingLive = item.status === "active";
   const trackingStatusChipLabel = isTrackingLive ? t("live") : t("paused");
   const trackingStatusLineLabel = isTrackingLive ? t("trackingLive") : t("trackingPaused");
@@ -174,6 +189,9 @@ export const TrackerRow = memo(function TrackerRow({
                 {t("priceIncrease")}
               </Chip>
             ) : null}
+            {availabilityLabel ? (
+              <Chip tone={isNotInStock ? "muted" : "subtle"}>{availabilityLabel}</Chip>
+            ) : null}
           </div>
 
           <p className="line-clamp-1 text-sm font-semibold text-foreground">{productName}</p>
@@ -182,6 +200,9 @@ export const TrackerRow = memo(function TrackerRow({
             <span className="text-2xl font-semibold text-foreground">
               {formatPrice(item.last_amount, item.currency, locale)}
             </span>
+            {isNotInStock ? (
+              <span className="text-xs text-muted-foreground">{t("lastInStock")}</span>
+            ) : null}
             {formattedTargetAmount ? (
               <span className="text-xs text-muted-foreground">
                 {t("target", { value: formattedTargetAmount })}
@@ -189,7 +210,7 @@ export const TrackerRow = memo(function TrackerRow({
             ) : null}
           </div>
 
-          {progress.percent !== null ? (
+          {progress.percent !== null && !isNotInStock ? (
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
                 <span className="min-w-0 max-w-[34%] truncate">{formattedCurrentAmount ?? "-"}</span>

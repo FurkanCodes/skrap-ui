@@ -491,6 +491,11 @@
         "priceAlert": "Fiyat Uyarisi",
         "priceDrop": "Fiyat Dususu",
         "priceIncrease": "Fiyat Artisi",
+        "availabilityInStock": "Stokta",
+        "availabilityOutOfStock": "Stokta yok",
+        "availabilityPreorder": "On siparis",
+        "availabilityDiscontinued": "Uretimden kalkti",
+        "lastInStock": "Son stoktaki fiyat",
         "target": "Hedef: {value}",
         "every": "her",
         "checkedRecently": "Az once kontrol edildi",
@@ -563,6 +568,7 @@
         "sharedDefaultsHint": "Elle degistirilmeyen hazir satirlara uygulanir.",
         "extraAlerts": "Ek bildirimler",
         "notifyIncrease": "Fiyat arttiginda bildir",
+        "notifyStockChange": "Stok degisimlerinde bildir",
         "items": "Ogeler",
         "selected": "Secili {count}",
         "configuration": "Yapilandirma",
@@ -594,6 +600,7 @@
         "interval": "Aralik",
         "extraAlerts": "Ek bildirimler",
         "notifyIncrease": "Fiyat arttiginda bildir",
+        "notifyStockChange": "Stok degisimlerinde bildir",
         "cancel": "Iptal",
         "save": "Kaydet"
       }
@@ -650,7 +657,8 @@
         "targetAmountPlaceholder": "45000.00",
         "mode": "Mod",
         "interval": "Kontrol araligi (dakika, min {minInterval})",
-        "notifyIncrease": "Fiyat artarsa da bildir"
+        "notifyIncrease": "Fiyat artarsa da bildir",
+        "notifyStockChange": "Stok degisimini de bildir"
       },
       "actions": {
         "trackItem": "Takibe al"
@@ -659,7 +667,8 @@
         "alert": "Fiyat hedefinize geldiginde size bildirim gonderecegiz.",
         "alertWithIncrease": "Fiyat hedefinize geldiginde ve fiyat artarsa size bildirim gonderecegiz.",
         "monitor": "Fiyat dustugunde size bildirim gonderecegiz.",
-        "monitorWithIncrease": "Fiyat dustugunde veya arttiginda size bildirim gonderecegiz."
+        "monitorWithIncrease": "Fiyat dustugunde veya arttiginda size bildirim gonderecegiz.",
+        "stockChange": "Stok bitisi ve tekrar stokta olma bildirimlerini de alacaksiniz."
       },
       "errors": {
         "targetRequired": "Fiyat Uyarisi modunda hedef fiyat zorunludur.",

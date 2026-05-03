@@ -491,6 +491,11 @@
         "priceAlert": "Price Alert",
         "priceDrop": "Price Drop",
         "priceIncrease": "Price Increase",
+        "availabilityInStock": "In stock",
+        "availabilityOutOfStock": "Out of stock",
+        "availabilityPreorder": "Preorder",
+        "availabilityDiscontinued": "Discontinued",
+        "lastInStock": "Last in-stock price",
         "target": "Target: {value}",
         "every": "every",
         "checkedRecently": "Checked recently",
@@ -563,6 +568,7 @@
         "sharedDefaultsHint": "Applies to ready rows that were not manually overridden.",
         "extraAlerts": "Extra alerts",
         "notifyIncrease": "Notify when price increases",
+        "notifyStockChange": "Notify stock changes",
         "items": "Items",
         "selected": "Selected {count}",
         "configuration": "Configuration",
@@ -594,6 +600,7 @@
         "interval": "Interval",
         "extraAlerts": "Extra alerts",
         "notifyIncrease": "Notify when price increases",
+        "notifyStockChange": "Notify stock changes",
         "cancel": "Cancel",
         "save": "Save"
       }
@@ -650,7 +657,8 @@
         "targetAmountPlaceholder": "45000.00",
         "mode": "Mode",
         "interval": "Check interval (minutes, min {minInterval})",
-        "notifyIncrease": "Notify when price increases too"
+        "notifyIncrease": "Notify when price increases too",
+        "notifyStockChange": "Notify when stock changes"
       },
       "actions": {
         "trackItem": "Track item"
@@ -659,7 +667,8 @@
         "alert": "We will notify you when price reaches your target.",
         "alertWithIncrease": "We will notify you when price reaches your target and when it increases.",
         "monitor": "We will notify you when price drops.",
-        "monitorWithIncrease": "We will notify you when price drops or increases."
+        "monitorWithIncrease": "We will notify you when price drops or increases.",
+        "stockChange": "You will also receive stock-out and restock updates."
       },
       "errors": {
         "targetRequired": "Target amount is required for Price Alert mode.",

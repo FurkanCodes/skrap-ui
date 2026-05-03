@@ -44,7 +44,9 @@ interface CreateTrackerModalProps {
   sharedInterval: string;
   setSharedInterval: (value: string) => void;
   sharedNotifyOnPriceIncrease: boolean;
+  sharedNotifyOnStockChange: boolean;
   setSharedNotifyOnPriceIncrease: (value: boolean) => void;
+  setSharedNotifyOnStockChange: (value: boolean) => void;
   minInterval: number;
   remainingSlots: number;
   canSaveDrafts: boolean;
@@ -66,6 +68,7 @@ interface CreateTrackerModalProps {
   setDraftInterval: (clientId: string, value: string) => void;
   setDraftTargetAmount: (clientId: string, value: string) => void;
   setDraftNotifyOnPriceIncrease: (clientId: string, value: boolean) => void;
+  setDraftNotifyOnStockChange: (clientId: string, value: boolean) => void;
   setDraftRawUrl: (clientId: string, value: string) => void;
   retryDraftPreview: (clientId: string) => void;
   saveTracker: () => void;
@@ -100,7 +103,9 @@ export function CreateTrackerModal({
   sharedInterval,
   setSharedInterval,
   sharedNotifyOnPriceIncrease,
+  sharedNotifyOnStockChange,
   setSharedNotifyOnPriceIncrease,
+  setSharedNotifyOnStockChange,
   minInterval,
   remainingSlots,
   canSaveDrafts,
@@ -119,6 +124,7 @@ export function CreateTrackerModal({
   setDraftInterval,
   setDraftTargetAmount,
   setDraftNotifyOnPriceIncrease,
+  setDraftNotifyOnStockChange,
   setDraftRawUrl,
   retryDraftPreview,
   saveTracker,
@@ -300,16 +306,28 @@ export function CreateTrackerModal({
                         <Label className="text-xs font-semibold text-foreground">
                           {t("extraAlerts")}
                         </Label>
-                        <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
-                          <Checkbox
-                            checked={sharedNotifyOnPriceIncrease}
-                            onCheckedChange={(checked) =>
-                              setSharedNotifyOnPriceIncrease(Boolean(checked))
-                            }
-                            disabled={isSavePending || isPreviewPending}
-                          />
-                          {t("notifyIncrease")}
-                        </Label>
+                        <div className="space-y-2">
+                          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
+                            <Checkbox
+                              checked={sharedNotifyOnPriceIncrease}
+                              onCheckedChange={(checked) =>
+                                setSharedNotifyOnPriceIncrease(Boolean(checked))
+                              }
+                              disabled={isSavePending || isPreviewPending}
+                            />
+                            {t("notifyIncrease")}
+                          </Label>
+                          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
+                            <Checkbox
+                              checked={sharedNotifyOnStockChange}
+                              onCheckedChange={(checked) =>
+                                setSharedNotifyOnStockChange(Boolean(checked))
+                              }
+                              disabled={isSavePending || isPreviewPending}
+                            />
+                            {t("notifyStockChange")}
+                          </Label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -520,6 +538,19 @@ export function CreateTrackerModal({
                           disabled={isSavePending}
                         />
                         {t("notifyIncrease")}
+                      </Label>
+                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-xs text-foreground">
+                        <Checkbox
+                          checked={activeDraft.notifyOnStockChange}
+                          onCheckedChange={(checked) =>
+                            setDraftNotifyOnStockChange(
+                              activeDraft.clientId,
+                              Boolean(checked)
+                            )
+                          }
+                          disabled={isSavePending}
+                        />
+                        {t("notifyStockChange")}
                       </Label>
 
                       {activeDraft.trackingMode === "monitor" ? (

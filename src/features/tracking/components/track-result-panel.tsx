@@ -61,6 +61,7 @@ export function TrackResultPanel({
   const [targetAmount, setTargetAmount] = useState(amount ?? "");
   const [interval, setInterval] = useState(DEFAULT_TRACK_INTERVAL_VALUE);
   const [notifyOnPriceIncrease, setNotifyOnPriceIncrease] = useState(false);
+  const [notifyOnStockChange, setNotifyOnStockChange] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modeOptions: Array<{ value: TrackingMode; label: string }> = [
@@ -120,15 +121,19 @@ export function TrackResultPanel({
           check_interval_minutes: parsedInterval,
           target_amount: targetRequired ? targetAmount.trim() : null,
           notify_on_price_increase: notifyOnPriceIncrease,
+          notify_on_stock_change: notifyOnStockChange,
         })) as { item?: { item_id?: string } };
 
-        const successMessage = targetRequired
+        let successMessage = targetRequired
           ? notifyOnPriceIncrease
             ? t("success.alertWithIncrease")
             : t("success.alert")
           : notifyOnPriceIncrease
             ? t("success.monitorWithIncrease")
             : t("success.monitor");
+        if (notifyOnStockChange) {
+          successMessage = `${successMessage} ${t("success.stockChange")}`;
+        }
 
         if (response.item?.item_id) {
           setMessage(t("startedWithId", { itemId: response.item.item_id, detail: successMessage }));
@@ -217,6 +222,14 @@ export function TrackResultPanel({
               disabled={isPending}
             />
             {t("fields.notifyIncrease")}
+          </Label>
+          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground md:col-span-2">
+            <Checkbox
+              checked={notifyOnStockChange}
+              onCheckedChange={(checked) => setNotifyOnStockChange(Boolean(checked))}
+              disabled={isPending}
+            />
+            {t("fields.notifyStockChange")}
           </Label>
 
           <div className="flex items-end md:col-span-2 md:justify-end">

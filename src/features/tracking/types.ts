@@ -10,6 +10,7 @@ export interface TrackedItemRequest {
   check_interval_minutes?: number;
   target_amount?: string | null;
   notify_on_price_increase?: boolean;
+  notify_on_stock_change?: boolean;
   created_via?: TrackingCreatedVia | null;
 }
 
@@ -19,6 +20,7 @@ export interface TrackedItemBulkRequestItem {
   check_interval_minutes?: number | null;
   target_amount?: string | null;
   notify_on_price_increase?: boolean | null;
+  notify_on_stock_change?: boolean | null;
 }
 
 export interface TrackedItemBulkRequest {
@@ -30,6 +32,7 @@ export interface TrackedItemBulkRequest {
   check_interval_minutes?: number;
   target_amount?: string | null;
   notify_on_price_increase?: boolean;
+  notify_on_stock_change?: boolean;
 }
 
 export interface TrackedItemUpdateRequest {
@@ -37,6 +40,7 @@ export interface TrackedItemUpdateRequest {
   check_interval_minutes?: number;
   target_amount?: string | null;
   notify_on_price_increase?: boolean;
+  notify_on_stock_change?: boolean;
 }
 
 export interface TrackedItemPreview {
@@ -69,11 +73,13 @@ export interface TrackedItemSummary {
   check_interval_minutes: number;
   target_amount: string | null;
   notify_on_price_increase: boolean;
+  notify_on_stock_change: boolean;
   created_via: TrackingCreatedVia | null;
   outbound_url: string | null;
   outbound_is_affiliate: boolean;
   last_amount: string | null;
   currency: string | null;
+  availability: string | null;
   next_check_at: string | null;
   updated_at: string;
 }

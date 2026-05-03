@@ -23,7 +23,9 @@ interface EditTrackerModalProps {
   interval: string;
   setInterval: (value: string) => void;
   notifyOnPriceIncrease: boolean;
+  notifyOnStockChange: boolean;
   setNotifyOnPriceIncrease: (value: boolean) => void;
+  setNotifyOnStockChange: (value: boolean) => void;
   minInterval: number;
   error: string | null;
   isSavePending: boolean;
@@ -41,7 +43,9 @@ export function EditTrackerModal({
   interval,
   setInterval,
   notifyOnPriceIncrease,
+  notifyOnStockChange,
   setNotifyOnPriceIncrease,
+  setNotifyOnStockChange,
   minInterval,
   error,
   isSavePending,
@@ -139,6 +143,16 @@ export function EditTrackerModal({
                   disabled={isSavePending}
                 />
                 {t("notifyIncrease")}
+              </Label>
+              <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-muted/25 px-3 py-2 text-xs text-foreground">
+                <Checkbox
+                  checked={notifyOnStockChange}
+                  onCheckedChange={(checked) =>
+                    setNotifyOnStockChange(Boolean(checked))
+                  }
+                  disabled={isSavePending}
+                />
+                {t("notifyStockChange")}
               </Label>
             </div>
           </div>
