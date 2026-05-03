@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
   "/terms",
   "/verify-email",
   "/reset-password",
+  "/debug/test-product",
 ] as const;
 
 const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
