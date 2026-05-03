@@ -90,7 +90,19 @@ async function resolveCustomerId({
   userId,
 }: ResolveCustomerIdInput): Promise<string> {
   if (paddleCustomerId) {
-    return paddleCustomerId;
+    try {
+      await getPaddleClient().customers.get(paddleCustomerId);
+      return paddleCustomerId;
+    } catch (error) {
+      if (!isPaddleNotFoundError(error)) {
+        throw error;
+      }
+      console.warn("[billing-checkout]", {
+        outcome: "stale_customer_id",
+        userId,
+        customerId: paddleCustomerId,
+      });
+    }
   }
 
   const paddle = getPaddleClient();
@@ -137,4 +149,17 @@ function readExistingCustomerIdFromError(error: unknown): string | null {
   }
   const match = /customer of id (ctm_[a-zA-Z0-9]+)/.exec(error.message);
   return match?.[1] ?? null;
+}
+
+function isPaddleNotFoundError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const status = (error as { status?: unknown; statusCode?: unknown }).status ??
+    (error as { statusCode?: unknown }).statusCode;
+  if (status === 404) {
+    return true;
+  }
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  return message.includes("not found");
 }
