@@ -1,15 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import type { Environments, PaddleEventData } from "@paddle/paddle-js";
+import type { PaddleEventData } from "@paddle/paddle-js";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { loadPaddle, subscribePaddleEvents } from "@/features/billing/client/paddle-js";
 import type { BillingCheckoutResponse, BillingPlanKey } from "@/features/billing/types";
 import { cn } from "@/lib/utils";
-
-type PaddleInstance = Awaited<ReturnType<typeof import("@paddle/paddle-js").initializePaddle>>;
 
 interface PaddleCheckoutButtonProps {
   planKey: BillingPlanKey;
@@ -38,7 +37,6 @@ interface CheckoutLabels {
   syncPendingError: string;
 }
 
-let paddlePromise: Promise<PaddleInstance> | null = null;
 const checkoutHandlers = new Map<string, CheckoutEventHandler>();
 const CHECKOUT_OPEN_FALLBACK_MS = 2500;
 
@@ -72,7 +70,9 @@ export function PaddleCheckoutButton({
 
   useEffect(() => {
     isMountedRef.current = true;
+    const unsubscribe = subscribePaddleEvents(handlePaddleCheckoutEvent);
     return () => {
+      unsubscribe();
       isMountedRef.current = false;
       const transactionId = transactionIdRef.current;
       if (transactionId) {
@@ -322,45 +322,6 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
-}
-
-async function loadPaddle() {
-  const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN?.trim();
-  if (!token) {
-    throw new Error("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is required.");
-  }
-
-  paddlePromise ??= import("@paddle/paddle-js").then(({ initializePaddle }) => {
-    const environment =
-      process.env.NEXT_PUBLIC_PADDLE_ENV === "production"
-        ? "production"
-        : "sandbox";
-
-    return initializePaddle({
-      token,
-      environment: environment as Environments,
-      checkout: {
-        settings: {
-          displayMode: "overlay",
-        },
-      },
-      eventCallback(event) {
-        handlePaddleCheckoutEvent(event);
-      },
-    });
-  });
-
-  try {
-    const paddle = await paddlePromise;
-    if (!paddle) {
-      paddlePromise = null;
-      throw new Error("Paddle checkout is unavailable.");
-    }
-    return paddle;
-  } catch (error) {
-    paddlePromise = null;
-    throw error;
-  }
 }
 
 function handlePaddleCheckoutEvent(event: PaddleEventData): void {

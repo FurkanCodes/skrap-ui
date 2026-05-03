@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { routing } from "@/i18n/routing";
+import { PaddlePaymentLinkHandler } from "@/features/billing/components/paddle-payment-link-handler";
+import { routing, type AppLocale } from "@/i18n/routing";
 import "../globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -52,7 +54,12 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              <Suspense fallback={null}>
+                <PaddlePaymentLinkHandler locale={locale as AppLocale} />
+              </Suspense>
+              {children}
+            </TooltipProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
