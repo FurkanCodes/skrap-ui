@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,18 @@ export default async function BillingReturnPage({ params, searchParams }: Billin
   const activeTransactionId = transactionId ?? paymentLinkTransactionId;
   const fromPaymentLink = !transactionId && Boolean(paymentLinkTransactionId);
   const auth = await getAuthContext();
+
+  if ((autoStart && plan) || paymentLinkTransactionId) {
+    const checkoutPath = localizePathname("/billing/checkout", currentLocale);
+    const paramsForCheckout = new URLSearchParams();
+    if (plan) {
+      paramsForCheckout.set("plan", plan);
+    }
+    if (paymentLinkTransactionId) {
+      paramsForCheckout.set("_ptxn", paymentLinkTransactionId);
+    }
+    redirect(`${checkoutPath}?${paramsForCheckout.toString()}`);
+  }
 
   if (!auth) {
     const returnPath = localizePathname("/billing/return", currentLocale);

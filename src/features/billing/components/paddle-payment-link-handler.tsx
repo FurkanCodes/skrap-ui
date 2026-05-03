@@ -27,14 +27,14 @@ export function PaddlePaymentLinkHandler({ locale }: PaddlePaymentLinkHandlerPro
       return;
     }
 
-    const returnPath = localizePathname("/billing/return", locale);
-    if (pathname === returnPath) {
+    const checkoutPath = localizePathname("/billing/checkout", locale);
+    if (pathname === checkoutPath) {
       return;
     }
 
     const params = new URLSearchParams();
     params.set(PADDLE_TRANSACTION_PARAM, transactionId);
-    router.replace(`${returnPath}?${params.toString()}`, { scroll: false });
+    router.replace(`${checkoutPath}?${params.toString()}`, { scroll: false });
   }, [locale, pathname, router, searchParams]);
 
   return null;

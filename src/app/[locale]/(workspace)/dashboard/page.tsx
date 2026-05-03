@@ -27,7 +27,7 @@ export default async function HomePage({
   if (checkoutPlan) {
     const currentLocale = isAppLocale(locale) ? locale : "en";
     redirect(
-      `${localizePathname("/billing/return", currentLocale)}?plan=${checkoutPlan}&start=1`
+      `${localizePathname("/billing/checkout", currentLocale)}?plan=${checkoutPlan}`
     );
   }
 

@@ -44,7 +44,7 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
   const checkoutPlan = parseCheckoutPlan(queryParams.billing_plan);
   const currentLocale = isAppLocale(locale) ? locale : "en";
   if (checkoutPlan) {
-    redirect(`${localizePathname("/billing/return", currentLocale)}?plan=${checkoutPlan}&start=1`);
+    redirect(`${localizePathname("/billing/checkout", currentLocale)}?plan=${checkoutPlan}`);
   }
 
   const t = await getTranslations("telegram.errors");

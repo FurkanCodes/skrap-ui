@@ -127,9 +127,9 @@ export function SettingsPageClient({
   );
   const needsBillingSync = hasPaidEntitlement && !hasPaddleSubscription;
 
-  function openBillingReturn(plan: BillingPlanKey): void {
-    const path = localizePathname("/billing/return", currentLocale);
-    router.push(`${path}?plan=${plan}&start=1`);
+  function openBillingCheckout(plan: BillingPlanKey): void {
+    const path = localizePathname("/billing/checkout", currentLocale);
+    router.push(`${path}?plan=${plan}`);
   }
 
   function openBillingStatus(): void {
@@ -401,7 +401,7 @@ export function SettingsPageClient({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => openBillingReturn("plus")}
+                    onClick={() => openBillingCheckout("plus")}
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
                   >
                     <ArrowUpRight className="size-4" />
@@ -409,7 +409,7 @@ export function SettingsPageClient({
                   </button>
                   <button
                     type="button"
-                    onClick={() => openBillingReturn("pro")}
+                    onClick={() => openBillingCheckout("pro")}
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90"
                   >
                     <ArrowUpRight className="size-4" />

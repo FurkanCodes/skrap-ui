@@ -204,6 +204,60 @@
       "supportedSites": "Desteklenen magazalar yuklenemedi."
     }
   },
+  "billingCheckout": {
+    "eyebrow": "Paddle odeme",
+    "title": "Yukseltmeyi tamamlayin",
+    "subtitle": "Plani inceleyin, Paddle icinde odemeyi tamamlayin; odemeden hemen sonra calisma alaninizi aktif edecegiz.",
+    "auth": {
+      "title": "Odemeye devam etmek icin giris yapin",
+      "description": "Islemi calisma alaniniza baglamak icin odeme ekranindan once oturumunuz gerekli.",
+      "signIn": "Giris yap"
+    },
+    "missing": {
+      "title": "Once bir plan secin",
+      "description": "Hangi Dealvinci planini hazirlayacagimizi bilmemiz icin odemeyi Fiyatlandirma veya Ayarlar'dan acin.",
+      "goSettings": "Ayarlara git"
+    },
+    "summary": {
+      "title": "Siparis ozeti",
+      "description": "Vergiler, para birimi ve odeme yontemleri Paddle tarafindan yerellestirilir.",
+      "selectedPlan": "Secili plan",
+      "awaitingPrice": "Odemede onaylayin",
+      "paymentLink": "Mevcut Paddle islemi",
+      "credits": "Plan hakki",
+      "status": "Durum",
+      "confirmInCheckout": "Odemede gosterilir",
+      "transactionId": "Islem: {value}",
+      "secure": "Odeme alanlari Paddle tarafindan render edilir. Dealvinci kart bilgilerini islemez."
+    },
+    "payment": {
+      "title": "Odeme bilgileri",
+      "description": "Bu sayfadan ayrilmadan odemeyi tamamlayin.",
+      "loading": "Odeme hazirlaniyor"
+    },
+    "states": {
+      "preparing": "Hazirlaniyor",
+      "ready": "Hazir",
+      "completed": "Tamamlandi",
+      "paused": "Duraklatildi",
+      "error": "Ilgi gerekiyor"
+    },
+    "completed": {
+      "title": "Odeme alindi",
+      "description": "Aktivasyon durumuna yonlendiriliyorsunuz."
+    },
+    "actions": {
+      "backToSettings": "Ayarlara don",
+      "resumeCheckout": "Odemeye devam et",
+      "retryCheckout": "Odemeyi tekrar dene"
+    },
+    "errors": {
+      "title": "Odeme hatasi",
+      "planRequired": "Odeme oncesi gecerli bir ucretli plan secin.",
+      "openCheckout": "Paddle odeme ekrani acilamadi.",
+      "startCheckout": "Odeme baslatilamadi."
+    }
+  },
   "billingReturn": {
     "title": "Odeme durumu",
     "subtitle": "Odeme adimini tamamlayin, planinizin Dealvinci icinde aktif olmasini bekleyin.",

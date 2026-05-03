@@ -204,6 +204,60 @@
       "supportedSites": "Unable to load supported store adapters."
     }
   },
+  "billingCheckout": {
+    "eyebrow": "Paddle checkout",
+    "title": "Complete your upgrade",
+    "subtitle": "Review the plan, finish payment in Paddle, and we will activate your workspace right after checkout.",
+    "auth": {
+      "title": "Sign in to continue billing",
+      "description": "We need your session before opening checkout so the transaction attaches to your workspace.",
+      "signIn": "Sign in"
+    },
+    "missing": {
+      "title": "Choose a plan first",
+      "description": "Open checkout from Pricing or Settings so we know which Dealvinci plan to prepare.",
+      "goSettings": "Go to settings"
+    },
+    "summary": {
+      "title": "Order summary",
+      "description": "Paddle localizes taxes, currency, and payment options inside checkout.",
+      "selectedPlan": "Selected plan",
+      "awaitingPrice": "Confirm in checkout",
+      "paymentLink": "Existing Paddle transaction",
+      "credits": "Plan allowance",
+      "status": "Status",
+      "confirmInCheckout": "Shown in checkout",
+      "transactionId": "Transaction: {value}",
+      "secure": "Payment fields are rendered by Paddle. Dealvinci never handles card details."
+    },
+    "payment": {
+      "title": "Payment details",
+      "description": "Complete checkout without leaving this page.",
+      "loading": "Preparing checkout"
+    },
+    "states": {
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "completed": "Completed",
+      "paused": "Paused",
+      "error": "Needs attention"
+    },
+    "completed": {
+      "title": "Payment received",
+      "description": "Redirecting to activation status now."
+    },
+    "actions": {
+      "backToSettings": "Back to settings",
+      "resumeCheckout": "Resume checkout",
+      "retryCheckout": "Retry checkout"
+    },
+    "errors": {
+      "title": "Checkout error",
+      "planRequired": "Select a valid paid plan before checkout.",
+      "openCheckout": "Could not open Paddle checkout.",
+      "startCheckout": "Could not start checkout."
+    }
+  },
   "billingReturn": {
     "title": "Billing status",
     "subtitle": "Complete checkout and wait for your plan to activate in Dealvinci.",

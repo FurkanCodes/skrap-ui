@@ -27,10 +27,10 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   const locale = useLocale();
   const currentLocale = isAppLocale(locale) ? locale : "en";
   const shouldReduceMotion = useReducedMotion();
-  const buildBillingReturnPath = (planKey: BillingPlanKey) =>
-    `${localizePathname("/billing/return", currentLocale)}?plan=${planKey}&start=1`;
+  const buildBillingCheckoutPath = (planKey: BillingPlanKey) =>
+    `${localizePathname("/billing/checkout", currentLocale)}?plan=${planKey}`;
   const buildCheckoutIntent = (planKey: BillingPlanKey) =>
-    `${localizePathname("/auth/sign-up", currentLocale)}?next=${encodeURIComponent(buildBillingReturnPath(planKey))}`;
+    `${localizePathname("/auth/sign-up", currentLocale)}?next=${encodeURIComponent(buildBillingCheckoutPath(planKey))}`;
 
   const cardVariants = {
     hidden: {
@@ -138,7 +138,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                         <ManageBillingButton label="Manage billing" />
                       ) : (
                         <Button
-                          onClick={() => router.push(buildBillingReturnPath(plan.planKey as BillingPlanKey))}
+                          onClick={() => router.push(buildBillingCheckoutPath(plan.planKey as BillingPlanKey))}
                           className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
                         >
                           <span className="relative z-10 transition-all duration-500">
