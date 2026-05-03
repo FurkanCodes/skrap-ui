@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { PaddleEventData } from "@paddle/paddle-js";
 import { AlertCircle, CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
@@ -9,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { loadPaddle, subscribePaddleEvents } from "@/features/billing/client/paddle-js";
 import type {
   BillingCheckoutResponse,
   BillingPlanKey,
@@ -51,6 +53,8 @@ export function BillingReturnClient({
   const [syncRun, setSyncRun] = useState(initialTransactionId ? 1 : 0);
   const startedCheckoutRef = useRef(false);
   const openedFromPaymentLinkRef = useRef(false);
+  const transactionIdRef = useRef<string | null>(initialTransactionId);
+  const checkoutUrlRef = useRef<string | null>(null);
 
   const returnPath = useMemo(() => localizePathname("/billing/return", locale), [locale]);
   const settingsPath = useMemo(() => localizePathname("/settings", locale), [locale]);
@@ -64,35 +68,34 @@ export function BillingReturnClient({
     return `${returnPath}?${params.toString()}`;
   }, [plan, returnPath]);
 
-  const openCheckout = useCallback(async (nextTransactionId: string): Promise<boolean> => {
+  const openCheckout = useCallback(async (
+    nextTransactionId: string,
+    hostedCheckoutUrl?: string | null
+  ): Promise<boolean> => {
     setErrorMessage(null);
     setFlowState("opening_checkout");
 
-    const response = await fetch("/api/billing/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ transactionId: nextTransactionId }),
-    });
-    const payload = await readJson(response);
-    if (isSyncResponse(payload) && payload.checkoutUrl) {
-      window.location.assign(payload.checkoutUrl);
+    try {
+      const paddle = await loadPaddle();
+      const successPath = buildReturnQuery(nextTransactionId);
+      paddle.Checkout.open({
+        transactionId: nextTransactionId,
+        settings: {
+          displayMode: "overlay",
+          successUrl: `${window.location.origin}${successPath}`,
+        },
+      });
+      setFlowState("checkout_open");
       return true;
+    } catch (error) {
+      if (hostedCheckoutUrl) {
+        window.location.assign(hostedCheckoutUrl);
+        return true;
+      }
+      setErrorMessage(error instanceof Error ? error.message : t("errors.openCheckout"));
+      setFlowState("error");
+      return false;
     }
-
-    const returnUrl = `${window.location.origin}${buildReturnQuery(nextTransactionId)}`;
-    setErrorMessage(
-      response.status === 409
-        ? t("errors.hostedCheckoutUnavailable")
-        : readError(payload, t("errors.openCheckout"))
-    );
-    setFlowState("error");
-    console.warn("[billing-return]", {
-      outcome: "hosted_checkout_unavailable",
-      transactionId: nextTransactionId,
-      returnUrl,
-    });
-    return false;
   }, [buildReturnQuery, t]);
 
   const startCheckout = useCallback(async () => {
@@ -128,12 +131,10 @@ export function BillingReturnClient({
         throw new Error(readError(payload, t("errors.startCheckout")));
       }
       checkoutPayload = payload;
+      checkoutUrlRef.current = payload.checkoutUrl;
+      transactionIdRef.current = payload.transactionId;
       setTransactionId(payload.transactionId);
-      if (payload.checkoutUrl) {
-        window.location.assign(payload.checkoutUrl);
-        return;
-      }
-      await openCheckout(payload.transactionId);
+      await openCheckout(payload.transactionId, payload.checkoutUrl);
     } catch (error) {
       if (checkoutPayload?.checkoutUrl) {
         window.location.assign(checkoutPayload.checkoutUrl);
@@ -173,17 +174,16 @@ export function BillingReturnClient({
         const syncPayload = isSyncResponse(payload) ? payload : null;
         const outcome = syncPayload?.outcome ?? null;
         const checkoutUrl = syncPayload?.checkoutUrl ?? null;
+        if (checkoutUrl) {
+          checkoutUrlRef.current = checkoutUrl;
+        }
         if (
           allowReopen &&
           outcome === "pending" &&
           !openedFromPaymentLinkRef.current
         ) {
           openedFromPaymentLinkRef.current = true;
-          if (checkoutUrl) {
-            window.location.assign(checkoutUrl);
-            return;
-          }
-          await openCheckout(targetTransactionId);
+          await openCheckout(targetTransactionId, checkoutUrl);
           return;
         }
         setFlowState(outcome === "pending" ? "checkout_open" : "syncing");
@@ -212,6 +212,41 @@ export function BillingReturnClient({
 
     setFlowState("delayed");
   }, [openCheckout, router, t]);
+
+  useEffect(() => {
+    const unsubscribe = subscribePaddleEvents((event) => {
+      const eventTransactionId = event.data?.transaction_id;
+      const currentTransactionId = transactionIdRef.current;
+      if (
+        currentTransactionId &&
+        eventTransactionId &&
+        eventTransactionId !== currentTransactionId
+      ) {
+        return;
+      }
+
+      if (event.name === "checkout.completed") {
+        if (currentTransactionId) {
+          setFlowState("syncing");
+          setSyncRun((value) => value + 1);
+          router.replace(buildReturnQuery(currentTransactionId), { scroll: false });
+        }
+        return;
+      }
+
+      if (event.name === "checkout.closed") {
+        setFlowState((state) => state === "checkout_open" ? "canceled" : state);
+        return;
+      }
+
+      if (isPaddleErrorEvent(event)) {
+        setErrorMessage(readPaddleEventMessage(event) ?? t("errors.openCheckout"));
+        setFlowState("error");
+      }
+    });
+
+    return unsubscribe;
+  }, [buildReturnQuery, router, t]);
 
   useEffect(() => {
     if (!autoStart || transactionId || !plan || startedCheckoutRef.current) {
@@ -276,7 +311,7 @@ export function BillingReturnClient({
               type="button"
               variant="outline"
               onClick={() => {
-                void openCheckout(transactionId);
+                void openCheckout(transactionId, checkoutUrlRef.current);
               }}
             >
               <ExternalLink className="size-4" />
@@ -379,4 +414,17 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
+}
+
+function isPaddleErrorEvent(event: PaddleEventData): boolean {
+  return (
+    event.name === "checkout.error" ||
+    event.name === "checkout.failed" ||
+    event.name === "checkout.payment.error"
+  );
+}
+
+function readPaddleEventMessage(event: PaddleEventData): string | null {
+  const detail = "detail" in event ? event.detail : null;
+  return typeof detail === "string" && detail.trim() ? detail : null;
 }
