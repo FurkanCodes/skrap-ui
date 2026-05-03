@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MARKETING_PRICING_PLANS } from "@/components/shadcn-space/blocks/pricing-content";
 import { loadPaddle, subscribePaddleEvents } from "@/features/billing/client/paddle-js";
 import type { BillingCheckoutResponse, BillingPlanKey, BillingSyncResponse } from "@/features/billing/types";
 import { localizePathname } from "@/i18n/paths";
@@ -24,26 +25,6 @@ interface BillingCheckoutClientProps {
 }
 
 type CheckoutState = "preparing" | "ready" | "completed" | "paused" | "error";
-
-const PLAN_DETAILS: Record<BillingPlanKey, {
-  name: string;
-  price: string;
-  trackers: string;
-  credits: string;
-}> = {
-  plus: {
-    name: "Plus",
-    price: "$19 / month",
-    trackers: "100 active trackers",
-    credits: "10,000 monthly checks",
-  },
-  pro: {
-    name: "Pro",
-    price: "$49 / month",
-    trackers: "500 active trackers",
-    credits: "60,000 monthly checks",
-  },
-};
 
 export function BillingCheckoutClient({
   locale,
@@ -61,7 +42,7 @@ export function BillingCheckoutClient({
   const startedRef = useRef(false);
   const transactionIdRef = useRef<string | null>(paymentLinkTransactionId);
 
-  const planDetails = plan ? PLAN_DETAILS[plan] : null;
+  const planDetails = useMemo(() => (plan ? getPlanDetails(plan) : null), [plan]);
   const returnPath = useMemo(() => localizePathname("/billing/return", locale), [locale]);
   const settingsPath = useMemo(() => localizePathname("/settings", locale), [locale]);
 
@@ -435,4 +416,22 @@ function statusClassName(state: CheckoutState): string {
     return "text-destructive";
   }
   return "text-foreground";
+}
+
+function getPlanDetails(planKey: BillingPlanKey): {
+  name: string;
+  price: string;
+  trackers: string;
+  credits: string;
+} | null {
+  const plan = MARKETING_PRICING_PLANS.find((item) => item.planKey === planKey);
+  if (!plan) {
+    return null;
+  }
+  return {
+    name: plan.name,
+    price: `$${plan.price} / month`,
+    credits: plan.features[0] ?? "Shown in checkout",
+    trackers: plan.features[1] ?? "Shown in checkout",
+  };
 }
