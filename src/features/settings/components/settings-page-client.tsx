@@ -130,7 +130,8 @@ export function SettingsPageClient({
       billingSubscription.provider_subscription_id &&
       PAID_ACCESS_STATUSES.has(billingSubscription.status)
   );
-  const activeCheckoutPlan = hasPaidEntitlement ? null : pendingCheckoutPlan;
+  const activeCheckoutPlan = hasPaddleSubscription ? null : pendingCheckoutPlan;
+  const shouldShowCheckoutButtons = !hasPaidEntitlement || Boolean(activeCheckoutPlan);
 
   useEffect(() => {
     if (!pendingCheckoutPlan || !isAuthenticated) {
@@ -387,15 +388,9 @@ export function SettingsPageClient({
                   </p>
                 ) : null}
               </div>
-              {hasPaidEntitlement ? (
-                hasPaddleSubscription ? (
-                  <ManageBillingButton label={t("billing.manage")} />
-                ) : (
-                  <p className="max-w-xs text-xs text-muted-foreground">
-                    {t("billing.portalPending")}
-                  </p>
-                )
-              ) : (
+              {hasPaddleSubscription ? (
+                <ManageBillingButton label={t("billing.manage")} />
+              ) : shouldShowCheckoutButtons ? (
                 <div className="flex flex-wrap gap-2">
                   <PaddleCheckoutButton
                     planKey="plus"
@@ -440,6 +435,10 @@ export function SettingsPageClient({
                     {t("billing.choosePro")}
                   </PaddleCheckoutButton>
                 </div>
+              ) : (
+                  <p className="max-w-xs text-xs text-muted-foreground">
+                    {t("billing.portalPending")}
+                  </p>
               )}
             </div>
           </div>
