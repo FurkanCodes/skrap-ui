@@ -205,81 +205,81 @@
     }
   },
   "billingCheckout": {
-  "brand": {
-    "name": "Dealvinci",
-    "tagline": "Güvenli ödeme"
+    "brand": {
+      "name": "Dealvinci",
+      "tagline": "Güvenli ödeme"
+    },
+    "eyebrow": "Paddle ödeme",
+    "title": "Yükseltmeyi tamamlayın",
+    "subtitle": "Planı inceleyin, Paddle içinde ödemeyi tamamlayın; ödemeden hemen sonra çalışma alanınızı aktif edeceğiz.",
+    "auth": {
+      "title": "Ödemeye devam etmek için giriş yapın",
+      "description": "İşlemi çalışma alanınıza bağlamak için ödeme ekranından önce oturumunuz gerekli.",
+      "signIn": "Giriş yap"
+    },
+    "missing": {
+      "title": "Önce bir plan seçin",
+      "description": "Hangi Dealvinci planını hazırlayacağımızı bilmemiz için ödemeyi Fiyatlandırma veya Ayarlar'dan açın.",
+      "goSettings": "Ayarlara git"
+    },
+    "summary": {
+      "title": "Sipariş özeti",
+      "description": "Vergiler, para birimi ve ödeme yöntemleri Paddle tarafından yerelleştirilir.",
+      "selectedPlan": "Seçili plan",
+      "awaitingPrice": "Ödemede onaylayın",
+      "paymentLink": "Mevcut Paddle işlemi",
+      "credits": "Plan hakkı",
+      "status": "Durum",
+      "confirmInCheckout": "Ödemede gösterilir",
+      "transactionId": "İşlem: {value}",
+      "secure": "Ödeme alanları Paddle tarafından render edilir. Dealvinci kart bilgilerini işlemez.",
+      "incTax": "vergi dahil",
+      "thenRecurring": "sonrasında her {period} {amount}",
+      "thenRecurringDefault": "sonrasında her ödeme döneminde {amount}",
+      "seatLabel": "Koltuk",
+      "subtotal": "Ara toplam",
+      "tax": "Vergi",
+      "dueToday": "Bugün ödenecek"
+    },
+    "payment": {
+      "title": "Ödeme bilgileri",
+      "description": "Bu sayfadan ayrılmadan ödemeyi tamamlayın.",
+      "loading": "Ödeme hazırlanıyor"
+    },
+    "states": {
+      "preparing": "Hazırlanıyor",
+      "ready": "Hazır",
+      "completed": "Tamamlandı",
+      "paused": "Duraklatıldı",
+      "error": "İlgi gerekiyor"
+    },
+    "completed": {
+      "title": "Ödeme alındı",
+      "description": "Aktivasyon durumuna yönlendiriliyorsunuz."
+    },
+    "actions": {
+      "backToSettings": "Ayarlara dön",
+      "resumeCheckout": "Ödemeye devam et",
+      "retryCheckout": "Ödemeyi tekrar dene"
+    },
+    "quantity": {
+      "decrease": "Adedi azalt",
+      "increase": "Adedi artır"
+    },
+    "intervals": {
+      "day": "{count, plural, one {gün} other {# gün}}",
+      "week": "{count, plural, one {hafta} other {# hafta}}",
+      "month": "{count, plural, one {ay} other {# ay}}",
+      "year": "{count, plural, one {yıl} other {# yıl}}",
+      "billingPeriod": "ödeme dönemi"
+    },
+    "errors": {
+      "title": "Ödeme hatası",
+      "planRequired": "Ödeme öncesi geçerli bir ücretli plan seçin.",
+      "openCheckout": "Paddle ödeme ekranı açılamadı.",
+      "startCheckout": "Ödeme başlatılamadı."
+    }
   },
-  "eyebrow": "Paddle ödeme",
-  "title": "Yükseltmeyi tamamlayın",
-  "subtitle": "Planı inceleyin, Paddle içinde ödemeyi tamamlayın; ödemeden hemen sonra çalışma alanınızı aktif edeceğiz.",
-  "auth": {
-    "title": "Ödemeye devam etmek için giriş yapın",
-    "description": "İşlemi çalışma alanınıza bağlamak için ödeme ekranından önce oturumunuz gerekli.",
-    "signIn": "Giriş yap"
-  },
-  "missing": {
-    "title": "Önce bir plan seçin",
-    "description": "Hangi Dealvinci planını hazırlayacağımızı bilmemiz için ödemeyi Fiyatlandırma veya Ayarlar'dan açın.",
-    "goSettings": "Ayarlara git"
-  },
-  "summary": {
-    "title": "Sipariş özeti",
-    "description": "Vergiler, para birimi ve ödeme yöntemleri Paddle tarafından yerelleştirilir.",
-    "selectedPlan": "Seçili plan",
-    "awaitingPrice": "Ödemede onaylayın",
-    "paymentLink": "Mevcut Paddle işlemi",
-    "credits": "Plan hakkı",
-    "status": "Durum",
-    "confirmInCheckout": "Ödemede gösterilir",
-    "transactionId": "İşlem: {value}",
-    "secure": "Ödeme alanları Paddle tarafından render edilir. Dealvinci kart bilgilerini işlemez.",
-    "incTax": "vergi dahil",
-    "thenRecurring": "sonrasında her {period} {amount}",
-    "thenRecurringDefault": "sonrasında her ödeme döneminde {amount}",
-    "seatLabel": "Koltuk",
-    "subtotal": "Ara toplam",
-    "tax": "Vergi",
-    "dueToday": "Bugün ödenecek"
-  },
-  "payment": {
-    "title": "Ödeme bilgileri",
-    "description": "Bu sayfadan ayrılmadan ödemeyi tamamlayın.",
-    "loading": "Ödeme hazırlanıyor"
-  },
-  "states": {
-    "preparing": "Hazırlanıyor",
-    "ready": "Hazır",
-    "completed": "Tamamlandı",
-    "paused": "Duraklatıldı",
-    "error": "İlgi gerekiyor"
-  },
-  "completed": {
-    "title": "Ödeme alındı",
-    "description": "Aktivasyon durumuna yönlendiriliyorsunuz."
-  },
-  "actions": {
-    "backToSettings": "Ayarlara dön",
-    "resumeCheckout": "Ödemeye devam et",
-    "retryCheckout": "Ödemeyi tekrar dene"
-  },
-  "quantity": {
-    "decrease": "Adedi azalt",
-    "increase": "Adedi artır"
-  },
-  "intervals": {
-    "day": "{count, plural, one {gün} other {# gün}}",
-    "week": "{count, plural, one {hafta} other {# hafta}}",
-    "month": "{count, plural, one {ay} other {# ay}}",
-    "year": "{count, plural, one {yıl} other {# yıl}}",
-    "billingPeriod": "ödeme dönemi"
-  },
-  "errors": {
-    "title": "Ödeme hatası",
-    "planRequired": "Ödeme öncesi geçerli bir ücretli plan seçin.",
-    "openCheckout": "Paddle ödeme ekranı açılamadı.",
-    "startCheckout": "Ödeme başlatılamadı."
-  }
-},
   "billingReturn": {
     "title": "Odeme durumu",
     "subtitle": "Odeme adimini tamamlayin, planinizin Dealvinci icinde aktif olmasini bekleyin.",
