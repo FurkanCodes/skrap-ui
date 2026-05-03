@@ -89,9 +89,7 @@ export function SettingsPageClient({
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
-  const [pendingCheckoutPlan, setPendingCheckoutPlan] = useState<BillingPlanKey | null>(
-    initialCheckoutPlan
-  );
+  const [pendingCheckoutPlan] = useState<BillingPlanKey | null>(initialCheckoutPlan);
   const [mounted, setMounted] = useState(false);
   const minimumDropOptions = [
     { value: "1", label: "1%" },
@@ -409,7 +407,7 @@ export function SettingsPageClient({
                       }
                     }}
                     autoStart={activeCheckoutPlan === "plus"}
-                    onStart={() => setPendingCheckoutPlan(null)}
+                    preferRedirect={activeCheckoutPlan === "plus"}
                   >
                     {t("billing.choosePlus")}
                   </PaddleCheckoutButton>
@@ -430,7 +428,7 @@ export function SettingsPageClient({
                       }
                     }}
                     autoStart={activeCheckoutPlan === "pro"}
-                    onStart={() => setPendingCheckoutPlan(null)}
+                    preferRedirect={activeCheckoutPlan === "pro"}
                   >
                     {t("billing.choosePro")}
                   </PaddleCheckoutButton>

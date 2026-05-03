@@ -2,6 +2,7 @@ export type BillingPlanKey = "plus" | "pro";
 
 export interface BillingCheckoutResponse {
   transactionId: string;
+  checkoutUrl: string | null;
 }
 
 export interface BillingPortalResponse {

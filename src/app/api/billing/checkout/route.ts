@@ -78,6 +78,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const response: BillingCheckoutResponse = {
       transactionId: transaction.id,
+      checkoutUrl: transaction.checkout?.url ?? null,
     };
     console.info("[billing-checkout]", {
       outcome: "created",

@@ -18,12 +18,13 @@ interface PaddleCheckoutButtonProps {
   idleIcon?: React.ReactNode;
   onCompleted?: () => void | Promise<unknown>;
   autoStart?: boolean;
-  onStart?: () => void;
+  preferRedirect?: boolean;
   labels?: Partial<CheckoutLabels>;
 }
 
 type CheckoutState = "idle" | "loading" | "syncing" | "pending";
 type CheckoutEventHandler = {
+  loaded: () => void;
   completed: () => void;
   closed: () => void;
   failed: (message?: string | null) => void;
@@ -39,6 +40,7 @@ interface CheckoutLabels {
 
 let paddlePromise: Promise<PaddleInstance> | null = null;
 const checkoutHandlers = new Map<string, CheckoutEventHandler>();
+const CHECKOUT_OPEN_FALLBACK_MS = 2500;
 
 const DEFAULT_LABELS: CheckoutLabels = {
   syncing: "Payment received, syncing...",
@@ -55,7 +57,7 @@ export function PaddleCheckoutButton({
   idleIcon,
   onCompleted,
   autoStart = false,
-  onStart,
+  preferRedirect = false,
   labels: labelsProp,
 }: PaddleCheckoutButtonProps) {
   const router = useRouter();
@@ -131,8 +133,16 @@ export function PaddleCheckoutButton({
     setError(null);
     setCheckoutState("loading");
     transactionIdRef.current = null;
-    onStart?.();
     startTransition(async () => {
+      let checkoutUrl: string | null = null;
+      let fallbackTimeoutId: number | null = null;
+      const clearFallbackTimer = () => {
+        if (fallbackTimeoutId !== null) {
+          window.clearTimeout(fallbackTimeoutId);
+          fallbackTimeoutId = null;
+        }
+      };
+
       try {
         const response = await fetch("/api/billing/checkout", {
           method: "POST",
@@ -152,13 +162,26 @@ export function PaddleCheckoutButton({
           throw new Error(readError(payload, labels.startError));
         }
 
+        checkoutUrl = payload.checkoutUrl;
         transactionIdRef.current = payload.transactionId;
+        if (preferRedirect && checkoutUrl) {
+          window.location.assign(checkoutUrl);
+          return;
+        }
+
+        let checkoutLoaded = false;
         checkoutHandlers.set(payload.transactionId, {
+          loaded: () => {
+            checkoutLoaded = true;
+            clearFallbackTimer();
+          },
           completed: () => {
+            clearFallbackTimer();
             checkoutHandlers.delete(payload.transactionId);
             syncTransaction(payload.transactionId);
           },
           closed: () => {
+            clearFallbackTimer();
             checkoutHandlers.delete(payload.transactionId);
             if (transactionIdRef.current === payload.transactionId) {
               transactionIdRef.current = null;
@@ -169,6 +192,7 @@ export function PaddleCheckoutButton({
             }
           },
           failed: (message) => {
+            clearFallbackTimer();
             checkoutHandlers.delete(payload.transactionId);
             if (isMountedRef.current) {
               setError(message?.trim() || labels.startError);
@@ -178,16 +202,38 @@ export function PaddleCheckoutButton({
         });
         const paddle = await loadPaddle();
         paddle.Checkout.open({ transactionId: payload.transactionId });
+        if (checkoutUrl && !checkoutLoaded) {
+          const fallbackCheckoutUrl = checkoutUrl;
+          fallbackTimeoutId = window.setTimeout(() => {
+            if (!checkoutLoaded && checkoutHandlers.has(payload.transactionId)) {
+              checkoutHandlers.delete(payload.transactionId);
+              window.location.assign(fallbackCheckoutUrl);
+            }
+          }, CHECKOUT_OPEN_FALLBACK_MS);
+        }
       } catch (err) {
+        clearFallbackTimer();
         const transactionId = transactionIdRef.current;
         if (transactionId) {
           checkoutHandlers.delete(transactionId);
+        }
+        if (checkoutUrl) {
+          window.location.assign(checkoutUrl);
+          return;
         }
         setError(err instanceof Error ? err.message : labels.startError);
         setCheckoutState("idle");
       }
     });
-  }, [isBusy, labels.startError, onStart, planKey, router, startTransition, syncTransaction]);
+  }, [
+    isBusy,
+    labels.startError,
+    planKey,
+    preferRedirect,
+    router,
+    startTransition,
+    syncTransaction,
+  ]);
 
   const retryPlanSync = useCallback(() => {
     if (checkoutState !== "pending") {
@@ -330,6 +376,10 @@ function handlePaddleCheckoutEvent(event: PaddleEventData): void {
 
   if (event.name === "checkout.completed") {
     handler.completed();
+    return;
+  }
+  if (event.name === "checkout.loaded") {
+    handler.loaded();
     return;
   }
   if (event.name === "checkout.closed") {
