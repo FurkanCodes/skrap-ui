@@ -64,6 +64,26 @@ AUTH_EMAIL_APP_NAME=Dealvinci
 
 Better Auth password reset + verification emails are sent through Resend.
 
+Paddle billing on Coolify:
+
+```bash
+PADDLE_ENV=sandbox
+NEXT_PUBLIC_PADDLE_ENV=sandbox
+PADDLE_API_KEY=...
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=...
+PADDLE_WEBHOOK_SECRET=...
+# optional alias accepted by webhook route:
+PADDLE_NOTIFICATION_WEBHOOK_SECRET=...
+PADDLE_PLUS_PRICE_ID=pri_...
+PADDLE_PRO_PRICE_ID=pri_...
+BILLING_BACKEND_SECRET=...
+```
+
+Paddle dashboard settings:
+- Webhook URL: `https://<your-domain>/api/billing/paddle/webhook`
+- Default payment link: `https://<your-domain>/billing/return`
+- Approve your deployed domain under Paddle website approval.
+
 5. Start UI:
 
 ```bash

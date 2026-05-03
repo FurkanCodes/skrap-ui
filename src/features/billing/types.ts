@@ -5,6 +5,22 @@ export interface BillingCheckoutResponse {
   checkoutUrl: string | null;
 }
 
+export type BillingSyncOutcome =
+  | "synced"
+  | "pending"
+  | "transaction_incomplete"
+  | "owner_mismatch"
+  | "backend_rejected"
+  | "failed";
+
+export interface BillingSyncResponse {
+  ok: boolean;
+  outcome: BillingSyncOutcome;
+  detail?: string;
+  status?: string;
+  reason?: string | null;
+}
+
 export interface BillingPortalResponse {
   url: string;
 }

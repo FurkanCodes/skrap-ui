@@ -204,6 +204,68 @@
       "supportedSites": "Unable to load supported store adapters."
     }
   },
+  "billingReturn": {
+    "title": "Billing status",
+    "subtitle": "Complete checkout and wait for your plan to activate in Dealvinci.",
+    "transactionId": "Transaction: {value}",
+    "auth": {
+      "title": "Sign in to continue billing",
+      "description": "We need your session to attach this transaction to your workspace.",
+      "signIn": "Sign in"
+    },
+    "states": {
+      "ready": {
+        "title": "Ready to start checkout",
+        "description": "Select start checkout to open Paddle."
+      },
+      "opening_checkout": {
+        "title": "Opening checkout",
+        "description": "Preparing your Paddle checkout now."
+      },
+      "checkout_open": {
+        "title": "Checkout open",
+        "description": "Complete payment in Paddle. We will sync your plan right after."
+      },
+      "syncing": {
+        "title": "Syncing your plan",
+        "description": "Payment was received. Dealvinci is applying your new plan."
+      },
+      "active": {
+        "title": "Plan activated",
+        "description": "Your paid plan is active. You can continue in Settings."
+      },
+      "delayed": {
+        "title": "Sync still in progress",
+        "description": "Paddle accepted payment, but activation is still processing. Retry sync shortly."
+      },
+      "canceled": {
+        "title": "Checkout canceled",
+        "description": "No charge was finalized. You can reopen checkout anytime."
+      },
+      "error": {
+        "title": "Billing flow needs attention",
+        "description": "We could not finish this billing step automatically."
+      }
+    },
+    "actions": {
+      "startCheckout": "Start checkout",
+      "openCheckout": "Open checkout",
+      "retrySync": "Retry sync",
+      "goSettings": "Back to settings"
+    },
+    "status": {
+      "processing": "Working on your billing update...",
+      "completeInCheckout": "Complete payment in the checkout window.",
+      "active": "Plan is active and ready."
+    },
+    "errors": {
+      "title": "Billing error",
+      "planRequired": "Select a valid paid plan before checkout.",
+      "openCheckout": "Could not open Paddle checkout.",
+      "startCheckout": "Could not start checkout.",
+      "syncFailed": "Could not sync billing state."
+    }
+  },
   "extensions": {
     "eyebrow": "Browser extension",
     "title": "Track products from your browser.",

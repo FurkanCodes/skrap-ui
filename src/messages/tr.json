@@ -204,6 +204,68 @@
       "supportedSites": "Desteklenen magazalar yuklenemedi."
     }
   },
+  "billingReturn": {
+    "title": "Odeme durumu",
+    "subtitle": "Odeme adimini tamamlayin, planinizin Dealvinci icinde aktif olmasini bekleyin.",
+    "transactionId": "Islem: {value}",
+    "auth": {
+      "title": "Odemeye devam etmek icin giris yapin",
+      "description": "Bu islemi calisma alaniniza baglamak icin oturumunuz gerekli.",
+      "signIn": "Giris yap"
+    },
+    "states": {
+      "ready": {
+        "title": "Odeme baslatmaya hazir",
+        "description": "Paddle ekranini acmak icin odemeyi baslatin."
+      },
+      "opening_checkout": {
+        "title": "Odeme aciliyor",
+        "description": "Paddle odeme ekrani hazirlaniyor."
+      },
+      "checkout_open": {
+        "title": "Odeme ekrani acik",
+        "description": "Paddle odemesini tamamlayin. Sonrasinda planinizi hemen esitleyecegiz."
+      },
+      "syncing": {
+        "title": "Planiniz esitleniyor",
+        "description": "Odeme alindi. Dealvinci yeni planinizi uyguluyor."
+      },
+      "active": {
+        "title": "Plan aktif",
+        "description": "Ucretli planiniz aktif. Ayarlar sayfasindan devam edebilirsiniz."
+      },
+      "delayed": {
+        "title": "Esitleme suruyor",
+        "description": "Odeme kabul edildi ancak aktivasyon hala suruyor. Kisa sure sonra tekrar deneyin."
+      },
+      "canceled": {
+        "title": "Odeme iptal edildi",
+        "description": "Odeme tamamlanmadi. Istediginiz zaman tekrar acabilirsiniz."
+      },
+      "error": {
+        "title": "Odeme akisinda islem gerekli",
+        "description": "Bu adimi otomatik tamamlayamadik."
+      }
+    },
+    "actions": {
+      "startCheckout": "Odemeyi baslat",
+      "openCheckout": "Odemeyi ac",
+      "retrySync": "Esitlemeyi tekrar dene",
+      "goSettings": "Ayarlara don"
+    },
+    "status": {
+      "processing": "Odeme guncellemesi yapiliyor...",
+      "completeInCheckout": "Odemeyi acik pencerede tamamlayin.",
+      "active": "Planiniz aktif ve hazir."
+    },
+    "errors": {
+      "title": "Odeme hatasi",
+      "planRequired": "Odeme oncesi gecerli bir ucretli plan secin.",
+      "openCheckout": "Paddle odeme ekrani acilamadi.",
+      "startCheckout": "Odeme baslatilamadi.",
+      "syncFailed": "Odeme durumu esitlenemedi."
+    }
+  },
   "extensions": {
     "eyebrow": "Tarayici eklentisi",
     "title": "Urunleri tarayicinizdan takip edin.",

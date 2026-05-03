@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   MARKETING_PRICING_PLANS,
   type MarketingPricingPlan,
 } from "@/components/shadcn-space/blocks/pricing-content";
+import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Check } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -22,11 +24,13 @@ interface PricingProps {
 
 const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   const router = useRouter();
+  const locale = useLocale();
+  const currentLocale = isAppLocale(locale) ? locale : "en";
   const shouldReduceMotion = useReducedMotion();
+  const buildBillingReturnPath = (planKey: BillingPlanKey) =>
+    `${localizePathname("/billing/return", currentLocale)}?plan=${planKey}&start=1`;
   const buildCheckoutIntent = (planKey: BillingPlanKey) =>
-    `/auth/sign-up?next=${encodeURIComponent(`/settings?billing_plan=${planKey}`)}`;
-  const buildSettingsBillingIntent = (planKey: BillingPlanKey) =>
-    `/settings?billing_plan=${planKey}`;
+    `${localizePathname("/auth/sign-up", currentLocale)}?next=${encodeURIComponent(buildBillingReturnPath(planKey))}`;
 
   const cardVariants = {
     hidden: {
@@ -134,7 +138,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                         <ManageBillingButton label="Manage billing" />
                       ) : (
                         <Button
-                          onClick={() => router.push(buildSettingsBillingIntent(plan.planKey as BillingPlanKey))}
+                          onClick={() => router.push(buildBillingReturnPath(plan.planKey as BillingPlanKey))}
                           className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
                         >
                           <span className="relative z-10 transition-all duration-500">

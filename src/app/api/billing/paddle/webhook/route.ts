@@ -23,7 +23,8 @@ const FORWARDED_EVENTS = new Set([
 export async function POST(request: Request): Promise<NextResponse> {
   const rawBody = await request.text();
   const signature = request.headers.get("paddle-signature")?.trim();
-  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET?.trim();
+  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET?.trim()
+    ?? process.env.PADDLE_NOTIFICATION_WEBHOOK_SECRET?.trim();
   if (!signature || !webhookSecret) {
     return NextResponse.json({ detail: "Missing Paddle webhook configuration." }, { status: 400 });
   }

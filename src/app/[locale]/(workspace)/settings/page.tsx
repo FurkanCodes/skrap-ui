@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 import { SettingsPageClient } from "@/features/settings/components/settings-page-client";
 import { getBillingCurrentQuery } from "@/features/billing/server/queries";
@@ -8,6 +9,7 @@ import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
+import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { getAuthContext } from "@/lib/auth-dal";
 
 function mapError(error: unknown, fallback: string): string {
@@ -24,6 +26,7 @@ function mapError(error: unknown, fallback: string): string {
 }
 
 interface SettingsPageProps {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{
     billing_plan?: string | string[];
   }>;
@@ -36,9 +39,14 @@ function parseCheckoutPlan(
   return plan === "plus" || plan === "pro" ? plan : null;
 }
 
-export default async function SettingsPage({ searchParams }: SettingsPageProps) {
-  const params = await searchParams;
-  const checkoutPlan = parseCheckoutPlan(params.billing_plan);
+export default async function SettingsPage({ params, searchParams }: SettingsPageProps) {
+  const [{ locale }, queryParams] = await Promise.all([params, searchParams]);
+  const checkoutPlan = parseCheckoutPlan(queryParams.billing_plan);
+  const currentLocale = isAppLocale(locale) ? locale : "en";
+  if (checkoutPlan) {
+    redirect(`${localizePathname("/billing/return", currentLocale)}?plan=${checkoutPlan}&start=1`);
+  }
+
   const t = await getTranslations("telegram.errors");
   const settingsT = await getTranslations("settings.errors");
   let initialStatus: TelegramActiveStatusResponse | null = null;
@@ -91,7 +99,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         supportedSites={supportedSites}
         supportedSitesError={supportedSitesError}
         initialBilling={billing}
-        initialCheckoutPlan={checkoutPlan}
       />
     </div>
   );

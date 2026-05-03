@@ -4,19 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { useTheme } from "@/components/theme/theme-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
-import { PaddleCheckoutButton } from "@/features/billing/components/paddle-checkout-button";
 import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { resolveEffectiveMinIntervalMinutes } from "@/features/tracking/interval-policy";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { isAppLocale, localizePathname } from "@/i18n/paths";
 
 interface SettingsPageClientProps {
   initialStatus: TelegramActiveStatusResponse | null;
@@ -25,7 +25,6 @@ interface SettingsPageClientProps {
   supportedSites: SiteInfoResponse[];
   supportedSitesError: string | null;
   initialBilling: BillingCurrentResponse | null;
-  initialCheckoutPlan: BillingPlanKey | null;
 }
 
 const PAID_ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
@@ -77,20 +76,18 @@ export function SettingsPageClient({
   supportedSites,
   supportedSitesError,
   initialBilling,
-  initialCheckoutPlan,
 }: SettingsPageClientProps) {
   const t = useTranslations("settings");
   const router = useRouter();
-  const pathname = usePathname();
   const locale = useLocale();
-  const { isAuthenticated, me, refreshViewer } = useViewer();
+  const { isAuthenticated, me } = useViewer();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
-  const [pendingCheckoutPlan] = useState<BillingPlanKey | null>(initialCheckoutPlan);
   const [mounted, setMounted] = useState(false);
+  const currentLocale = isAppLocale(locale) ? locale : "en";
   const minimumDropOptions = [
     { value: "1", label: "1%" },
     { value: "3", label: "3%" },
@@ -128,15 +125,17 @@ export function SettingsPageClient({
       billingSubscription.provider_subscription_id &&
       PAID_ACCESS_STATUSES.has(billingSubscription.status)
   );
-  const activeCheckoutPlan = hasPaddleSubscription ? null : pendingCheckoutPlan;
-  const shouldShowCheckoutButtons = !hasPaidEntitlement || Boolean(activeCheckoutPlan);
+  const needsBillingSync = hasPaidEntitlement && !hasPaddleSubscription;
 
-  useEffect(() => {
-    if (!pendingCheckoutPlan || !isAuthenticated) {
-      return;
-    }
-    router.replace(pathname, { scroll: false });
-  }, [isAuthenticated, pathname, pendingCheckoutPlan, router]);
+  function openBillingReturn(plan: BillingPlanKey): void {
+    const path = localizePathname("/billing/return", currentLocale);
+    router.push(`${path}?plan=${plan}&start=1`);
+  }
+
+  function openBillingStatus(): void {
+    const path = localizePathname("/billing/return", currentLocale);
+    router.push(path);
+  }
   const trackerUsagePercent = useMemo(() => {
     if (maxTrackers <= 0) {
       return 0;
@@ -380,63 +379,43 @@ export function SettingsPageClient({
                     ? t("billing.paidDescription")
                     : t("billing.freeDescription")}
                 </p>
-                {activeCheckoutPlan ? (
+                {needsBillingSync ? (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t("billing.openingCheckout", { plan: activeCheckoutPlan.toUpperCase() })}
+                    {t("billing.syncPending")}
                   </p>
                 ) : null}
               </div>
               {hasPaddleSubscription ? (
                 <ManageBillingButton label={t("billing.manage")} />
-              ) : shouldShowCheckoutButtons ? (
+              ) : needsBillingSync ? (
                 <div className="flex flex-wrap gap-2">
-                  <PaddleCheckoutButton
-                    planKey="plus"
-                    className="h-9 rounded-lg border-border bg-background text-foreground hover:bg-muted"
-                    idleIcon={<ArrowUpRight className="size-4" />}
-                    labels={{
-                      syncing: t("billing.syncing"),
-                      pending: t("billing.syncPending"),
-                      retry: t("billing.refreshPlan"),
-                      syncPendingError: t("billing.syncPending"),
-                    }}
-                    onCompleted={async () => {
-                      const refreshed = await refreshViewer({ expectedPlanKey: "plus" });
-                      if (refreshed?.entitlement.plan_key !== "plus") {
-                        throw new Error(t("billing.syncPending"));
-                      }
-                    }}
-                    autoStart={activeCheckoutPlan === "plus"}
-                    preferRedirect={activeCheckoutPlan === "plus"}
+                  <button
+                    type="button"
+                    onClick={openBillingStatus}
+                    className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
                   >
-                    {t("billing.choosePlus")}
-                  </PaddleCheckoutButton>
-                  <PaddleCheckoutButton
-                    planKey="pro"
-                    className="h-9 rounded-lg"
-                    idleIcon={<ArrowUpRight className="size-4" />}
-                    labels={{
-                      syncing: t("billing.syncing"),
-                      pending: t("billing.syncPending"),
-                      retry: t("billing.refreshPlan"),
-                      syncPendingError: t("billing.syncPending"),
-                    }}
-                    onCompleted={async () => {
-                      const refreshed = await refreshViewer({ expectedPlanKey: "pro" });
-                      if (refreshed?.entitlement.plan_key !== "pro") {
-                        throw new Error(t("billing.syncPending"));
-                      }
-                    }}
-                    autoStart={activeCheckoutPlan === "pro"}
-                    preferRedirect={activeCheckoutPlan === "pro"}
-                  >
-                    {t("billing.choosePro")}
-                  </PaddleCheckoutButton>
+                    {t("billing.refreshPlan")}
+                  </button>
                 </div>
               ) : (
-                  <p className="max-w-xs text-xs text-muted-foreground">
-                    {t("billing.portalPending")}
-                  </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openBillingReturn("plus")}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
+                  >
+                    <ArrowUpRight className="size-4" />
+                    {t("billing.choosePlus")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openBillingReturn("pro")}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90"
+                  >
+                    <ArrowUpRight className="size-4" />
+                    {t("billing.choosePro")}
+                  </button>
+                </div>
               )}
             </div>
           </div>

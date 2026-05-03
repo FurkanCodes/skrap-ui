@@ -6,6 +6,7 @@ import {
   readCustomString,
 } from "@/features/billing/server/paddle-events";
 import { getPaddleClient } from "@/features/billing/server/paddle";
+import type { BillingSyncResponse } from "@/features/billing/types";
 import { invalidateCachedMe } from "@/features/tracking/server/me-cache";
 import type { MeResponse } from "@/features/tracking/types";
 import { getBackendJson } from "@/features/scraper/server/backend-client";
@@ -46,13 +47,14 @@ export async function POST(request: Request): Promise<NextResponse> {
         transactionId: body.transactionId,
         transactionStatus: transaction.status,
       });
+      const response: BillingSyncResponse = {
+        ok: false,
+        outcome: "pending",
+        detail: "Payment has not completed yet.",
+        status: transaction.status,
+      };
       return NextResponse.json(
-        {
-          ok: false,
-          outcome: "pending",
-          detail: "Payment has not completed yet.",
-          status: transaction.status,
-        },
+        response,
         { status: 409 }
       );
     }
@@ -61,12 +63,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         userId: me.user.user_id,
         transactionId: body.transactionId,
       });
+      const response: BillingSyncResponse = {
+        ok: false,
+        outcome: "transaction_incomplete",
+        detail: "Paddle has not attached a subscription to this transaction yet.",
+      };
       return NextResponse.json(
-        {
-          ok: false,
-          outcome: "transaction_incomplete",
-          detail: "Paddle has not attached a subscription to this transaction yet.",
-        },
+        response,
         { status: 409 }
       );
     }
@@ -83,12 +86,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         transactionId: transaction.id,
         subscriptionId: subscription.id,
       });
+      const response: BillingSyncResponse = {
+        ok: false,
+        outcome: "owner_mismatch",
+        detail: "Transaction does not belong to this account.",
+      };
       return NextResponse.json(
-        {
-          ok: false,
-          outcome: "owner_mismatch",
-          detail: "Transaction does not belong to this account.",
-        },
+        response,
         { status: 403 }
       );
     }
@@ -111,14 +115,14 @@ export async function POST(request: Request): Promise<NextResponse> {
         subscriptionId: subscription.id,
         reason: backendReason,
       });
+      const response: BillingSyncResponse = {
+        ok: false,
+        outcome: "backend_rejected",
+        detail: "Backend rejected Paddle event.",
+        reason: backendReason,
+      };
       return NextResponse.json(
-        {
-          ok: false,
-          outcome: "backend_rejected",
-          detail: "Backend rejected Paddle event.",
-          reason: backendReason,
-          result,
-        },
+        response,
         { status: 422 }
       );
     }
@@ -132,7 +136,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       status: normalized.status,
       reason: backendReason,
     });
-    return NextResponse.json({ ok: true, outcome: "synced", synced: true, result });
+    const response: BillingSyncResponse = { ok: true, outcome: "synced", reason: backendReason };
+    return NextResponse.json(response);
   } catch (error) {
     const status = typeof (error as { status?: unknown }).status === "number"
       ? (error as { status: number }).status
@@ -144,12 +149,12 @@ export async function POST(request: Request): Promise<NextResponse> {
       status,
       message,
     });
-    return NextResponse.json(
-      backendDetail === undefined
-        ? { ok: false, outcome: "backend_rejected", detail: message }
-        : { ok: false, outcome: "backend_rejected", detail: message, backend_detail: backendDetail },
-      { status }
-    );
+    const response: BillingSyncResponse = {
+      ok: false,
+      outcome: "failed",
+      detail: backendDetail === undefined ? message : `${message}`,
+    };
+    return NextResponse.json(response, { status });
   }
 }
 
