@@ -47,10 +47,12 @@ export function BillingReturnClient({
   const t = useTranslations("billingReturn");
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
-  const [flowState, setFlowState] = useState<FlowState>(resolveInitialFlowState(initialTransactionId, autoStart));
+  const [flowState, setFlowState] = useState<FlowState>(
+    resolveInitialFlowState(initialTransactionId, fromPaymentLink, autoStart)
+  );
   const [transactionId, setTransactionId] = useState<string | null>(initialTransactionId);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [syncRun, setSyncRun] = useState(initialTransactionId ? 1 : 0);
+  const [syncRun, setSyncRun] = useState(initialTransactionId && !fromPaymentLink ? 1 : 0);
   const startedCheckoutRef = useRef(false);
   const openedFromPaymentLinkRef = useRef(false);
   const transactionIdRef = useRef<string | null>(initialTransactionId);
@@ -256,6 +258,14 @@ export function BillingReturnClient({
   }, [autoStart, plan, startCheckout, transactionId]);
 
   useEffect(() => {
+    if (!fromPaymentLink || !transactionId || openedFromPaymentLinkRef.current) {
+      return;
+    }
+    openedFromPaymentLinkRef.current = true;
+    void openCheckout(transactionId, checkoutUrlRef.current);
+  }, [fromPaymentLink, openCheckout, transactionId]);
+
+  useEffect(() => {
     if (!transactionId || syncRun <= 0) {
       return;
     }
@@ -364,8 +374,12 @@ export function BillingReturnClient({
 
 function resolveInitialFlowState(
   initialTransactionId: string | null,
+  fromPaymentLink: boolean,
   autoStart: boolean
 ): FlowState {
+  if (initialTransactionId && fromPaymentLink) {
+    return "opening_checkout";
+  }
   if (initialTransactionId) {
     return "syncing";
   }
