@@ -12,11 +12,28 @@ interface PaddlePublicConfigResponse {
 }
 
 export async function GET(): Promise<NextResponse> {
-  const token = readEnv("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", "PADDLE_CLIENT_TOKEN");
+  const tokenState = readEnvState("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", "PADDLE_CLIENT_TOKEN");
+  const token = tokenState.value;
   if (!token) {
+    const diagnostics = {
+      build: "paddle-public-config-v2",
+      tokenVars: tokenState.diagnostics,
+      environmentVars: readEnvState("NEXT_PUBLIC_PADDLE_ENV", "PADDLE_ENV").diagnostics,
+    };
+    console.warn("[billing-public-config] Paddle client token missing", diagnostics);
     return NextResponse.json(
-      { detail: "Paddle client token is not configured on the server. Set NEXT_PUBLIC_PADDLE_CLIENT_TOKEN or PADDLE_CLIENT_TOKEN for the running Next.js container." },
-      { status: 500 }
+      {
+        detail:
+          "Paddle client token is not configured in the running Next.js container.",
+        diagnostics,
+      },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Dealvinci-Billing-Config": "paddle-public-config-v2",
+        },
+      }
     );
   }
 
@@ -29,6 +46,7 @@ export async function GET(): Promise<NextResponse> {
   return NextResponse.json(response, {
     headers: {
       "Cache-Control": "no-store",
+      "X-Dealvinci-Billing-Config": "paddle-public-config-v2",
     },
   });
 }
@@ -48,11 +66,29 @@ function resolveEnvironment(): PaddleEnvironment {
 }
 
 function readEnv(...names: string[]): string | null {
+  return readEnvState(...names).value;
+}
+
+function readEnvState(...names: string[]): {
+  value: string | null;
+  diagnostics: Record<string, { present: boolean; length: number }>;
+} {
+  const diagnostics: Record<string, { present: boolean; length: number }> = {};
+  let firstValue: string | null = null;
+
   for (const name of names) {
     const value = process.env[name]?.trim();
+    diagnostics[name] = {
+      present: Boolean(value),
+      length: value?.length ?? 0,
+    };
     if (value) {
-      return value;
+      firstValue ??= value;
     }
   }
-  return null;
+
+  return {
+    value: firstValue,
+    diagnostics,
+  };
 }
