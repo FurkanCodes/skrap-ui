@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
 import type { CheckoutEventsData } from "@paddle/paddle-js/types/checkout/events";
-import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Minus, Plus, RefreshCw, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -57,11 +57,7 @@ export function BillingCheckoutClient({
     (targetTransactionId: string) => {
       const params = new URLSearchParams();
       params.set("transaction_id", targetTransactionId);
-
-      if (plan) {
-        params.set("plan", plan);
-      }
-
+      if (plan) params.set("plan", plan);
       return `${window.location.origin}${returnPath}?${params.toString()}`;
     },
     [plan, returnPath]
@@ -71,11 +67,7 @@ export function BillingCheckoutClient({
     (targetTransactionId: string) => {
       const params = new URLSearchParams();
       params.set("transaction_id", targetTransactionId);
-
-      if (plan) {
-        params.set("plan", plan);
-      }
-
+      if (plan) params.set("plan", plan);
       router.replace(`${returnPath}?${params.toString()}`, { scroll: false });
     },
     [plan, returnPath, router]
@@ -137,9 +129,7 @@ export function BillingCheckoutClient({
   }, []);
 
   const startCheckout = useCallback(async () => {
-    if (startedRef.current) {
-      return;
-    }
+    if (startedRef.current) return;
 
     startedRef.current = true;
     setErrorMessage(null);
@@ -154,9 +144,7 @@ export function BillingCheckoutClient({
         return;
       }
 
-      if (!plan) {
-        throw new Error(t("errors.planRequired"));
-      }
+      if (!plan) throw new Error(t("errors.planRequired"));
 
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
@@ -220,18 +208,14 @@ export function BillingCheckoutClient({
         return;
       }
 
-      if (event.data) {
-        setCheckoutData(event.data);
-      }
+      if (event.data) setCheckoutData(event.data);
 
       if (event.name === "checkout.completed") {
         const completedTransactionId = event.data?.transaction_id ?? transactionIdRef.current;
-
         if (completedTransactionId) {
           setCheckoutState("completed");
           goToReturn(completedTransactionId);
         }
-
         return;
       }
 
@@ -254,133 +238,202 @@ export function BillingCheckoutClient({
       void startCheckout();
     }, 0);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return () => window.clearTimeout(timeoutId);
   }, [startCheckout]);
 
   return (
-    <div className="space-y-5">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-foreground">{t("title")}</h1>
-        </div>
+    <div className="min-h-screen bg-[#0e0f0e] text-[#e8e8e6] font-sans">
+      {/* Top bar */}
+      <header className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.07]">
+        <button
+          type="button"
+          onClick={() => router.push(settingsPath)}
+          className="flex items-center justify-center w-8 h-8 rounded-md border border-white/15 bg-white/5 text-[#aaa] hover:text-white transition-colors"
+        >
+          <X className="size-3.5" />
+        </button>
 
-        <Button type="button" variant="ghost" onClick={() => router.push(settingsPath)}>
-          {t("actions.backToSettings")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#d4ff6b]">
+            <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none">
+              <path d="M6 1L11 6L6 11L1 6Z" fill="#0e0f0e" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white leading-none">Aero Edit</p>
+            <p className="text-[11px] text-[#666] mt-0.5">A Paddle Demo Brand</p>
+          </div>
+        </div>
       </header>
 
-      {checkoutState === "completed" ? (
-        <Alert className="border-emerald-500/40 bg-emerald-500/10">
-          <CheckCircle2 className="size-4 text-emerald-600" />
-          <AlertTitle>{t("completed.title")}</AlertTitle>
-          <AlertDescription>{t("completed.description")}</AlertDescription>
-        </Alert>
-      ) : null}
+      {/* Alerts */}
+      {checkoutState === "completed" && (
+        <div className="px-5 pt-4">
+          <Alert className="border-emerald-500/40 bg-emerald-500/10">
+            <CheckCircle2 className="size-4 text-emerald-500" />
+            <AlertTitle>{t("completed.title")}</AlertTitle>
+            <AlertDescription>{t("completed.description")}</AlertDescription>
+          </Alert>
+        </div>
+      )}
 
-      {errorMessage ? (
-        <Alert variant="destructive">
-          <AlertCircle className="size-4" />
-          <AlertTitle>{t("errors.title")}</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      ) : null}
+      {errorMessage && (
+        <div className="px-5 pt-4">
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertTitle>{t("errors.title")}</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        </div>
+      )}
 
-      <motion.section
+      {/* Two-column checkout grid */}
+      <motion.div
         initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.18 }}
-        className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+        className="grid lg:grid-cols-[1fr_1.3fr] min-h-[calc(100vh-57px)]"
       >
-        <div className="relative min-h-[640px]">
-          {isLoadingCheckout ? (
-            <div className="absolute inset-0 z-10 bg-card">
-              <CheckoutSkeleton />
-            </div>
-          ) : null}
+        {/* ── Left: Order summary ── */}
+        <div className="px-10 py-9 border-b lg:border-b-0 lg:border-r border-white/[0.07]">
+          <p className="text-[13px] font-medium text-[#888] mb-5 tracking-wide">
+            {t("orderSummary.title")}
+          </p>
 
-          <div
-            className={cn(
-              "paddle-checkout-frame min-h-[640px]",
-              isLoadingCheckout && "opacity-0"
-            )}
-          />
+          <div className="flex items-baseline gap-1">
+            <span className="text-[42px] font-semibold text-white leading-none tracking-tight">
+              TRY 2,257.12
+            </span>
+            <span className="text-base text-[#888] ml-1">inc. tax</span>
+          </div>
+          <p className="text-[13px] text-[#666] mt-2">then TRY 2,257.12 monthly</p>
 
-          {checkoutState === "error" || checkoutState === "paused" ? (
-            <div className="border-t border-border p-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  void reopenCheckout();
-                }}
-              >
-                <RefreshCw className="size-4" />
-                {checkoutState === "paused"
-                  ? t("actions.resumeCheckout")
-                  : t("actions.retryCheckout")}
-              </Button>
+          <p className="text-[13px] text-[#aaa] mt-7 mb-3">{t("orderSummary.seatLabel")}</p>
+
+          {/* Quantity stepper */}
+          <div className="flex items-center w-fit rounded-lg border border-white/10 bg-[#1a1b1a] overflow-hidden">
+            <button
+              type="button"
+              className="flex items-center justify-center w-10 h-10 text-[#aaa] hover:text-white transition-colors"
+            >
+              <Minus className="size-3.5" />
+            </button>
+            <div className="w-10 h-10 flex items-center justify-center text-sm font-medium text-white border-x border-white/[0.08]">
+              1
             </div>
-          ) : null}
+            <button
+              type="button"
+              className="flex items-center justify-center w-10 h-10 text-[#aaa] hover:text-white transition-colors"
+            >
+              <Plus className="size-3.5" />
+            </button>
+          </div>
+
+          {/* Line items */}
+          <div className="mt-8 pt-6 border-t border-white/[0.07] space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-[13px] text-[#888]">{t("orderSummary.subtotal")}</span>
+              <span className="text-[13px] font-medium text-[#ccc]">TRY 1,880.93</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[13px] text-[#888]">{t("orderSummary.tax")}</span>
+              <span className="text-[13px] font-medium text-[#ccc]">TRY 376.19</span>
+            </div>
+            <div className="flex justify-between items-center pt-4 mt-2 border-t border-white/[0.07]">
+              <span className="text-[13px] text-[#888]">{t("orderSummary.dueToday")}</span>
+              <span className="text-sm font-semibold text-white">TRY 2,257.12</span>
+            </div>
+          </div>
         </div>
-      </motion.section>
+
+        {/* ── Right: Paddle checkout frame ── */}
+        <div className="px-10 py-9">
+          <p className="text-[13px] font-medium text-[#888] mb-5 tracking-wide">
+            {t("paymentDetails.title")}
+          </p>
+
+          <div className="relative min-h-[640px]">
+            {/* Loading skeleton */}
+            {isLoadingCheckout && (
+              <div className="absolute inset-0 z-10 bg-[#0e0f0e]">
+                <CheckoutSkeleton />
+              </div>
+            )}
+
+            {/* Paddle injects its iframe here */}
+            <div
+              className={cn(
+                "paddle-checkout-frame min-h-[640px]",
+                isLoadingCheckout && "opacity-0"
+              )}
+            />
+
+            {/* Resume / retry footer */}
+            {(checkoutState === "error" || checkoutState === "paused") && (
+              <div className="border-t border-white/[0.07] pt-4 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-white/15 bg-white/5 text-[#ccc] hover:bg-white/10 hover:text-white"
+                  onClick={() => void reopenCheckout()}
+                >
+                  <RefreshCw className="size-4" />
+                  {checkoutState === "paused"
+                    ? t("actions.resumeCheckout")
+                    : t("actions.retryCheckout")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
+
+// ── Skeleton ────────────────────────────────────────────────────────────────
 
 function CheckoutSkeleton() {
   return (
-    <div className="grid min-h-[640px] gap-8 p-6 lg:grid-cols-[0.82fr_1.18fr] lg:p-10">
-      <div className="space-y-8">
-        <div className="h-6 w-40 animate-pulse rounded-md bg-muted" />
+    <div className="space-y-5">
+      {/* Test mode badge */}
+      <div className="flex items-center gap-3">
+        <div className="h-5 w-20 animate-pulse rounded bg-[#1c1d1c]" />
+        <div className="h-4 w-36 animate-pulse rounded bg-[#1c1d1c]" />
+      </div>
 
-        <div className="space-y-3">
-          <div className="h-14 w-72 animate-pulse rounded-md bg-muted" />
-          <div className="h-5 w-52 animate-pulse rounded-md bg-muted" />
+      {/* Form fields */}
+      <div className="space-y-4 pt-1">
+        <div className="space-y-1.5">
+          <div className="h-3.5 w-24 animate-pulse rounded bg-[#1c1d1c]" />
+          <div className="h-11 w-full animate-pulse rounded-lg bg-[#1c1d1c]" />
         </div>
-
-        <div className="space-y-4 pt-8">
-          <div className="h-5 w-36 animate-pulse rounded-md bg-muted" />
-          <div className="h-14 w-44 animate-pulse rounded-xl bg-muted" />
+        <div className="space-y-1.5">
+          <div className="h-3.5 w-28 animate-pulse rounded bg-[#1c1d1c]" />
+          <div className="h-11 w-full animate-pulse rounded-lg bg-[#1c1d1c]" />
         </div>
-
-        <div className="space-y-4 border-t border-border pt-8">
-          <div className="flex justify-between">
-            <div className="h-5 w-24 animate-pulse rounded-md bg-muted" />
-            <div className="h-5 w-28 animate-pulse rounded-md bg-muted" />
-          </div>
-
-          <div className="flex justify-between">
-            <div className="h-5 w-16 animate-pulse rounded-md bg-muted" />
-            <div className="h-5 w-24 animate-pulse rounded-md bg-muted" />
-          </div>
-
-          <div className="flex justify-between border-t border-border pt-6">
-            <div className="h-5 w-24 animate-pulse rounded-md bg-muted" />
-            <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
-          </div>
+        <div className="space-y-1.5">
+          <div className="h-3.5 w-20 animate-pulse rounded bg-[#1c1d1c]" />
+          <div className="h-24 w-full animate-pulse rounded-lg bg-[#1c1d1c]" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="h-3.5 w-16 animate-pulse rounded bg-[#1c1d1c]" />
+          <div className="h-11 w-full animate-pulse rounded-lg bg-[#1c1d1c]" />
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="h-6 w-44 animate-pulse rounded-md bg-muted" />
+      {/* Discount row */}
+      <div className="h-px w-full bg-white/[0.07] my-1" />
+      <div className="h-4 w-32 animate-pulse rounded bg-[#1c1d1c]" />
+      <div className="h-px w-full bg-white/[0.07] my-1" />
 
-        <div className="space-y-4">
-          <div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-          <div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-          <div className="h-24 w-full animate-pulse rounded-md bg-muted" />
-          <div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-        </div>
-
-        <div className="h-12 w-full animate-pulse rounded-full bg-muted" />
-      </div>
+      {/* Subscribe button */}
+      <div className="h-12 w-full animate-pulse rounded-lg bg-[#1c1d1c] mt-2" />
     </div>
   );
 }
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function readJson(response: Response): Promise<unknown> {
   try {
@@ -393,12 +446,8 @@ async function readJson(response: Response): Promise<unknown> {
 function readError(value: unknown, fallback: string): string {
   if (value && typeof value === "object") {
     const detail = (value as { detail?: unknown }).detail;
-
-    if (typeof detail === "string" && detail.trim()) {
-      return detail;
-    }
+    if (typeof detail === "string" && detail.trim()) return detail;
   }
-
   return fallback;
 }
 
