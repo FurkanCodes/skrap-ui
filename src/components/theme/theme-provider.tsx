@@ -143,9 +143,21 @@ export function ThemeProvider({
       return forcedTheme;
     }
 
-    return readStoredTheme(storageKey) ?? defaultTheme;
+    return defaultTheme;
   });
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() => getSystemTheme());
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    if (forcedTheme) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setThemeState(readStoredTheme(storageKey) ?? defaultTheme);
+      setSystemTheme(getSystemTheme());
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [defaultTheme, forcedTheme, storageKey]);
 
   useEffect(() => {
     if (!enableSystem || typeof window === "undefined") {

@@ -39,7 +39,7 @@ interface ViewerContextValue {
   sessionPending: boolean;
   sessionUser: ViewerSessionUser | null;
   clearViewerCache: () => void;
-  refreshViewer: () => void;
+  refreshViewer: (options?: { expectedPlanKey?: string }) => Promise<MeResponse | null>;
 }
 
 const ViewerContext = createContext<ViewerContextValue | null>(null);
@@ -156,6 +156,14 @@ export function ViewerProvider({
 
   useEffect(() => {
     if (initialMe && initialUserKey) {
+      const snapshot = readViewerCache();
+      if (
+        snapshot &&
+        snapshot.userKey === initialUserKey &&
+        shouldKeepCachedViewer(snapshot.data, initialMe)
+      ) {
+        return;
+      }
       writeViewerCache(initialMe, initialUserKey);
       return;
     }
@@ -297,10 +305,43 @@ export function ViewerProvider({
     clearViewerCacheStore();
   }, []);
 
-  const refreshViewer = useCallback(() => {
+  const refreshViewer = useCallback(async (options?: { expectedPlanKey?: string }) => {
     clearViewerCacheStore();
+    if (initialUserKey) {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        if (attempt > 0) {
+          await wait(1000);
+        }
+
+        try {
+          const response = await fetch("/api/tracking/me", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (!response.ok) {
+            continue;
+          }
+
+          const payload = (await response.json()) as MeResponse;
+          if (
+            options?.expectedPlanKey &&
+            payload.entitlement.plan_key !== options.expectedPlanKey
+          ) {
+            continue;
+          }
+
+          writeViewerCache(payload, initialUserKey);
+          refreshRouterSafely({ force: true });
+          return payload;
+        } catch {
+          // Retry briefly, then fall back to route refresh below.
+        }
+      }
+    }
     refreshRouterSafely({ force: true });
-  }, [refreshRouterSafely]);
+    return null;
+  }, [initialUserKey, refreshRouterSafely]);
 
   const fallbackMe = useMemo(() => {
     if (!initialMe || !initialUserKey) {
@@ -342,4 +383,41 @@ export function useViewer(): ViewerContextValue {
     throw new Error("useViewer must be used inside ViewerProvider.");
   }
   return context;
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function shouldKeepCachedViewer(cached: MeResponse, incoming: MeResponse): boolean {
+  if (cached.user.user_id !== incoming.user.user_id) {
+    return false;
+  }
+
+  const cachedEntitlementUpdatedAt = toTime(cached.entitlement.updated_at);
+  const incomingEntitlementUpdatedAt = toTime(incoming.entitlement.updated_at);
+  if (cachedEntitlementUpdatedAt > incomingEntitlementUpdatedAt) {
+    return true;
+  }
+  if (cachedEntitlementUpdatedAt < incomingEntitlementUpdatedAt) {
+    return false;
+  }
+
+  const cachedUsageUpdatedAt = toTime(cached.usage.updated_at);
+  const incomingUsageUpdatedAt = toTime(incoming.usage.updated_at);
+  if (cachedUsageUpdatedAt > incomingUsageUpdatedAt) {
+    return true;
+  }
+  if (cachedUsageUpdatedAt < incomingUsageUpdatedAt) {
+    return false;
+  }
+
+  return cached.entitlement.plan_key !== "free" && incoming.entitlement.plan_key === "free";
+}
+
+function toTime(value: string): number {
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : 0;
 }

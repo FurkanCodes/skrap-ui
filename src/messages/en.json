@@ -187,6 +187,19 @@
       "trackersUsed": "Trackers used",
       "monthlyCredits": "Monthly credits"
     },
+    "billing": {
+      "title": "Billing",
+      "freeDescription": "Upgrade with Paddle to raise tracker limits and monthly credits.",
+      "paidDescription": "Manage invoices, payment methods, cancellation, and subscription changes in Paddle.",
+      "openingCheckout": "Opening {plan} checkout...",
+      "syncing": "Payment received, syncing your plan...",
+      "syncPending": "Payment received. Your plan is still updating; refresh again in a moment.",
+      "refreshPlan": "Refresh plan",
+      "portalPending": "Your paid plan is active. Billing portal access will appear once Paddle finishes syncing.",
+      "choosePlus": "Choose Plus",
+      "choosePro": "Choose Pro",
+      "manage": "Manage billing"
+    },
     "errors": {
       "supportedSites": "Unable to load supported store adapters."
     }

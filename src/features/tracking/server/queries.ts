@@ -6,11 +6,12 @@ import type { MeResponse, TrackedItemsListResponse } from "@/features/tracking/t
 
 interface GetMeQueryOptions {
   cacheKey?: string | null;
+  forceFresh?: boolean;
 }
 
 export async function getMeQuery(options: GetMeQueryOptions = {}): Promise<MeResponse> {
   const cacheKey = options.cacheKey?.trim() || null;
-  if (cacheKey) {
+  if (cacheKey && !options.forceFresh) {
     const cached = readCachedMe(cacheKey);
     if (cached) {
       return cached;

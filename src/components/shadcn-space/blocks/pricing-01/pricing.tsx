@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
+import type { BillingPlanKey } from "@/features/billing/types";
 import {
   MARKETING_PRICING_PLANS,
   type MarketingPricingPlan,
@@ -13,9 +15,18 @@ import { cn } from "@/lib/utils";
 import { ArrowUpRight, Check } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
-const Pricing = () => {
+interface PricingProps {
+  isAuthenticated: boolean;
+  hasPaidSubscription: boolean;
+}
+
+const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
+  const buildCheckoutIntent = (planKey: BillingPlanKey) =>
+    `/auth/sign-up?next=${encodeURIComponent(`/settings?billing_plan=${planKey}`)}`;
+  const buildSettingsBillingIntent = (planKey: BillingPlanKey) =>
+    `/settings?billing_plan=${planKey}`;
 
   const cardVariants = {
     hidden: {
@@ -93,17 +104,47 @@ const Pricing = () => {
                           /month
                         </span>
                       </p>
-                      <Button
-                        onClick={() => router.push("/auth/sign-up?next=/dashboard")}
-                        className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
-                      >
-                        <span className="relative z-10 transition-all duration-500">
-                          {plan.ctaLabel}
-                        </span>
-                        <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                          <ArrowUpRight size={16} />
-                        </div>
-                      </Button>
+                      {plan.planKey === "free" ? (
+                        <Button
+                          onClick={() =>
+                            router.push(isAuthenticated ? "/dashboard" : "/auth/sign-up?next=/dashboard")
+                          }
+                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
+                        >
+                          <span className="relative z-10 transition-all duration-500">
+                            {plan.ctaLabel}
+                          </span>
+                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+                            <ArrowUpRight size={16} />
+                          </div>
+                        </Button>
+                      ) : !isAuthenticated ? (
+                        <Button
+                          onClick={() => router.push(buildCheckoutIntent(plan.planKey as BillingPlanKey))}
+                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
+                        >
+                          <span className="relative z-10 transition-all duration-500">
+                            {plan.ctaLabel}
+                          </span>
+                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+                            <ArrowUpRight size={16} />
+                          </div>
+                        </Button>
+                      ) : hasPaidSubscription ? (
+                        <ManageBillingButton label="Manage billing" />
+                      ) : (
+                        <Button
+                          onClick={() => router.push(buildSettingsBillingIntent(plan.planKey as BillingPlanKey))}
+                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
+                        >
+                          <span className="relative z-10 transition-all duration-500">
+                            {plan.ctaLabel}
+                          </span>
+                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+                            <ArrowUpRight size={16} />
+                          </div>
+                        </Button>
+                      )}
                     </div>
 
                     <Separator orientation="horizontal" className="block" />

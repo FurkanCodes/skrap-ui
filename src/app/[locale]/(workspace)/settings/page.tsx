@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { SettingsPageClient } from "@/features/settings/components/settings-page-client";
+import { getBillingCurrentQuery } from "@/features/billing/server/queries";
+import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
 import { listSupportedSitesQuery } from "@/features/settings/server/queries";
 import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
@@ -21,7 +23,22 @@ function mapError(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export default async function SettingsPage() {
+interface SettingsPageProps {
+  searchParams: Promise<{
+    billing_plan?: string | string[];
+  }>;
+}
+
+function parseCheckoutPlan(
+  rawPlan: string | string[] | undefined
+): BillingPlanKey | null {
+  const plan = Array.isArray(rawPlan) ? rawPlan[0] : rawPlan;
+  return plan === "plus" || plan === "pro" ? plan : null;
+}
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const params = await searchParams;
+  const checkoutPlan = parseCheckoutPlan(params.billing_plan);
   const t = await getTranslations("telegram.errors");
   const settingsT = await getTranslations("settings.errors");
   let initialStatus: TelegramActiveStatusResponse | null = null;
@@ -29,6 +46,7 @@ export default async function SettingsPage() {
   let trackedCount = 0;
   let supportedSites: SiteInfoResponse[] = [];
   let supportedSitesError: string | null = null;
+  let billing: BillingCurrentResponse | null = null;
 
   const authPromise = getAuthContext();
   const supportedSitesPromise = listSupportedSitesQuery();
@@ -42,9 +60,10 @@ export default async function SettingsPage() {
   }
 
   if (auth) {
-    const [telegramResult, trackedResult] = await Promise.allSettled([
+    const [telegramResult, trackedResult, billingResult] = await Promise.allSettled([
       getTelegramStatusQuery(),
       listTrackedItemsQuery(),
+      getBillingCurrentQuery(),
     ]);
 
     if (telegramResult.status === "fulfilled") {
@@ -58,6 +77,10 @@ export default async function SettingsPage() {
     } else {
       trackedCount = 0;
     }
+
+    if (billingResult.status === "fulfilled") {
+      billing = billingResult.value;
+    }
   }
   return (
     <div className="mx-auto w-full max-w-5xl p-6 lg:p-8">
@@ -67,6 +90,8 @@ export default async function SettingsPage() {
         trackedCount={trackedCount}
         supportedSites={supportedSites}
         supportedSitesError={supportedSitesError}
+        initialBilling={billing}
+        initialCheckoutPlan={checkoutPlan}
       />
     </div>
   );

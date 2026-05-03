@@ -14,6 +14,12 @@ importers:
       '@iconify/react':
         specifier: ^6.0.2
         version: 6.0.2(react@19.2.4)
+      '@paddle/paddle-js':
+        specifier: ^1.6.4
+        version: 1.6.4
+      '@paddle/paddle-node-sdk':
+        specifier: ^3.8.0
+        version: 3.8.0
       '@tabler/icons-react':
         specifier: ^3.41.1
         version: 3.41.1(react@19.2.4)
@@ -105,6 +111,8 @@ importers:
       typescript:
         specifier: ^5
         version: 5.9.3
+
+  apps/extension: {}
 
 packages:
 
@@ -1251,6 +1259,13 @@ packages:
   '@opentelemetry/semantic-conventions@1.40.0':
     resolution: {integrity: sha512-cifvXDhcqMwwTlTK04GBNeIe7yyo28Mfby85QXFe1Yk8nmi36Ab/5UQwptOx84SsoGNRg+EVSjwzfSZMy6pmlw==}
     engines: {node: '>=14'}
+
+  '@paddle/paddle-js@1.6.4':
+    resolution: {integrity: sha512-ncfnS6I8mCX6krZ3Sgz2iAYivGmhdI81yt9mT6prtPj4Ipd9J3M12LCJRUFL4FB7BYeeuV04c33RSEnbZUBCaA==}
+
+  '@paddle/paddle-node-sdk@3.8.0':
+    resolution: {integrity: sha512-4RS6AhZisloYaT2jiFgx9hwm22qwLRUx4EgIVb1gS3bS96lhDBQWq8BC1/Zow2i3CuxMkehXQUc3qKSBS77ozA==}
+    engines: {node: '>=20'}
 
   '@parcel/watcher-android-arm64@2.5.6':
     resolution: {integrity: sha512-YQxSS34tPF/6ZG7r/Ih9xy+kP/WwediEUsqmtf0cuCV5TPPKw/PQHRhueUo6JdeFJaqV3pyjm0GdYjZotbRt/A==}
@@ -5214,6 +5229,10 @@ snapshots:
   '@opentelemetry/api@1.9.1': {}
 
   '@opentelemetry/semantic-conventions@1.40.0': {}
+
+  '@paddle/paddle-js@1.6.4': {}
+
+  '@paddle/paddle-node-sdk@3.8.0': {}
 
   '@parcel/watcher-android-arm64@2.5.6':
     optional: true

@@ -43,7 +43,7 @@ export default function AuthControls() {
           );
           return;
         }
-        router.push("/auth/sign-in");
+        router.replace("/");
         router.refresh();
       } catch (error) {
         setStatusMessage(

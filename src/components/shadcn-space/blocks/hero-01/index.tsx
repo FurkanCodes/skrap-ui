@@ -3,7 +3,11 @@ import type { NavigationSection } from "@/components/shadcn-space/blocks/hero-01
 import Header from "@/components/shadcn-space/blocks/hero-01/header";
 import BrandSlider, { BrandList } from "@/components/shadcn-space/blocks/hero-01/brand-slider";
 
-export default function AgencyHeroSection() {
+export default function AgencyHeroSection({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
   const navigationData: NavigationSection[] = [
     {
       title: "Home",
@@ -49,9 +53,9 @@ export default function AgencyHeroSection() {
 
   return (
     <div id="home" className="relative">
-      <Header navigationData={navigationData} />
+      <Header navigationData={navigationData} isAuthenticated={isAuthenticated} />
       <main>
-        <HeroSection />
+        <HeroSection isAuthenticated={isAuthenticated} />
         <BrandSlider brandList={brandList} />
       </main>
     </div>

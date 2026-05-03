@@ -30,13 +30,16 @@ export type NavigationSection = {
 
 type HeaderProps = {
   navigationData: NavigationSection[];
+  isAuthenticated: boolean;
   className?: string;
 };
 
-const StartButton = ({
+const CtaButton = ({
+  label,
   className,
   onClick,
 }: {
+  label: string;
   className?: string;
   onClick?: () => void;
 }) => (
@@ -48,14 +51,14 @@ const StartButton = ({
       "cursor-pointer",
     )}
   >
-    <span className="relative z-10 transition-all duration-500">Start free</span>
+    <span className="relative z-10 transition-all duration-500">{label}</span>
     <span className="absolute right-1 w-8 h-8 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
       <ArrowUpRight size={16} />
     </span>
   </Button>
 );
 
-const Header = ({ navigationData, className }: HeaderProps) => {
+const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => {
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
@@ -79,9 +82,14 @@ const Header = ({ navigationData, className }: HeaderProps) => {
     };
   }, [handleScroll, handleResize]);
 
+  const ctaLabel = isAuthenticated ? "Go to Dashboard" : "Start free";
   const handleStart = useCallback(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+      return;
+    }
     router.push("/auth/sign-up?next=/dashboard");
-  }, [router]);
+  }, [isAuthenticated, router]);
 
   return (
     <motion.header
@@ -133,7 +141,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
         </div>
 
         <div className="flex gap-4">
-          <StartButton className="hidden lg:flex" onClick={handleStart} />
+          <CtaButton label={ctaLabel} className="hidden lg:flex" onClick={handleStart} />
 
           <div className="lg:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -196,7 +204,8 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                     </NavigationMenu>
 
                     <div className="w-fit">
-                      <StartButton
+                      <CtaButton
+                        label={ctaLabel}
                         onClick={() => {
                           setIsOpen(false);
                           handleStart();

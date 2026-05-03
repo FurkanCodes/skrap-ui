@@ -187,6 +187,19 @@
       "trackersUsed": "Kullanilan takipci",
       "monthlyCredits": "Aylik kredi"
     },
+    "billing": {
+      "title": "Odeme",
+      "freeDescription": "Takipci limitlerini ve aylik kredileri artirmak icin Paddle ile yukseltin.",
+      "paidDescription": "Faturalari, odeme yontemlerini, iptali ve abonelik degisikliklerini Paddle'da yonetin.",
+      "openingCheckout": "{plan} odeme ekrani aciliyor...",
+      "syncing": "Odeme alindi, planiniz guncelleniyor...",
+      "syncPending": "Odeme alindi. Planiniz hala guncelleniyor; birazdan tekrar yenileyin.",
+      "refreshPlan": "Plani yenile",
+      "portalPending": "Ucretli planiniz aktif. Paddle esitlemesi bitince odeme portali burada gorunecek.",
+      "choosePlus": "Plus sec",
+      "choosePro": "Pro sec",
+      "manage": "Odemeyi yonet"
+    },
     "errors": {
       "supportedSites": "Desteklenen magazalar yuklenemedi."
     }

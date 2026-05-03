@@ -72,3 +72,11 @@ export function writeCachedMe(cacheKey: string, data: MeResponse, now = Date.now
   });
   pruneMeCache(now);
 }
+
+export function invalidateCachedMe(cacheKey: string | null | undefined): void {
+  const normalizedKey = cacheKey?.trim();
+  if (!normalizedKey) {
+    return;
+  }
+  meCache.delete(normalizedKey);
+}

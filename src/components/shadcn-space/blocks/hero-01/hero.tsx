@@ -13,9 +13,15 @@ const instrumentSerif = Instrument_Serif({
   style: ["italic"],
 });
 
-function HeroSection() {
+function HeroSection({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
+  const ctaLabel = isAuthenticated ? "Go to Dashboard" : "Start free";
+  const ctaPath = isAuthenticated ? "/dashboard" : "/auth/sign-up?next=/dashboard";
 
   return (
     <section>
@@ -67,11 +73,11 @@ function HeroSection() {
                   className="flex items-center justify-center lg:justify-start"
                 >
                   <Button
-                    onClick={() => router.push("/auth/sign-up?next=/dashboard")}
+                    onClick={() => router.push(ctaPath)}
                     className="relative text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
                   >
                     <span className="relative z-10 transition-all duration-500">
-                      Start free
+                      {ctaLabel}
                     </span>
                     <span className="absolute right-1 w-10 h-10 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
                       <ArrowUpRight size={16} />

@@ -1,13 +1,17 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpRight, Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
 
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { useTheme } from "@/components/theme/theme-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
+import { PaddleCheckoutButton } from "@/features/billing/components/paddle-checkout-button";
+import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
@@ -20,7 +24,12 @@ interface SettingsPageClientProps {
   trackedCount: number;
   supportedSites: SiteInfoResponse[];
   supportedSitesError: string | null;
+  initialBilling: BillingCurrentResponse | null;
+  initialCheckoutPlan: BillingPlanKey | null;
 }
+
+const PAID_ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
+
 function formatCount(value: number, locale: string): string {
   return value.toLocaleString(locale);
 }
@@ -67,26 +76,35 @@ export function SettingsPageClient({
   trackedCount,
   supportedSites,
   supportedSitesError,
+  initialBilling,
+  initialCheckoutPlan,
 }: SettingsPageClientProps) {
   const t = useTranslations("settings");
+  const router = useRouter();
+  const pathname = usePathname();
   const locale = useLocale();
-  const { isAuthenticated, me } = useViewer();
+  const { isAuthenticated, me, refreshViewer } = useViewer();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
+  const [pendingCheckoutPlan, setPendingCheckoutPlan] = useState<BillingPlanKey | null>(
+    initialCheckoutPlan
+  );
+  const [mounted, setMounted] = useState(false);
   const minimumDropOptions = [
     { value: "1", label: "1%" },
     { value: "3", label: "3%" },
     { value: "5", label: "5%" },
     { value: "10", label: "10%" },
   ];
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const activeTheme = mounted ? theme : null;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = resolveEffectiveMinIntervalMinutes({
@@ -104,6 +122,22 @@ export function SettingsPageClient({
   );
   const cycleResetLabel = formatPeriodEnd(me?.usage?.period_end ?? null, locale);
   const planKey = me?.entitlement.plan_key ?? "free";
+  const hasPaidEntitlement = planKey !== "free";
+  const billingSubscription = initialBilling?.subscription ?? null;
+  const hasPaddleSubscription = Boolean(
+    billingSubscription?.provider === "paddle" &&
+      billingSubscription.provider_customer_id &&
+      billingSubscription.provider_subscription_id &&
+      PAID_ACCESS_STATUSES.has(billingSubscription.status)
+  );
+  const activeCheckoutPlan = hasPaidEntitlement ? null : pendingCheckoutPlan;
+
+  useEffect(() => {
+    if (!pendingCheckoutPlan || !isAuthenticated) {
+      return;
+    }
+    router.replace(pathname, { scroll: false });
+  }, [isAuthenticated, pathname, pendingCheckoutPlan, router]);
   const trackerUsagePercent = useMemo(() => {
     if (maxTrackers <= 0) {
       return 0;
@@ -136,7 +170,7 @@ export function SettingsPageClient({
               disabled={!mounted}
               onClick={() => setTheme("light")}
               className={
-                theme === "light"
+                activeTheme === "light"
                   ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
                   : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
               }
@@ -149,7 +183,7 @@ export function SettingsPageClient({
               disabled={!mounted}
               onClick={() => setTheme("dark")}
               className={
-                theme === "dark"
+                activeTheme === "dark"
                   ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
                   : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
               }
@@ -162,7 +196,7 @@ export function SettingsPageClient({
               disabled={!mounted}
               onClick={() => setTheme("system")}
               className={
-                theme === "system"
+                activeTheme === "system"
                   ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
                   : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
               }
@@ -336,6 +370,78 @@ export function SettingsPageClient({
               className="h-full rounded-full bg-zinc-900 transition-all duration-300 dark:bg-zinc-100"
               style={{ width: `${creditUsagePercent}%` }}
             />
+          </div>
+
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{t("billing.title")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {hasPaidEntitlement
+                    ? t("billing.paidDescription")
+                    : t("billing.freeDescription")}
+                </p>
+                {activeCheckoutPlan ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("billing.openingCheckout", { plan: activeCheckoutPlan.toUpperCase() })}
+                  </p>
+                ) : null}
+              </div>
+              {hasPaidEntitlement ? (
+                hasPaddleSubscription ? (
+                  <ManageBillingButton label={t("billing.manage")} />
+                ) : (
+                  <p className="max-w-xs text-xs text-muted-foreground">
+                    {t("billing.portalPending")}
+                  </p>
+                )
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <PaddleCheckoutButton
+                    planKey="plus"
+                    className="h-9 rounded-lg border-border bg-background text-foreground hover:bg-muted"
+                    idleIcon={<ArrowUpRight className="size-4" />}
+                    labels={{
+                      syncing: t("billing.syncing"),
+                      pending: t("billing.syncPending"),
+                      retry: t("billing.refreshPlan"),
+                      syncPendingError: t("billing.syncPending"),
+                    }}
+                    onCompleted={async () => {
+                      const refreshed = await refreshViewer({ expectedPlanKey: "plus" });
+                      if (refreshed?.entitlement.plan_key !== "plus") {
+                        throw new Error(t("billing.syncPending"));
+                      }
+                    }}
+                    autoStart={activeCheckoutPlan === "plus"}
+                    onStart={() => setPendingCheckoutPlan(null)}
+                  >
+                    {t("billing.choosePlus")}
+                  </PaddleCheckoutButton>
+                  <PaddleCheckoutButton
+                    planKey="pro"
+                    className="h-9 rounded-lg"
+                    idleIcon={<ArrowUpRight className="size-4" />}
+                    labels={{
+                      syncing: t("billing.syncing"),
+                      pending: t("billing.syncPending"),
+                      retry: t("billing.refreshPlan"),
+                      syncPendingError: t("billing.syncPending"),
+                    }}
+                    onCompleted={async () => {
+                      const refreshed = await refreshViewer({ expectedPlanKey: "pro" });
+                      if (refreshed?.entitlement.plan_key !== "pro") {
+                        throw new Error(t("billing.syncPending"));
+                      }
+                    }}
+                    autoStart={activeCheckoutPlan === "pro"}
+                    onStart={() => setPendingCheckoutPlan(null)}
+                  >
+                    {t("billing.choosePro")}
+                  </PaddleCheckoutButton>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

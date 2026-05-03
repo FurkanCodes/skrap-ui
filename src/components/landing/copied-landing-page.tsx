@@ -5,17 +5,38 @@ import Feature01 from "@/components/shadcn-space/blocks/feature-01";
 import Footer from "@/components/shadcn-space/blocks/footer-01/footer";
 import AgencyHeroSection from "@/components/shadcn-space/blocks/hero-01";
 import Pricing from "@/components/shadcn-space/blocks/pricing-01/pricing";
+import { getBillingCurrentQuery } from "@/features/billing/server/queries";
+import { getAuthContext } from "@/lib/auth-dal";
 
 const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
 });
 
-export default function CopiedLandingPage() {
+const ACTIVE_PADDLE_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+export default async function CopiedLandingPage() {
+  const auth = await getAuthContext();
+  const isAuthenticated = Boolean(auth);
+  let hasPaidSubscription = false;
+
+  if (isAuthenticated) {
+    try {
+      const billing = await getBillingCurrentQuery();
+      hasPaidSubscription = Boolean(
+        billing.subscription?.provider === "paddle" &&
+          billing.subscription.provider_subscription_id &&
+          ACTIVE_PADDLE_STATUSES.has(billing.subscription.status)
+      );
+    } catch {
+      hasPaidSubscription = false;
+    }
+  }
+
   return (
     <main className={manrope.className}>
       <section id="home">
-        <AgencyHeroSection />
+        <AgencyHeroSection isAuthenticated={isAuthenticated} />
       </section>
 
       <section id="features">
@@ -23,7 +44,10 @@ export default function CopiedLandingPage() {
       </section>
 
       <section id="pricing">
-        <Pricing />
+        <Pricing
+          isAuthenticated={isAuthenticated}
+          hasPaidSubscription={hasPaidSubscription}
+        />
       </section>
 
       <section id="faq">
