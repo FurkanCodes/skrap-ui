@@ -8,6 +8,9 @@ import { getAuthContext } from "@/lib/auth-dal";
 
 export const runtime = "nodejs";
 
+type PaddleClient = ReturnType<typeof getPaddleClient>;
+type PaddleCustomer = Awaited<ReturnType<PaddleClient["customers"]["get"]>>;
+
 interface CheckoutRequestBody {
   planKey?: unknown;
 }
@@ -36,22 +39,42 @@ export async function POST(request: Request): Promise<NextResponse> {
     ]);
     const paddle = getPaddleClient();
     const priceId = getPaddlePriceId(body.planKey);
-    const customerId = await resolveCustomerId({
+    let customerId: string | null = await resolveCustomerId({
+      paddle,
       paddleCustomerId: billing.subscription?.provider_customer_id ?? null,
       email: me.user.email,
       name: me.user.display_name,
       userId: me.user.user_id,
     });
 
-    const transaction = await paddle.transactions.create({
-      items: [{ priceId, quantity: 1 }],
-      customerId,
-      customData: {
+    let transaction;
+    try {
+      transaction = await createCheckoutTransaction({
+        paddle,
+        priceId,
+        customerId,
         userId: me.user.user_id,
         planKey: body.planKey,
-        app: "dealvinci",
-      },
-    });
+      });
+    } catch (error) {
+      if (!customerId || !isPaddleCustomerReferenceError(error, customerId)) {
+        throw error;
+      }
+      console.warn("[billing-checkout]", {
+        outcome: "customer_rejected_by_transaction",
+        userId: me.user.user_id,
+        customerId,
+        message: readPaddleErrorMessage(error),
+      });
+      customerId = null;
+      transaction = await createCheckoutTransaction({
+        paddle,
+        priceId,
+        customerId,
+        userId: me.user.user_id,
+        planKey: body.planKey,
+      });
+    }
 
     const response: BillingCheckoutResponse = {
       transactionId: transaction.id,
@@ -77,6 +100,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 }
 
 interface ResolveCustomerIdInput {
+  paddle: PaddleClient;
   paddleCustomerId: string | null;
   email: string | null;
   name: string | null;
@@ -84,15 +108,29 @@ interface ResolveCustomerIdInput {
 }
 
 async function resolveCustomerId({
+  paddle,
   paddleCustomerId,
   email,
   name,
   userId,
-}: ResolveCustomerIdInput): Promise<string> {
+}: ResolveCustomerIdInput): Promise<string | null> {
   if (paddleCustomerId) {
     try {
-      await getPaddleClient().customers.get(paddleCustomerId);
-      return paddleCustomerId;
+      const customer = await paddle.customers.get(paddleCustomerId);
+      const activeCustomerId = await ensureActiveCustomerId({
+        paddle,
+        customer,
+        userId,
+        source: "stored_customer_id",
+      });
+      if (activeCustomerId) {
+        return activeCustomerId;
+      }
+      console.warn("[billing-checkout]", {
+        outcome: "stored_customer_unusable",
+        userId,
+        customerId: paddleCustomerId,
+      });
     } catch (error) {
       if (!isPaddleNotFoundError(error)) {
         throw error;
@@ -105,28 +143,49 @@ async function resolveCustomerId({
     }
   }
 
-  const paddle = getPaddleClient();
   const trimmedEmail = email?.trim() ?? "";
 
   if (trimmedEmail) {
-    const customerMatches = await paddle.customers
+    const activeMatches = await paddle.customers
       .list({
         email: [trimmedEmail],
-        status: ["active", "archived"],
+        status: ["active"],
         perPage: 10,
       })
       .next();
-    const newestCustomer = customerMatches
-      .slice()
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-    if (newestCustomer) {
-      return newestCustomer.id;
+    const newestActiveCustomer = getNewestCustomer(activeMatches);
+    if (newestActiveCustomer) {
+      return newestActiveCustomer.id;
     }
+
+    const archivedMatches = await paddle.customers
+      .list({
+        email: [trimmedEmail],
+        status: ["archived"],
+        perPage: 10,
+      })
+      .next();
+    const newestArchivedCustomer = getNewestCustomer(archivedMatches);
+    if (newestArchivedCustomer) {
+      const reactivatedCustomerId = await ensureActiveCustomerId({
+        paddle,
+        customer: newestArchivedCustomer,
+        userId,
+        source: "email_lookup",
+      });
+      if (reactivatedCustomerId) {
+        return reactivatedCustomerId;
+      }
+    }
+  }
+
+  if (!trimmedEmail) {
+    return null;
   }
 
   try {
     const createdCustomer = await paddle.customers.create({
-      email: trimmedEmail || `user-${userId}@dealvinci.local`,
+      email: trimmedEmail,
       name,
       customData: {
         userId,
@@ -137,18 +196,118 @@ async function resolveCustomerId({
   } catch (error) {
     const conflictCustomerId = readExistingCustomerIdFromError(error);
     if (conflictCustomerId) {
-      return conflictCustomerId;
+      const customer = await paddle.customers.get(conflictCustomerId);
+      const activeCustomerId = await ensureActiveCustomerId({
+        paddle,
+        customer,
+        userId,
+        source: "customer_create_conflict",
+      });
+      if (activeCustomerId) {
+        return activeCustomerId;
+      }
+      console.warn("[billing-checkout]", {
+        outcome: "conflict_customer_unusable",
+        userId,
+        customerId: conflictCustomerId,
+        message: readPaddleErrorMessage(error),
+      });
+      return null;
     }
     throw error;
   }
 }
 
-function readExistingCustomerIdFromError(error: unknown): string | null {
-  if (!(error instanceof Error)) {
+async function createCheckoutTransaction({
+  paddle,
+  priceId,
+  customerId,
+  userId,
+  planKey,
+}: {
+  paddle: PaddleClient;
+  priceId: string;
+  customerId: string | null;
+  userId: string;
+  planKey: string;
+}) {
+  return paddle.transactions.create({
+    items: [{ priceId, quantity: 1 }],
+    ...(customerId ? { customerId } : {}),
+    customData: {
+      userId,
+      planKey,
+      app: "dealvinci",
+    },
+  });
+}
+
+async function ensureActiveCustomerId({
+  paddle,
+  customer,
+  userId,
+  source,
+}: {
+  paddle: PaddleClient;
+  customer: PaddleCustomer;
+  userId: string;
+  source: string;
+}): Promise<string | null> {
+  if (customer.status === "active") {
+    return customer.id;
+  }
+
+  if (customer.status !== "archived") {
+    console.warn("[billing-checkout]", {
+      outcome: "unusable_customer_status",
+      userId,
+      customerId: customer.id,
+      status: customer.status,
+      source,
+    });
     return null;
   }
-  const match = /customer of id (ctm_[a-zA-Z0-9]+)/.exec(error.message);
+
+  try {
+    const reactivatedCustomer = await paddle.customers.update(customer.id, {
+      status: "active",
+    });
+    console.warn("[billing-checkout]", {
+      outcome: "reactivated_archived_customer",
+      userId,
+      customerId: customer.id,
+      source,
+    });
+    return reactivatedCustomer.id;
+  } catch (error) {
+    if (!isPaddleNotFoundError(error)) {
+      throw error;
+    }
+    console.warn("[billing-checkout]", {
+      outcome: "archived_customer_missing",
+      userId,
+      customerId: customer.id,
+      source,
+      message: readPaddleErrorMessage(error),
+    });
+    return null;
+  }
+}
+
+function getNewestCustomer(customers: PaddleCustomer[]): PaddleCustomer | null {
+  return customers
+    .slice()
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
+}
+
+function readExistingCustomerIdFromError(error: unknown): string | null {
+  const match = /(ctm_[a-zA-Z0-9]+)/.exec(readPaddleErrorMessage(error));
   return match?.[1] ?? null;
+}
+
+function isPaddleCustomerReferenceError(error: unknown, customerId: string): boolean {
+  const message = readPaddleErrorMessage(error).toLowerCase();
+  return message.includes(customerId.toLowerCase()) && message.includes("customer");
 }
 
 function isPaddleNotFoundError(error: unknown): boolean {
@@ -160,6 +319,25 @@ function isPaddleNotFoundError(error: unknown): boolean {
   if (status === 404) {
     return true;
   }
-  const message = error instanceof Error ? error.message.toLowerCase() : "";
-  return message.includes("not found");
+  const code = readPaddleErrorField(error, "code").toLowerCase();
+  if (code.includes("not_found") || code.includes("not-found")) {
+    return true;
+  }
+  return readPaddleErrorMessage(error).toLowerCase().includes("not found");
+}
+
+function readPaddleErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "";
+  }
+  const detail = readPaddleErrorField(error, "detail");
+  return detail && detail !== error.message ? `${error.message} ${detail}` : error.message;
+}
+
+function readPaddleErrorField(error: unknown, key: "code" | "detail"): string {
+  if (!error || typeof error !== "object") {
+    return "";
+  }
+  const value = (error as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : "";
 }

@@ -73,6 +73,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const subscription = await getPaddleClient().subscriptions.get(transaction.subscriptionId);
     const transactionUserId = readCustomString(transaction.customData, "userId");
+    const transactionPlanKey = readCustomString(transaction.customData, "planKey");
     const subscriptionUserId = readCustomString(subscription.customData, "userId");
     const ownerUserId = subscriptionUserId ?? transactionUserId;
     if (ownerUserId !== me.user.user_id) {
@@ -99,6 +100,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const normalized = {
       ...normalizedEvent,
       user_id: normalizedEvent.user_id ?? ownerUserId,
+      plan_key: normalizedEvent.plan_key ?? transactionPlanKey,
     };
     const result = await forwardPaddleBillingEvent(normalized);
     const backendReason = readBackendReason(result);
