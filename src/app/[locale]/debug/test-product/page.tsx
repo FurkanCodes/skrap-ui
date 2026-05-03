@@ -7,6 +7,10 @@ const DEFAULT_PRODUCT_NAME = "Dealvinci Test Item";
 const DEFAULT_PRICE = "9999";
 const DEFAULT_CURRENCY = "TRY";
 const DEFAULT_STOCK = "in_stock";
+const DEFAULT_CHANGED_PRICE = "7999";
+const DEFAULT_CHANGE_AFTER_SECONDS = 300;
+
+export const dynamic = "force-dynamic";
 
 const STOCK_LABELS: Record<string, string> = {
   in_stock: "In stock",
@@ -49,6 +53,54 @@ function includeNoise(value: SearchParamValue): boolean {
   return cleanText(value, "false").toLowerCase() === "true";
 }
 
+function cleanPositiveInteger(value: SearchParamValue, fallback: number): number {
+  const parsed = Number.parseInt(cleanText(value, String(fallback)), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function cleanScenario(value: SearchParamValue): "static" | "drop" | "increase" | "stock_out" | "restock" {
+  const scenario = cleanText(value, "static").toLowerCase();
+  if (
+    scenario === "drop" ||
+    scenario === "increase" ||
+    scenario === "stock_out" ||
+    scenario === "restock"
+  ) {
+    return scenario;
+  }
+  return "static";
+}
+
+function parseStartTime(value: SearchParamValue): number | null {
+  const raw = firstParam(value)?.trim();
+  if (!raw) {
+    return null;
+  }
+
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric)) {
+    return numeric > 9_999_999_999 ? numeric : numeric * 1000;
+  }
+
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function hasChanged(searchParams: Record<string, SearchParamValue>): boolean {
+  const startsAt = parseStartTime(searchParams.starts_at);
+  const changeAfterSeconds = cleanPositiveInteger(
+    searchParams.change_after_seconds,
+    DEFAULT_CHANGE_AFTER_SECONDS
+  );
+
+  if (startsAt) {
+    return Date.now() >= startsAt + changeAfterSeconds * 1000;
+  }
+
+  const cycleSeconds = cleanPositiveInteger(searchParams.cycle_seconds, changeAfterSeconds * 2);
+  return Math.floor(Date.now() / (cycleSeconds * 1000)) % 2 === 1;
+}
+
 function formatPrice(amount: string, currency: string): string {
   const numeric = Number.parseFloat(amount);
   if (!Number.isFinite(numeric)) {
@@ -68,9 +120,19 @@ function getAvailabilityUrl(stock: string): string {
 
 function buildProduct(searchParams: Record<string, SearchParamValue>) {
   const name = cleanText(searchParams.name, DEFAULT_PRODUCT_NAME);
-  const price = cleanPrice(searchParams.price);
   const currency = cleanCurrency(searchParams.currency);
-  const stock = cleanStock(searchParams.stock);
+  const scenario = cleanScenario(searchParams.scenario);
+  const changed = scenario !== "static" && hasChanged(searchParams);
+  const basePrice = cleanPrice(searchParams.price);
+  const changedPrice = cleanPrice(searchParams.changed_price ?? DEFAULT_CHANGED_PRICE);
+  const price =
+    changed && (scenario === "drop" || scenario === "increase") ? changedPrice : basePrice;
+  const baseStock = cleanStock(searchParams.stock);
+  const changedStock = cleanStock(searchParams.changed_stock ?? "out_of_stock");
+  const stock =
+    changed && (scenario === "stock_out" || scenario === "restock")
+      ? changedStock
+      : baseStock;
   const displayPrice = formatPrice(price, currency);
   const noisy = includeNoise(searchParams.include_noise);
 
@@ -79,6 +141,8 @@ function buildProduct(searchParams: Record<string, SearchParamValue>) {
     price,
     currency,
     stock,
+    scenario,
+    changed,
     displayPrice,
     noisy,
     availability: getAvailabilityUrl(stock),
@@ -162,7 +226,7 @@ export default async function TestProductPage({
               {product.name}
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              Stable synthetic product page for extension and backend tracker tests.
+              Synthetic product page for extension and backend tracker tests.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -177,6 +241,11 @@ export default async function TestProductPage({
             <span className="rounded-md bg-secondary px-3 py-1 text-sm text-secondary-foreground">
               {product.stockLabel}
             </span>
+            {product.scenario !== "static" ? (
+              <span className="rounded-md border border-border px-3 py-1 text-sm text-muted-foreground">
+                {product.scenario}: {product.changed ? "changed" : "initial"}
+              </span>
+            ) : null}
           </div>
         </div>
 
