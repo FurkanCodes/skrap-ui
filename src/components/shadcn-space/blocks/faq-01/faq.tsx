@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { MARKETING_PRICING_FAQ } from "@/components/shadcn-space/blocks/pricing-content";
-import { PlusIcon } from "lucide-react";
+import { IconPlus } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 export default function Faq() {
@@ -41,7 +41,7 @@ export default function Faq() {
               >
                 <AccordionTrigger className="cursor-pointer p-0 text-left text-heading-sm font-semibold leading-heading-sm text-slate-ink hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
                   {faq.question}
-                  <PlusIcon className="h-5 w-5 shrink-0 text-radiant-violet transition-transform duration-200 group-aria-expanded/accordion-trigger:rotate-45" />
+                  <IconPlus className="h-5 w-5 shrink-0 text-radiant-violet transition-transform duration-200 group-aria-expanded/accordion-trigger:rotate-45" stroke={1.5} />
                 </AccordionTrigger>
                 <AccordionContent className="p-0 text-body leading-body text-medium-gray">
                   {faq.answer}

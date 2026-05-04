@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Bell, Clock3, Laptop, Moon, Sun, VolumeX } from "lucide-react";
+import {
+  IconArrowUpRight,
+  IconBell,
+  IconClock,
+  IconDeviceLaptop,
+  IconMoon,
+  IconSun,
+  IconVolumeOff,
+} from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -9,7 +17,9 @@ import { useRouter } from "next/navigation";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { useTheme } from "@/components/theme/theme-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
+import { Radio } from "@/components/ui/radio";
 import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
 import type { SiteInfoResponse } from "@/features/scraper/types";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
@@ -151,11 +161,6 @@ export function SettingsPageClient({
 
   return (
     <div className="space-y-5">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-      </header>
-
       <Card className="rounded-lg border-border bg-card">
         <CardHeader>
           <CardTitle>{t("appearance.title")}</CardTitle>
@@ -167,39 +172,30 @@ export function SettingsPageClient({
               type="button"
               disabled={!mounted}
               onClick={() => setTheme("light")}
-              className={
-                activeTheme === "light"
-                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
-                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
-              }
+              className="flex items-center justify-center gap-2 rounded-full border border-border/70 bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/45"
             >
-              <Sun className="size-4" />
+              <Radio checked={activeTheme === "light"} readOnly aria-hidden="true" tabIndex={-1} />
+              <IconSun className="size-4" stroke={1.5} />
               {t("appearance.light")}
             </button>
             <button
               type="button"
               disabled={!mounted}
               onClick={() => setTheme("dark")}
-              className={
-                activeTheme === "dark"
-                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
-                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
-              }
+              className="flex items-center justify-center gap-2 rounded-full border border-border/70 bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/45"
             >
-              <Moon className="size-4" />
+              <Radio checked={activeTheme === "dark"} readOnly aria-hidden="true" tabIndex={-1} />
+              <IconMoon className="size-4" stroke={1.5} />
               {t("appearance.dark")}
             </button>
             <button
               type="button"
               disabled={!mounted}
               onClick={() => setTheme("system")}
-              className={
-                activeTheme === "system"
-                  ? "flex items-center justify-center gap-2 rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm font-medium text-foreground"
-                  : "flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted/40"
-              }
+              className="flex items-center justify-center gap-2 rounded-full border border-border/70 bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/45"
             >
-              <Laptop className="size-4" />
+              <Radio checked={activeTheme === "system"} readOnly aria-hidden="true" tabIndex={-1} />
+              <IconDeviceLaptop className="size-4" stroke={1.5} />
               {t("appearance.system")}
             </button>
           </div>
@@ -271,46 +267,42 @@ export function SettingsPageClient({
           <CardDescription>{t("notifications.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
+          <label className="flex items-center justify-between rounded-xl border border-border/70 bg-card p-3">
             <div className="flex items-center gap-3">
               <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-                <Clock3 className="size-4" />
+              <IconClock className="size-4" stroke={1.5} />
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{t("notifications.dailySummary")}</p>
                 <p className="text-xs text-muted-foreground">{t("notifications.dailySummaryDescription")}</p>
               </div>
             </div>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={dailySummary}
-              onChange={(event) => setDailySummary(event.target.checked)}
-              className="size-5 accent-foreground"
+              onCheckedChange={(checked) => setDailySummary(Boolean(checked))}
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
+          <label className="flex items-center justify-between rounded-xl border border-border/70 bg-card p-3">
             <div className="flex items-center gap-3">
               <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-                <VolumeX className="size-4" />
+              <IconVolumeOff className="size-4" stroke={1.5} />
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{t("notifications.muteWeekends")}</p>
                 <p className="text-xs text-muted-foreground">{t("notifications.muteWeekendsDescription")}</p>
               </div>
             </div>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={muteWeekends}
-              onChange={(event) => setMuteWeekends(event.target.checked)}
-              className="size-5 accent-foreground"
+              onCheckedChange={(checked) => setMuteWeekends(Boolean(checked))}
             />
           </label>
 
-          <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
+          <div className="flex items-center justify-between rounded-xl border border-border/70 bg-card p-3">
             <div className="flex items-center gap-3">
               <span className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-                <Bell className="size-4" />
+              <IconBell className="size-4" stroke={1.5} />
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{t("notifications.minDrop")}</p>
@@ -404,7 +396,7 @@ export function SettingsPageClient({
                     onClick={() => openBillingCheckout("plus")}
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
                   >
-                    <ArrowUpRight className="size-4" />
+                    <IconArrowUpRight className="size-4" stroke={1.5} />
                     {t("billing.choosePlus")}
                   </button>
                   <button
@@ -412,7 +404,7 @@ export function SettingsPageClient({
                     onClick={() => openBillingCheckout("pro")}
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90"
                   >
-                    <ArrowUpRight className="size-4" />
+                    <IconArrowUpRight className="size-4" stroke={1.5} />
                     {t("billing.choosePro")}
                   </button>
                 </div>

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { ArrowRight, Check } from "lucide-react";
+import { IconArrowRight, IconCheck } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import {
@@ -142,7 +142,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                       )}
                     >
                       {plan.ctaLabel}
-                      <ArrowRight className="size-4" aria-hidden="true" />
+                      <IconArrowRight className="size-4" aria-hidden="true" stroke={1.5} />
                     </button>
                   )}
                 </div>
@@ -159,9 +159,10 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                         key={feature}
                         className="flex items-start gap-3 text-body font-medium leading-body text-medium-gray"
                       >
-                        <Check
+                        <IconCheck
                           className="mt-0.5 size-4 shrink-0 text-radiant-violet"
                           aria-hidden="true"
+                          stroke={1.5}
                         />
                         <span>{feature}</span>
                       </li>

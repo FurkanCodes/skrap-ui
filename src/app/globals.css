@@ -229,6 +229,35 @@
     --ring: oklch(0.62 0.12 257);
   }
 
+  .visitors-shell {
+    color-scheme: light;
+    --background: #ffffff;
+    --foreground: #181925;
+    --fg-2: #999999;
+    --fg-3: #6f6f6f;
+    --fg-4: #181925;
+    --bg-3: #e8e8e8;
+    --card: #ffffff;
+    --card-foreground: #181925;
+    --popover: #ffffff;
+    --popover-foreground: #181925;
+    --primary: #181925;
+    --primary-foreground: #ffffff;
+    --secondary: #f3f3f3;
+    --secondary-foreground: #181925;
+    --muted: #f3f3f3;
+    --muted-foreground: #999999;
+    --accent: #f3f3f3;
+    --accent-foreground: #181925;
+    --border: #e8e8e8;
+    --input: #e8e8e8;
+    --ring: #918df6;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #181925;
+    --sidebar-accent: #f3f3f3;
+    --sidebar-border: #e8e8e8;
+  }
+
   .app-loading-screen {
     animation: loading-screen-enter 320ms ease-out both;
   }

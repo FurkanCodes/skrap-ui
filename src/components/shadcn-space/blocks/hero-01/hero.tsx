@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { IconArrowRight, IconChevronRight } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
 function HeroSection({
@@ -32,7 +32,7 @@ function HeroSection({
             NEW
           </span>
           Price alerts in Telegram
-          <ChevronRight className="size-4" aria-hidden="true" />
+          <IconChevronRight className="size-4" aria-hidden="true" stroke={1.5} />
         </motion.a>
 
         <motion.h1
@@ -84,7 +84,7 @@ function HeroSection({
             className="inline-flex h-[52px] min-w-36 items-center justify-center gap-2 rounded-full bg-[#00000008] px-6 text-heading-sm font-semibold leading-none text-medium-gray transition-colors hover:bg-light-gray/70 hover:text-slate-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/60 focus-visible:ring-offset-2"
           >
             See how it works
-            <ArrowRight className="size-4" aria-hidden="true" />
+            <IconArrowRight className="size-4" aria-hidden="true" stroke={1.5} />
           </a>
         </motion.div>
       </div>

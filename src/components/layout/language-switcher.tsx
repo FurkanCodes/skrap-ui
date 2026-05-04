@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Languages, Loader2 } from "lucide-react";
+import { IconLanguage, IconLoader2 } from "@tabler/icons-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -27,9 +27,9 @@ export default function LanguageSwitcher() {
   return (
     <div className="inline-flex items-center gap-1.5">
       {isPending ? (
-        <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+        <IconLoader2 className="size-3.5 animate-spin text-muted-foreground" stroke={1.5} />
       ) : (
-        <Languages className="size-3.5 text-muted-foreground" />
+        <IconLanguage className="size-3.5 text-muted-foreground" stroke={1.5} />
       )}
       <AnimatedDropdown
         value={locale}

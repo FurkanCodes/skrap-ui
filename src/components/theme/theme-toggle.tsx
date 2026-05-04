@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Moon, Sun } from "lucide-react";
+import { IconMoon, IconSun } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -50,7 +50,7 @@ export default function ThemeToggle() {
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="grid place-items-center"
             >
-              <Sun className="size-3.5" />
+              <IconSun className="size-3.5" stroke={1.5} />
             </motion.span>
           ) : (
             <motion.span
@@ -61,7 +61,7 @@ export default function ThemeToggle() {
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="grid place-items-center"
             >
-              <Moon className="size-3.5" />
+              <IconMoon className="size-3.5" stroke={1.5} />
             </motion.span>
           )}
         </AnimatePresence>

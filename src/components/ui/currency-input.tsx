@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentPropsWithoutRef } from "react";
-import { DollarSign } from "lucide-react";
+import { IconCurrencyDollar } from "@tabler/icons-react";
 
 import { Input } from "@/components/ui/input";
 import { getCurrencySymbol } from "@/lib/currency";
@@ -21,7 +21,7 @@ export function CurrencyInput({ className, currency, ...props }: CurrencyInputPr
           {symbol}
         </span>
       ) : (
-        <DollarSign className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <IconCurrencyDollar className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" stroke={1.5} />
       )}
       <Input
         type="text"

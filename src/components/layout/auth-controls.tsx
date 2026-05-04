@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronDown, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
+import {
+  IconChevronDown,
+  IconLoader2,
+  IconLogin,
+  IconLogout,
+  IconUserPlus,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -61,23 +67,20 @@ export default function AuthControls() {
         <>
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full px-1.5 text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
               disabled={isPending || sessionPending}
               aria-label={t("openMenu")}
             >
               <Avatar size="sm">
                 <AvatarFallback>{avatarLabel}</AvatarFallback>
               </Avatar>
-              <span className="hidden max-w-44 truncate text-xs text-muted-foreground md:inline">
-                {identityLabel}
-              </span>
               {isPending ? (
-                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                <IconLoader2 className="size-3.5 animate-spin text-muted-foreground" stroke={1.5} />
               ) : (
-                <ChevronDown className="size-3.5 text-muted-foreground" />
+                <IconChevronDown className="hidden size-3 text-muted-foreground md:block" stroke={1.5} />
               )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="w-64 p-1.5">
+            <DropdownMenuContent align="end" sideOffset={8} className="w-56 p-1.5">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="px-2 py-1.5">
                   <div className="flex items-center gap-2.5 py-0.5">
@@ -85,7 +88,7 @@ export default function AuthControls() {
                       <AvatarFallback>{avatarLabel}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-foreground">{identityLabel}</p>
+                      <p className="truncate text-[13px] font-medium text-foreground">{identityLabel}</p>
                       <p className="text-xs text-muted-foreground">{t("account")}</p>
                     </div>
                   </div>
@@ -99,7 +102,7 @@ export default function AuthControls() {
                   disabled={isPending}
                   variant="destructive"
                 >
-                  <LogOut className="size-4" />
+                  <IconLogout className="size-4" stroke={1.5} />
                   {t("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -112,11 +115,11 @@ export default function AuthControls() {
             href="/auth/sign-in"
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            <LogIn className="size-3.5" />
+            <IconLogin className="size-3.5" stroke={1.5} />
             {t("signIn")}
           </Link>
           <Link href="/auth/sign-up" className={buttonVariants({ size: "sm" })}>
-            <UserPlus className="size-3.5" />
+            <IconUserPlus className="size-3.5" stroke={1.5} />
             {t("signUp")}
           </Link>
         </>

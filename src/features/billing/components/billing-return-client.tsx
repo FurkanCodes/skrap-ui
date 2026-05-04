@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
-import { AlertCircle, CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import {
+  IconAlertCircle,
+  IconCircleCheck,
+  IconExternalLink,
+  IconLoader2,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -302,7 +308,7 @@ export function BillingReturnClient({
 
         {errorMessage ? (
           <Alert variant="destructive">
-            <AlertCircle className="size-4" />
+            <IconAlertCircle className="size-4" stroke={1.5} />
             <AlertTitle>{t("errors.title")}</AlertTitle>
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
@@ -311,7 +317,7 @@ export function BillingReturnClient({
         <div className="flex flex-wrap items-center gap-2">
           {(flowState === "ready" || flowState === "canceled" || flowState === "error") && plan ? (
             <Button type="button" onClick={() => { void startCheckout(); }}>
-              <ExternalLink className="size-4" />
+              <IconExternalLink className="size-4" stroke={1.5} />
               {t("actions.startCheckout")}
             </Button>
           ) : null}
@@ -324,7 +330,7 @@ export function BillingReturnClient({
                 void openCheckout(transactionId, checkoutUrlRef.current);
               }}
             >
-              <ExternalLink className="size-4" />
+              <IconExternalLink className="size-4" stroke={1.5} />
               {t("actions.openCheckout")}
             </Button>
           ) : null}
@@ -337,7 +343,7 @@ export function BillingReturnClient({
                 setSyncRun((value) => value + 1);
               }}
             >
-              <RefreshCw className="size-4" />
+              <IconRefresh className="size-4" stroke={1.5} />
               {t("actions.retrySync")}
             </Button>
           ) : null}
@@ -349,21 +355,21 @@ export function BillingReturnClient({
 
         {flowState === "syncing" || flowState === "opening_checkout" ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
+            <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
             {t("status.processing")}
           </div>
         ) : null}
 
         {flowState === "checkout_open" ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <RefreshCw className="size-4" />
+            <IconRefresh className="size-4" stroke={1.5} />
             {t("status.completeInCheckout")}
           </div>
         ) : null}
 
         {flowState === "active" ? (
           <div className="flex items-center gap-2 text-xs text-emerald-600">
-            <CheckCircle2 className="size-4" />
+            <IconCircleCheck className="size-4" stroke={1.5} />
             {t("status.active")}
           </div>
         ) : null}

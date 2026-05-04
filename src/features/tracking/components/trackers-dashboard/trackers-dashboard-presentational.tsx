@@ -55,6 +55,48 @@ export function TrackersDashboardAuthenticatedView({
         onOpenModal={controller.openModal}
       />
 
+      <CreateTrackerModal
+        isModalOpen={controller.isModalOpen}
+        modalStep={controller.modalStep}
+        closeModal={controller.closeModal}
+        isPreviewPending={controller.isPreviewPending}
+        isSavePending={controller.isSavePending}
+        urlRows={controller.urlRows}
+        drafts={controller.drafts}
+        activeDraftId={controller.activeDraftId}
+        activeDraft={controller.activeDraft}
+        sharedTrackingMode={controller.sharedTrackingMode}
+        setSharedTrackingMode={controller.setSharedTrackingMode}
+        sharedInterval={controller.sharedInterval}
+        setSharedInterval={controller.setSharedInterval}
+        sharedNotifyOnPriceIncrease={controller.sharedNotifyOnPriceIncrease}
+        sharedNotifyOnStockChange={controller.sharedNotifyOnStockChange}
+        setSharedNotifyOnPriceIncrease={controller.setSharedNotifyOnPriceIncrease}
+        setSharedNotifyOnStockChange={controller.setSharedNotifyOnStockChange}
+        minInterval={controller.minInterval}
+        remainingSlots={controller.remainingSlots}
+        canSaveDrafts={controller.canSaveDrafts}
+        bulkResultSummary={controller.bulkResultSummary}
+        telegramConnected={controller.telegramConnected}
+        modalError={controller.modalError}
+        setUrlRowValue={controller.setUrlRowValue}
+        addUrlRow={controller.addUrlRow}
+        removeUrlRow={controller.removeUrlRow}
+        handleUrlRowPaste={controller.handleUrlRowPaste}
+        reviewUrlRows={controller.reviewUrlRows}
+        goBackToUrlStep={controller.goBackToUrlStep}
+        setActiveDraft={controller.setActiveDraft}
+        toggleDraftSelection={controller.toggleDraftSelection}
+        setDraftTrackingMode={controller.setDraftTrackingMode}
+        setDraftInterval={controller.setDraftInterval}
+        setDraftTargetAmount={controller.setDraftTargetAmount}
+        setDraftNotifyOnPriceIncrease={controller.setDraftNotifyOnPriceIncrease}
+        setDraftNotifyOnStockChange={controller.setDraftNotifyOnStockChange}
+        setDraftRawUrl={controller.setDraftRawUrl}
+        retryDraftPreview={controller.retryDraftPreview}
+        saveTracker={controller.saveTracker}
+      />
+
       <TelegramConnectionBanner telegramConnected={controller.telegramConnected} />
 
       <SummaryBar
@@ -115,48 +157,6 @@ export function TrackersDashboardAuthenticatedView({
           {t("creditsExhausted")}
         </p>
       ) : null}
-
-      <CreateTrackerModal
-        isModalOpen={controller.isModalOpen}
-        modalStep={controller.modalStep}
-        closeModal={controller.closeModal}
-        isPreviewPending={controller.isPreviewPending}
-        isSavePending={controller.isSavePending}
-        urlRows={controller.urlRows}
-        drafts={controller.drafts}
-        activeDraftId={controller.activeDraftId}
-        activeDraft={controller.activeDraft}
-        sharedTrackingMode={controller.sharedTrackingMode}
-        setSharedTrackingMode={controller.setSharedTrackingMode}
-        sharedInterval={controller.sharedInterval}
-        setSharedInterval={controller.setSharedInterval}
-        sharedNotifyOnPriceIncrease={controller.sharedNotifyOnPriceIncrease}
-        sharedNotifyOnStockChange={controller.sharedNotifyOnStockChange}
-        setSharedNotifyOnPriceIncrease={controller.setSharedNotifyOnPriceIncrease}
-        setSharedNotifyOnStockChange={controller.setSharedNotifyOnStockChange}
-        minInterval={controller.minInterval}
-        remainingSlots={controller.remainingSlots}
-        canSaveDrafts={controller.canSaveDrafts}
-        bulkResultSummary={controller.bulkResultSummary}
-        telegramConnected={controller.telegramConnected}
-        modalError={controller.modalError}
-        setUrlRowValue={controller.setUrlRowValue}
-        addUrlRow={controller.addUrlRow}
-        removeUrlRow={controller.removeUrlRow}
-        handleUrlRowPaste={controller.handleUrlRowPaste}
-        reviewUrlRows={controller.reviewUrlRows}
-        goBackToUrlStep={controller.goBackToUrlStep}
-        setActiveDraft={controller.setActiveDraft}
-        toggleDraftSelection={controller.toggleDraftSelection}
-        setDraftTrackingMode={controller.setDraftTrackingMode}
-        setDraftInterval={controller.setDraftInterval}
-        setDraftTargetAmount={controller.setDraftTargetAmount}
-        setDraftNotifyOnPriceIncrease={controller.setDraftNotifyOnPriceIncrease}
-        setDraftNotifyOnStockChange={controller.setDraftNotifyOnStockChange}
-        setDraftRawUrl={controller.setDraftRawUrl}
-        retryDraftPreview={controller.retryDraftPreview}
-        saveTracker={controller.saveTracker}
-      />
 
       <EditTrackerModal
         isOpen={controller.isEditModalOpen}

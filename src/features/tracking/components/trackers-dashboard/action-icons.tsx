@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Loader2, Pause, Play } from "lucide-react";
+import { IconLoader2, IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react";
 
 import type { ActionFeedbackState } from "@/features/tracking/components/trackers-dashboard/types";
 
@@ -18,7 +18,7 @@ export function ResumeActionIcon({ state }: { state: ActionFeedbackState }) {
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="grid place-items-center"
           >
-            <Loader2 className="size-3.5 animate-spin" />
+            <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
           </motion.span>
         ) : null}
 
@@ -31,7 +31,7 @@ export function ResumeActionIcon({ state }: { state: ActionFeedbackState }) {
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="grid place-items-center"
           >
-            <Play className="size-3.5" />
+            <IconPlayerPlay className="size-3.5" stroke={1.5} />
           </motion.span>
         ) : null}
 
@@ -107,7 +107,7 @@ export function PauseActionIcon({ state }: { state: ActionFeedbackState }) {
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="grid place-items-center"
           >
-            <Loader2 className="size-3.5 animate-spin" />
+            <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
           </motion.span>
         ) : null}
 
@@ -120,7 +120,7 @@ export function PauseActionIcon({ state }: { state: ActionFeedbackState }) {
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="grid place-items-center"
           >
-            <Pause className="size-3.5" />
+            <IconPlayerPause className="size-3.5" stroke={1.5} />
           </motion.span>
         ) : null}
 

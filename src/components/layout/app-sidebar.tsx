@@ -1,227 +1,242 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
-import { LayoutDashboard, Puzzle, Settings2 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { type CSSProperties } from "react";
+import {
+  IconBell,
+  IconCirclePlus,
+  IconPointer,
+  IconLayoutGrid,
+  IconSelector,
+  IconSettings,
+  IconWorld,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import Logo from "@/assets/marketing/logo";
 import AuthControls from "@/components/layout/auth-controls";
-import LanguageSwitcher from "@/components/layout/language-switcher";
-import ThemeToggle from "@/components/theme/theme-toggle";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Link, usePathname } from "@/i18n/navigation";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link, usePathname } from "@/i18n/navigation";
+import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   {
     titleKey: "dashboard",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: IconLayoutGrid,
   },
   {
     titleKey: "extensions",
     href: "/extensions",
-    icon: Puzzle,
+    icon: IconPointer,
   },
   {
     titleKey: "settings",
     href: "/settings",
-    icon: Settings2,
+    icon: IconSettings,
   },
 ];
 
 const AppSidebar = ({ children }: { children: React.ReactNode }) => {
   const t = useTranslations("layout.sidebar");
+  const trackingHeaderT = useTranslations("tracking.dashboard.header");
+  const trackingUnauthenticatedT = useTranslations("tracking.dashboard.unauthenticated");
+  const settingsT = useTranslations("settings");
   const pathname = usePathname();
-  const isMobile = useIsMobile();
-  const shouldReduceMotion = useReducedMotion();
-  const [isPinnedOpen, setIsPinnedOpen] = useState(true);
-  const [isHoverExpanded, setIsHoverExpanded] = useState(false);
-  const sidebarOpen = isPinnedOpen || isHoverExpanded;
-  const [hoveredItemState, setHoveredItemState] = useState<{
-    path: string;
-    title: string | null;
-  }>({
-    path: "",
-    title: null,
-  });
-  const activeItemTitle =
-    navItems.find((item) => pathname === item.href)?.titleKey ?? null;
-  const hoveredItemTitle =
-    hoveredItemState.path === pathname ? hoveredItemState.title : null;
-  const highlightedItemTitle = hoveredItemTitle ?? activeItemTitle;
-  const sidebarVariables = {
-    "--sidebar-width-icon": "3.75rem",
-  } as CSSProperties;
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    setIsPinnedOpen(nextOpen);
-    setIsHoverExpanded(false);
-  };
+  const { isAuthenticated } = useViewer();
+  const pageHero =
+    pathname === "/dashboard"
+      ? {
+          title: isAuthenticated
+            ? trackingHeaderT("title")
+            : trackingUnauthenticatedT("title"),
+          description: isAuthenticated
+            ? trackingHeaderT("description")
+            : trackingUnauthenticatedT("description"),
+        }
+      : pathname === "/settings"
+        ? {
+            title: settingsT("title"),
+            description: settingsT("subtitle"),
+          }
+        : null;
 
   return (
-    <SidebarProvider
-      open={sidebarOpen}
-      onOpenChange={handleOpenChange}
-      style={sidebarVariables}
-    >
-      <Sidebar
-        variant="inset"
-        collapsible="icon"
-        className="border-sidebar-border/70"
-        onMouseEnter={() => {
-          if (!isMobile && !isPinnedOpen) {
-            setIsHoverExpanded(true);
-          }
-        }}
-        onMouseLeave={() => {
-          if (!isMobile && !isPinnedOpen) {
-            setIsHoverExpanded(false);
-          }
-        }}
-      >
-        <SidebarHeader className="px-2.5 py-3">
-          <Link
-            href="/dashboard"
-            prefetch={false}
-            className="flex h-10 w-full items-center justify-start overflow-hidden rounded-xl px-[11px] transition-colors hover:bg-sidebar-accent/60"
-            aria-label={t("goToDashboard")}
-          >
-            {sidebarOpen ? <SidebarLogo /> : <SidebarLogoIcon />}
-          </Link>
-        </SidebarHeader>
+    <div className="visitors-shell min-h-svh bg-background text-foreground">
+      <header className="fixed left-1/2 top-0 z-40 w-full max-w-3xl -translate-x-1/2">
+        <div className="absolute inset-x-0 top-0 -bottom-4 bg-background/80 backdrop-blur-lg [mask:linear-gradient(to_top,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_50%)]" />
+        <div className="relative flex w-full items-center justify-between px-5 py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/dashboard"
+              prefetch={false}
+              className="grid size-8 shrink-0 place-items-center text-foreground transition-opacity duration-150 hover:opacity-80"
+              aria-label={t("goToDashboard")}
+            >
+              <SidebarLogoIcon />
+            </Link>
+            <ProjectMenu workspaceLabel={t("workspace")} />
+          </div>
 
-        <SidebarContent className="px-2">
-          <SidebarGroup className="px-1 pt-1">
-            <SidebarMenu
-              className="gap-1.5"
-              onMouseLeave={() =>
-                setHoveredItemState({
-                  path: pathname,
-                  title: null,
-                })
-              }
+          <AuthControls />
+        </div>
+      </header>
+
+      <BottomDock pathname={pathname} />
+
+      <div className="mx-auto w-full max-w-3xl px-5 pb-32 pt-20">
+        {pageHero ? <PageHero title={pageHero.title} description={pageHero.description} /> : null}
+
+        <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[14rem_minmax(0,1fr)]", pageHero ? "mt-20" : "")}>
+          <aside className="w-full md:w-56">
+            <nav
+              className="flex w-full items-start gap-6 overflow-x-auto border-b border-[var(--bg-3)] md:sticky md:top-20 md:flex-col md:gap-2 md:border-b-0"
+              aria-label={t("workspace")}
             >
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
-                  <SidebarMenuItem
+                  <Link
                     key={item.titleKey}
-                    onMouseEnter={() =>
-                      setHoveredItemState({
-                        path: pathname,
-                        title: item.titleKey,
-                      })
-                    }
+                    href={item.href}
+                    prefetch={false}
+                    className={cn(
+                      "flex shrink-0 items-center gap-2 border-b-2 py-2.5 text-sm font-medium transition-colors md:border-b-0 md:py-0",
+                      isActive
+                        ? "border-primary text-[var(--fg-4)]"
+                        : "cursor-pointer border-transparent text-[var(--fg-2)] hover:text-[var(--fg-3)]"
+                    )}
                   >
-                    {highlightedItemTitle === item.titleKey ? (
-                      <motion.span
-                        layoutId={shouldReduceMotion ? undefined : "sidebar-nav-highlight"}
-                        transition={
-                          shouldReduceMotion
-                            ? { duration: 0 }
-                            : { type: "spring", stiffness: 420, damping: 34, mass: 0.6 }
-                        }
-                        className="pointer-events-none absolute inset-0 rounded-lg border border-sidebar-border/80 bg-sidebar-accent/90 shadow-[0_6px_18px_-12px_hsl(var(--sidebar-foreground)/0.8)]"
-                      />
-                    ) : null}
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      render={<Link href={item.href} prefetch={false} />}
-                      className={cn(
-                        "relative z-10 h-10 w-full justify-start overflow-hidden rounded-lg px-3 text-[13px] font-medium transition-colors duration-200 ease-out",
-                        "hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent",
-                        "text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-sidebar-foreground",
-                        "group-data-[collapsible=icon]:size-auto! group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-full! group-data-[collapsible=icon]:px-[11px]! group-data-[collapsible=icon]:py-0!"
-                      )}
-                    >
-                      <span className="flex size-4 shrink-0 items-center justify-center">
-                        <item.icon className="size-4" />
-                      </span>
-                      <span
-                        className={cn(
-                          "pointer-events-none absolute top-1/2 left-10 -translate-y-1/2 whitespace-nowrap transition-opacity duration-200 ease-out",
-                          sidebarOpen ? "opacity-100" : "opacity-0"
-                        )}
-                      >
-                        {t(`nav.${item.titleKey}`)}
-                      </span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                    <item.icon className="size-4 shrink-0" stroke={1.5} />
+                    {t(`nav.${item.titleKey}`)}
+                  </Link>
                 );
               })}
-            </SidebarMenu>
-          </SidebarGroup>
-        </SidebarContent>
+            </nav>
+          </aside>
 
-      
-      </Sidebar>
-
-      <SidebarInset className="overflow-hidden border border-border/70 bg-background md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0">
-        <header className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <SidebarTrigger className="-ml-1 h-8 w-8 shrink-0" />
-              <div className="h-5 w-px bg-border" aria-hidden="true" />
-              <p className="truncate text-sm font-medium text-muted-foreground">{t("workspace")}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <ThemeToggle />
-              <AuthControls />
-            </div>
-          </div>
-        </header>
-        <main className="flex-1">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+        <main className="min-w-0 px-0">{children}</main>
+        </div>
+      </div>
+    </div>
   );
 };
 
-function SidebarLogo() {
-  const logoStyle = {
-    "--brand-logo-accent": "var(--sidebar-foreground)",
-    "--brand-logo-wordmark": "var(--sidebar-foreground)",
-    "--brand-logo-cutout": "var(--sidebar)",
-  } as CSSProperties;
+function PageHero({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1 text-center">
+      <h1 className="text-2xl font-medium tracking-tight text-foreground">{title}</h1>
+      <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function BottomDock({ pathname }: { pathname: string }) {
+  const dockItems = [
+    {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: IconWorld,
+      value: "0",
+    },
+    {
+      href: "/settings",
+      label: "Settings",
+      icon: IconSettings,
+    },
+  ];
 
   return (
-    <motion.div
-      className="relative z-20 flex items-center py-1 text-sm font-normal text-sidebar-foreground"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-    >
-      <Logo className="gap-2.5" style={logoStyle} />
-    </motion.div>
+    <div className="fixed bottom-0 left-1/2 z-50 max-w-full -translate-x-1/2 px-5 pb-4">
+      <nav className="flex h-[42px] items-center justify-center gap-1 rounded-[20px] bg-foreground px-1 py-1 text-background shadow-md">
+        {dockItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch={false}
+              aria-label={item.label}
+              className={cn(
+                "relative flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-full px-2 text-sm font-medium transition-colors",
+                isActive ? "text-background" : "text-background/62 hover:text-background"
+              )}
+            >
+              {isActive ? (
+                <span className="absolute inset-0 rounded-full bg-background/18" aria-hidden="true" />
+              ) : null}
+              <span className="relative z-10 flex items-center gap-1">
+                <item.icon className="size-5" stroke={1.5} />
+                {item.value ? <span>{item.value}</span> : null}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}
+
+function ProjectMenu({ workspaceLabel }: { workspaceLabel: string }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="group inline-flex h-8 items-center gap-2 rounded-full pl-1 pr-2.5 text-[13px] font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30">
+        <span className="grid size-6 place-items-center rounded-full bg-muted shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-colors group-hover:bg-background">
+          <span className="grid size-4 place-items-center rounded-full bg-foreground text-[8px] font-semibold text-background">
+            D
+          </span>
+        </span>
+        <span className="max-w-36 truncate">{workspaceLabel}</span>
+        <IconSelector className="size-3.5 text-muted-foreground" stroke={1.5} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" sideOffset={8} className="w-44 p-0">
+        <DropdownMenuGroup className="p-1.5">
+          <DropdownMenuLabel className="px-2 pb-1.5 pt-1 text-[12px] font-medium text-muted-foreground">
+            Projects
+          </DropdownMenuLabel>
+          <DropdownMenuItem className="min-h-8 px-2">
+            <span className="grid size-4 place-items-center rounded-full bg-foreground text-[9px] font-semibold text-background">
+              D
+            </span>
+            dealvinci
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator className="my-0" />
+        <DropdownMenuGroup className="p-1.5">
+          <DropdownMenuItem className="min-h-8 px-2">
+            <IconCirclePlus className="size-4" stroke={1.5} />
+            Create project
+          </DropdownMenuItem>
+          <DropdownMenuItem className="min-h-8 px-2">
+            <IconWorld className="size-4" stroke={1.5} />
+            All projects
+          </DropdownMenuItem>
+          <DropdownMenuItem className="min-h-8 px-2 md:hidden">
+            <IconBell className="size-4" stroke={1.5} />
+            Realtime alerts
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
 function SidebarLogoIcon() {
   const logoStyle = {
-    "--brand-logo-accent": "var(--sidebar-foreground)",
-    "--brand-logo-wordmark": "var(--sidebar-foreground)",
-    "--brand-logo-cutout": "var(--sidebar)",
+    "--brand-logo-accent": "var(--foreground)",
+    "--brand-logo-wordmark": "var(--foreground)",
+    "--brand-logo-cutout": "var(--background)",
   } as CSSProperties;
 
-  return (
-    <div className="relative z-20 flex items-center py-1 text-sm font-normal text-sidebar-foreground">
-      <Logo iconOnly style={logoStyle} />
-    </div>
-  );
+  return <Logo iconOnly className="size-8" style={logoStyle} />;
 }
 
 export default AppSidebar;

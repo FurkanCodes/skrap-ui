@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
-import { Loader2, RefreshCw } from "lucide-react";
+import { IconLoader2, IconRefresh } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -260,9 +260,9 @@ export function PaddleCheckoutButton({
         className={cn(className)}
       >
         {isBusy ? (
-          <Loader2 className="size-4 animate-spin" />
+          <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
         ) : checkoutState === "pending" ? (
-          <RefreshCw className="size-4" />
+          <IconRefresh className="size-4" stroke={1.5} />
         ) : (
           idleIcon
         )}

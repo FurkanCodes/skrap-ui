@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
 
@@ -746,7 +746,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 }
               >
                 {isEmailActionPending ? (
-                  <Loader2 className="size-4 animate-spin" />
+                              <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
                 ) : (
                   isSignUp ? t("signUp.submit") : t("signIn.submit")
                 )}
@@ -762,7 +762,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 onClick={() => runSocialAuth("google")}
               >
                 {pendingAction === "google" ? (
-                  <Loader2 className="size-4 animate-spin" />
+                              <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
                 ) : (
                   <>
                     <GoogleIcon />
@@ -779,7 +779,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 onClick={() => runSocialAuth("github")}
               >
                 {pendingAction === "github" ? (
-                  <Loader2 className="size-4 animate-spin" />
+                              <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
                 ) : (
                   <>
                     <GithubMark />

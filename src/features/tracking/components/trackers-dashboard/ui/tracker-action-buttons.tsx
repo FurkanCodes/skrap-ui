@@ -2,7 +2,13 @@
 
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ExternalLink, Loader2, Pencil, Trash2, X } from "lucide-react";
+import {
+  IconExternalLink,
+  IconLoader2,
+  IconPencil,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
@@ -78,7 +84,7 @@ export function TrackerActionButtons({
             className={buttonVariants({ size: "icon-sm", variant: "ghost" })}
             aria-label={t("openProduct")}
           >
-            <ExternalLink className="size-3.5" />
+            <IconExternalLink className="size-3.5" stroke={1.5} />
           </a>
         )}
 
@@ -92,7 +98,7 @@ export function TrackerActionButtons({
             aria-label={t("edit")}
             onClick={() => openEditModal(item.item_id)}
           >
-            <Pencil className="size-3.5" />
+            <IconPencil className="size-3.5" stroke={1.5} />
           </Button>
         )}
 
@@ -210,7 +216,7 @@ export function TrackerActionButtons({
                   onClick={confirmDeleteAction}
                   className="inline-flex min-w-[52px] items-center justify-center gap-1.5 border-r border-border bg-destructive/10 px-3 text-[11px] font-semibold text-destructive transition hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-50"
                 >
-                  {isDeletePending ? <Loader2 className="size-3 animate-spin" /> : null}
+                  {isDeletePending ? <IconLoader2 className="size-3 animate-spin" stroke={1.5} /> : null}
                   {t("delete")}
                 </button>
                 <button
@@ -244,9 +250,9 @@ export function TrackerActionButtons({
                   onClick={() => requestDeleteAction(item.item_id)}
                 >
                   {isDeletePending ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
                   ) : (
-                    <Trash2 className="size-3.5" />
+                    <IconTrash className="size-3.5" stroke={1.5} />
                   )}
                 </Button>
               )}
@@ -264,7 +270,7 @@ export function TrackerActionButtons({
             onClick={() => dismissRowActionError(item.item_id)}
             aria-label={t("dismissError")}
           >
-            <X className="size-3.5" />
+            <IconX className="size-3.5" stroke={1.5} />
           </button>
         </div>
       ) : null}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, Lock } from "lucide-react";
+import { IconLoader2, IconLock } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 
@@ -260,10 +260,10 @@ export function ResetPasswordForm() {
               disabled={isPending || isSuccess || !password || !confirmPassword || !token}
             >
               {isPending ? (
-                <Loader2 className="size-4 animate-spin" />
+                  <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
               ) : (
                 <>
-                  <Lock className="size-4" />
+                  <IconLock className="size-4" stroke={1.5} />
                   {t("submit")}
                 </>
               )}

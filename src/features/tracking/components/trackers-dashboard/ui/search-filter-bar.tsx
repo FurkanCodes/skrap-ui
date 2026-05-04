@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { MODE_FILTERS, STATUS_FILTERS } from "@/features/tracking/components/trackers-dashboard/constants";
@@ -50,19 +50,19 @@ export function SearchFilterBar({
   }));
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/50 bg-muted/15 p-2">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-card p-2 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)]">
       <div className="relative min-w-[240px] flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" stroke={1.5} />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("searchPlaceholder")}
-          className="h-10 border-border/70 bg-background pl-9"
+          className="h-9 bg-muted pl-9"
         />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center gap-1 rounded-md bg-background/80 p-1">
+        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background p-1">
           <Chip tone="subtle" className="uppercase tracking-wide">
             {t("statusLabel")}
           </Chip>
@@ -75,7 +75,7 @@ export function SearchFilterBar({
           />
         </div>
 
-        <div className="inline-flex items-center gap-1 rounded-md bg-background/80 p-1">
+        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background p-1">
           <Chip tone="subtle" className="uppercase tracking-wide">
             {t("modeLabel")}
           </Chip>

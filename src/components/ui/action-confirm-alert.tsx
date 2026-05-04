@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2, X } from "lucide-react";
+import { IconCheck, IconLoader2, IconX } from "@tabler/icons-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export function ActionConfirmAlert({
               disabled={isConfirmPending}
               className="cursor-pointer"
             >
-              <X className="size-4" />
+              <IconX className="size-4" stroke={1.5} />
               {cancelLabel}
             </Button>
             <Button
@@ -57,9 +57,9 @@ export function ActionConfirmAlert({
               className="cursor-pointer"
             >
               {isConfirmPending ? (
-                <Loader2 className="size-4 animate-spin" />
+                <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
               ) : (
-                <Check className="size-4" />
+                <IconCheck className="size-4" stroke={1.5} />
               )}
               {confirmLabel}
             </Button>

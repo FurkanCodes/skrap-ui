@@ -91,15 +91,13 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
     }
   }
   return (
-    <div className="mx-auto w-full max-w-5xl p-6 lg:p-8">
-      <SettingsPageClient
-        initialStatus={initialStatus}
-        initialError={initialError}
-        trackedCount={trackedCount}
-        supportedSites={supportedSites}
-        supportedSitesError={supportedSitesError}
-        initialBilling={billing}
-      />
-    </div>
+    <SettingsPageClient
+      initialStatus={initialStatus}
+      initialError={initialError}
+      trackedCount={trackedCount}
+      supportedSites={supportedSites}
+      supportedSitesError={supportedSitesError}
+      initialBilling={billing}
+    />
   );
 }

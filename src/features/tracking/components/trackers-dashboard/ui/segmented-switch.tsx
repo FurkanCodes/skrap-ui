@@ -43,7 +43,7 @@ export function SegmentedSwitch<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/35 p-1",
+        "inline-flex items-center gap-1 rounded-full border border-border/70 bg-background p-1",
         disabled && "opacity-60",
         fullWidth && "w-full",
         className
@@ -59,8 +59,8 @@ export function SegmentedSwitch<T extends string>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              "relative inline-flex h-7 items-center justify-center rounded-full px-3 text-[13px] font-medium whitespace-nowrap transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
               "disabled:pointer-events-none",
               fullWidth && "flex-1",
               isSelected ? "text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -74,7 +74,7 @@ export function SegmentedSwitch<T extends string>({
                     ? { duration: 0 }
                     : { type: "spring", stiffness: 420, damping: 34, mass: 0.6 }
                 }
-                className="pointer-events-none absolute inset-0 rounded-md bg-background/85 shadow-sm dark:bg-muted/45"
+                className="pointer-events-none absolute inset-0 rounded-full bg-muted shadow-[0_1px_1px_rgb(24_25_37_/_0.04)]"
               />
             ) : null}
             <span className="relative z-10">{option.label}</span>

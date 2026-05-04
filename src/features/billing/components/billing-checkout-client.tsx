@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
 import type { CheckoutEventsData } from "@paddle/paddle-js/types/checkout/events";
-import { AlertCircle, CheckCircle2, Minus, Plus, RefreshCw, X } from "lucide-react";
+import {
+  IconAlertCircle,
+  IconCircleCheck,
+  IconMinus,
+  IconPlus,
+  IconRefresh,
+  IconX,
+} from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -330,7 +337,7 @@ export function BillingCheckoutClient({
             aria-label={t("actions.backToSettings")}
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <X className="size-4" />
+            <IconX className="size-4" stroke={1.5} />
           </button>
 
           <div className="flex items-center gap-2">
@@ -353,7 +360,7 @@ export function BillingCheckoutClient({
       {checkoutState === "completed" && (
         <div className="mx-auto max-w-[1440px] px-6 pt-6">
           <Alert className="border-emerald-300 bg-emerald-50 text-emerald-900">
-            <CheckCircle2 className="size-4 text-emerald-600" />
+            <IconCircleCheck className="size-4 text-emerald-600" stroke={1.5} />
             <AlertTitle>{t("completed.title")}</AlertTitle>
             <AlertDescription>{t("completed.description")}</AlertDescription>
           </Alert>
@@ -363,7 +370,7 @@ export function BillingCheckoutClient({
       {errorMessage && (
         <div className="mx-auto max-w-[1440px] px-6 pt-6">
           <Alert variant="destructive">
-            <AlertCircle className="size-4" />
+            <IconAlertCircle className="size-4" stroke={1.5} />
             <AlertTitle>{t("errors.title")}</AlertTitle>
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
@@ -418,7 +425,7 @@ export function BillingCheckoutClient({
                   aria-label={t("quantity.decrease")}
                   className="flex h-14 w-14 items-center justify-center text-slate-400"
                 >
-                  <Minus className="size-4" />
+                  <IconMinus className="size-4" stroke={1.5} />
                 </button>
 
                 <div className="flex h-14 w-14 items-center justify-center border-x border-slate-200 text-lg font-medium text-slate-900">
@@ -431,7 +438,7 @@ export function BillingCheckoutClient({
                   aria-label={t("quantity.increase")}
                   className="flex h-14 w-14 items-center justify-center text-slate-400"
                 >
-                  <Plus className="size-4" />
+                  <IconPlus className="size-4" stroke={1.5} />
                 </button>
               </div>
             </div>
@@ -502,7 +509,7 @@ export function BillingCheckoutClient({
                       className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
                       onClick={() => void reopenCheckout()}
                     >
-                      <RefreshCw className="size-4" />
+                      <IconRefresh className="size-4" stroke={1.5} />
                       {checkoutState === "paused"
                         ? t("actions.resumeCheckout")
                         : t("actions.retryCheckout")}

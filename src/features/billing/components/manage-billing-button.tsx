@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CreditCard, Loader2 } from "lucide-react";
+import { IconCreditCard, IconLoader2 } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import type { BillingPortalResponse } from "@/features/billing/types";
@@ -40,7 +40,11 @@ export function ManageBillingButton({ label }: ManageBillingButtonProps) {
           });
         }}
       >
-        {isPending ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
+        {isPending ? (
+          <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
+        ) : (
+          <IconCreditCard className="size-4" stroke={1.5} />
+        )}
         {label}
       </Button>
       {error ? (

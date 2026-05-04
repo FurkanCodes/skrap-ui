@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -234,7 +234,7 @@ export function TrackResultPanel({
 
           <div className="flex items-end md:col-span-2 md:justify-end">
             <Button type="button" size="sm" disabled={!canSubmit || isPending} onClick={runTrack}>
-              {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+          {isPending ? <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} /> : null}
               {t("actions.trackItem")}
             </Button>
           </div>

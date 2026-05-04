@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CheckCircle2, ExternalLink } from "lucide-react";
+import { IconBell, IconCircleCheck, IconExternalLink } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Chip } from "@/components/ui/chip";
@@ -28,7 +28,7 @@ export function TelegramConnectionStatusChip({
       tone="success"
       className="rounded-full bg-emerald-500/14 text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-500/22 dark:text-emerald-200 dark:ring-emerald-400/30"
     >
-      <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-300" />
+      <IconCircleCheck className="size-3.5 text-emerald-600 dark:text-emerald-300" stroke={1.5} />
       <span>{t("connectedChip")}</span>
     </Chip>
   );
@@ -47,7 +47,7 @@ export function TelegramConnectionBanner({ telegramConnected }: TelegramConnecti
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <span className="grid size-8 place-items-center rounded-md bg-zinc-900 text-white">
-              <Bell className="size-4" />
+              <IconBell className="size-4" stroke={1.5} />
             </span>
             <div>
               <p className="text-sm font-semibold text-foreground">{t("connectTitle")}</p>
@@ -57,7 +57,7 @@ export function TelegramConnectionBanner({ telegramConnected }: TelegramConnecti
             </div>
           </div>
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
-            {t("setup")} <ExternalLink className="size-3" />
+            {t("setup")} <IconExternalLink className="size-3" stroke={1.5} />
           </span>
         </div>
       </Link>

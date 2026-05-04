@@ -1,11 +1,11 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import { ArrowRight } from "lucide-react";
+import type { Icon } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
 type Features = {
-  icon: LucideIcon;
+  icon: Icon;
   content: string;
 }[];
 
@@ -41,7 +41,7 @@ const Feature = ({ featureData }: { featureData: Features }) => {
             className="inline-flex h-11 items-center gap-2 rounded-full bg-radiant-violet px-5 text-body font-semibold leading-none text-canvas-white shadow-subtle transition-colors hover:bg-deep-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2"
           >
             See pricing
-            <ArrowRight className="size-4" aria-hidden="true" />
+            <IconArrowRight className="size-4" aria-hidden="true" stroke={1.5} />
           </a>
         </motion.div>
 

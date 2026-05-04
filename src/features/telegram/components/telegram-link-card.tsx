@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
-import { CheckCircle2, ExternalLink, Link2, Loader2, MessageCircle, RefreshCw } from "lucide-react";
+import {
+  IconCircleCheck,
+  IconExternalLink,
+  IconLink,
+  IconLoader2,
+  IconMessageCircle,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { useLocale, useTranslations } from "next-intl";
 import QRCode from "qrcode";
 
@@ -301,9 +308,9 @@ export function TelegramLinkCard({
           className="justify-self-start sm:justify-self-end"
         >
           {isRefreshing ? (
-            <Loader2 className="size-3.5 animate-spin" />
+            <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
           ) : (
-            <RefreshCw className="size-3.5" />
+            <IconRefresh className="size-3.5" stroke={1.5} />
           )}
           {t("actions.refresh")}
         </Button>
@@ -327,7 +334,7 @@ export function TelegramLinkCard({
           {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
           {pendingSession ? (
             <Chip tone="muted" className="gap-1">
-              <Loader2 className="size-3 animate-spin" />
+              <IconLoader2 className="size-3 animate-spin" stroke={1.5} />
               {t("waitingStart")}
             </Chip>
           ) : null}
@@ -346,7 +353,7 @@ export function TelegramLinkCard({
                 />
               ) : (
                 <div className="grid h-40 w-40 place-items-center">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                  <IconLoader2 className="size-5 animate-spin text-muted-foreground" stroke={1.5} />
                 </div>
               )}
             </div>
@@ -360,7 +367,7 @@ export function TelegramLinkCard({
 
               <div className="flex flex-wrap items-center gap-2">
                 <a href={qrTargetUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "sm" })}>
-                  <ExternalLink className="size-3.5" />
+                  <IconExternalLink className="size-3.5" stroke={1.5} />
                   {t("actions.openTelegram")}
                 </a>
                 <Button
@@ -371,9 +378,9 @@ export function TelegramLinkCard({
                   disabled={isPending || allowsTelegram === false}
                 >
                   {isCreatingLink ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
                   ) : (
-                    <RefreshCw className="size-3.5" />
+                    <IconRefresh className="size-3.5" stroke={1.5} />
                   )}
                   {t("actions.newLink")}
                 </Button>
@@ -390,7 +397,11 @@ export function TelegramLinkCard({
           <div className="grid gap-4 rounded-2xl bg-muted/20 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="flex items-start gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background text-foreground shadow-sm ring-1 ring-foreground/10">
-                {isConnected ? <CheckCircle2 className="size-5" /> : <MessageCircle className="size-5" />}
+                {isConnected ? (
+                  <IconCircleCheck className="size-5" stroke={1.5} />
+                ) : (
+                  <IconMessageCircle className="size-5" stroke={1.5} />
+                )}
               </span>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-foreground">
@@ -411,13 +422,17 @@ export function TelegramLinkCard({
                 onClick={startConnect}
                 disabled={isPending || allowsTelegram === false}
               >
-                {isCreatingLink ? <Loader2 className="size-3.5 animate-spin" /> : <Link2 className="size-3.5" />}
+                {isCreatingLink ? (
+                  <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
+                ) : (
+                  <IconLink className="size-3.5" stroke={1.5} />
+                )}
                 {isConnected ? t("actions.showRelinkQr") : t("actions.showQr")}
               </Button>
 
               {isConnected && botDeepLink ? (
                 <a href={botDeepLink} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>
-                  <ExternalLink className="size-3.5" />
+                  <IconExternalLink className="size-3.5" stroke={1.5} />
                   {t("actions.openBot", { username: botUsername })}
                 </a>
               ) : null}

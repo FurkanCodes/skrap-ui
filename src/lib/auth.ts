@@ -61,6 +61,23 @@ function normalizeTrustedOrigin(value: string): string | null {
   }
 }
 
+function getLoopbackOriginAliases(value: string): string[] {
+  try {
+    const url = new URL(value);
+    if (url.hostname === "127.0.0.1") {
+      return [`${url.protocol}//localhost${url.port ? `:${url.port}` : ""}`];
+    }
+
+    if (url.hostname === "localhost") {
+      return [`${url.protocol}//127.0.0.1${url.port ? `:${url.port}` : ""}`];
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 function resolveTrustedOrigins(baseUrl: string): string[] {
   const baseOrigin = normalizeTrustedOrigin(baseUrl);
   const configuredOrigins = [
@@ -75,6 +92,20 @@ function resolveTrustedOrigins(baseUrl: string): string[] {
       continue;
     }
     deduped.add(normalized);
+
+    for (const alias of getLoopbackOriginAliases(normalized)) {
+      if (alias !== baseOrigin) {
+        deduped.add(alias);
+      }
+    }
+  }
+
+  if (baseOrigin) {
+    for (const alias of getLoopbackOriginAliases(baseOrigin)) {
+      if (alias !== baseOrigin) {
+        deduped.add(alias);
+      }
+    }
   }
 
   return [...deduped];

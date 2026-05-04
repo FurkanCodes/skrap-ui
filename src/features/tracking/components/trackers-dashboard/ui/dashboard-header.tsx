@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { IconLoader2, IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { TelegramConnectionStatusChip } from "@/features/tracking/components/trackers-dashboard/ui/telegram-connection-banner";
@@ -29,16 +29,15 @@ export function DashboardHeader({
   const t = useTranslations("tracking.dashboard.header");
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
-      </div>
-
+    <header className="space-y-2">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <TelegramConnectionStatusChip telegramConnected={telegramConnected} />
         <Button type="button" size="sm" variant="outline" onClick={onRefresh} disabled={isMutating}>
-          {isRefreshPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+          {isRefreshPending ? (
+            <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
+          ) : (
+            <IconRefresh className="size-3.5" stroke={1.5} />
+          )}
           {t("refresh")}
         </Button>
         {createTrackerDisabledReason ? (
@@ -53,7 +52,7 @@ export function DashboardHeader({
                     onClick={onOpenModal}
                     disabled={!canCreateTracker}
                   >
-                    <Plus className="size-3.5" />
+                    <IconPlus className="size-3.5" stroke={1.5} />
                     {t("newTracker")}
                   </Button>
                 </span>
@@ -69,7 +68,7 @@ export function DashboardHeader({
             onClick={onOpenModal}
             disabled={!canCreateTracker}
           >
-            <Plus className="size-3.5" />
+            <IconPlus className="size-3.5" stroke={1.5} />
             {t("newTracker")}
           </Button>
         )}

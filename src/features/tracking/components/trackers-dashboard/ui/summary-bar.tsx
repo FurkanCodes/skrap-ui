@@ -48,7 +48,7 @@ interface SummaryMetricProps {
 function SummaryMetric({ label, value, title }: SummaryMetricProps) {
   return (
     <div className="min-w-[132px]" title={title}>
-      <dt className="text-[11px] text-muted-foreground">{label}</dt>
+      <dt className="text-[11px] font-medium text-muted-foreground">{label}</dt>
       <dd className="text-sm font-semibold text-foreground">{value}</dd>
     </div>
   );
@@ -74,11 +74,11 @@ export function SummaryBar({
   const hasLiveTracking = active > 0;
 
   return (
-    <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+    <div className="rounded-xl border border-border/70 bg-card px-4 py-3 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
           <p className="text-[11px] font-semibold text-muted-foreground">{t("checksLeft")}</p>
-          <p className="flex items-end gap-1 text-2xl font-semibold leading-none text-foreground">
+          <p className="flex items-end gap-1 text-[24px] font-semibold leading-none text-foreground">
             {hasLiveTracking ? (
               <LiveNumberTicker
                 value={remainingCredits}

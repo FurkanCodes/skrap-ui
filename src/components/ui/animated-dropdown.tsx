@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 
 import { cn } from "@/lib/utils";
 
@@ -169,34 +169,35 @@ export function AnimatedDropdown({
           setOpen((prev) => !prev);
         }}
         className={cn(
-          "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-transparent bg-bg-2 px-4 text-sm font-medium text-fg-4 backdrop-blur-md transition-all outline-2 outline-transparent",
-          "focus:outline-purple-4 focus:ring-2 focus:ring-purple-2 focus-visible:outline-purple-4 focus-visible:ring-2 focus-visible:ring-purple-2",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-full border border-border/70 bg-background px-3 text-[13px] font-medium text-foreground shadow-[0_1px_1px_rgb(24_25_37_/_0.04)] transition-all outline-none",
+          "hover:bg-muted/45 focus-visible:ring-2 focus-visible:ring-ring/30",
           "disabled:cursor-not-allowed disabled:opacity-60"
         )}
       >
-        <span className={cn("truncate", !selectedOption && "text-fg-1")}>
+        <span className={cn("truncate", !selectedOption && "text-muted-foreground")}>
           {selectedOption?.label ?? placeholder}
         </span>
-        <ChevronDown
-          className={cn("size-4 text-fg-1 transition-transform", open && "rotate-180")}
+        <IconChevronDown
+          className={cn("size-3.5 text-muted-foreground transition-transform", open && "rotate-180")}
+          stroke={1.5}
         />
       </button>
 
       <AnimatePresence>
         {open ? (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
             style={{ maxHeight: menuMaxHeight }}
             className={cn(
-              "absolute right-0 left-0 z-50 flex flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-lg",
-              openUpward ? "bottom-full mb-2" : "top-full mt-2"
+              "absolute right-0 left-0 z-50 flex flex-col overflow-hidden rounded-xl border border-border/70 bg-popover p-1 shadow-[0_14px_34px_-24px_rgb(24_25_37_/_0.42),0_0_0_1px_rgb(24_25_37_/_0.03)]",
+              openUpward ? "bottom-full mb-1.5" : "top-full mt-1.5"
             )}
           >
             {searchable ? (
-              <div className="border-b border-border p-3">
+              <div className="border-b border-border/70 p-2">
                 <div className="relative">
                   <input
                     ref={inputRef}
@@ -204,7 +205,7 @@ export function AnimatedDropdown({
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={searchPlaceholder}
-                    className="h-10 w-full rounded-lg border border-transparent bg-bg-2 px-4 text-sm font-medium text-fg-4 backdrop-blur-md transition-all outline-2 outline-transparent placeholder:text-fg-1 focus:outline-purple-4 focus:ring-2 focus:ring-purple-2"
+                    className="h-9 w-full rounded-[10px] border border-transparent bg-muted px-3 text-sm font-medium text-foreground transition-all outline-none placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-ring/25"
                   />
                 </div>
               </div>
@@ -233,15 +234,16 @@ export function AnimatedDropdown({
                         setSearchQuery("");
                       }}
                       className={cn(
-                        "flex w-full cursor-pointer select-none items-center gap-3 px-3 py-2.5 text-left transition-all",
-                        isSelected ? "bg-bg-a2 text-fg-3" : "text-fg-3 hover:bg-bg-a2"
+                        "flex min-h-8 w-full cursor-pointer select-none items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors",
+                        isSelected ? "text-foreground" : "text-foreground hover:bg-muted"
                       )}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className={cn("truncate text-sm font-medium", isSelected ? "text-foreground" : "text-foreground/85")}>
+                        <p className="truncate text-[13px] font-medium">
                           {option.label}
                         </p>
                       </div>
+                      {isSelected ? <span className="size-1.5 rounded-full bg-radiant-violet" /> : null}
                     </motion.button>
                   );
                 })

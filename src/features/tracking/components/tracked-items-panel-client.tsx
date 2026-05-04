@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useOptimistic, useState, useTransition } from "react";
-import { ExternalLink, Loader2, PauseCircle, PlayCircle, RefreshCw, Trash2 } from "lucide-react";
+import {
+  IconExternalLink,
+  IconLoader2,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconRefresh,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -184,9 +191,9 @@ export function TrackedItemsPanelClient({
           disabled={isMutating}
         >
           {isRefreshPending ? (
-            <Loader2 className="size-3.5 animate-spin" />
+              <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
           ) : (
-            <RefreshCw className="size-3.5" />
+              <IconRefresh className="size-3.5" stroke={1.5} />
           )}
           {t("actions.refresh")}
         </Button>
@@ -240,7 +247,7 @@ export function TrackedItemsPanelClient({
                     rel="noopener noreferrer"
                     className={buttonVariants({ size: "xs", variant: "outline" })}
                   >
-                    <ExternalLink className="size-3.5" />
+                      <IconExternalLink className="size-3.5" stroke={1.5} />
                     {t("actions.openLink")}
                   </a>
                   {item.status === "active" ? (
@@ -252,9 +259,9 @@ export function TrackedItemsPanelClient({
                       disabled={busy || isMutating}
                     >
                       {busy ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <PauseCircle className="size-3.5" />
+                          <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
+                        ) : (
+                          <IconPlayerPause className="size-3.5" stroke={1.5} />
                       )}
                       {t("actions.pause")}
                     </Button>
@@ -267,9 +274,9 @@ export function TrackedItemsPanelClient({
                       disabled={busy || isMutating}
                     >
                       {busy ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <PlayCircle className="size-3.5" />
+                          <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
+                        ) : (
+                          <IconPlayerPlay className="size-3.5" stroke={1.5} />
                       )}
                       {t("actions.resume")}
                     </Button>
@@ -281,7 +288,7 @@ export function TrackedItemsPanelClient({
                     onClick={() => runItemAction(item.item_id, "delete")}
                     disabled={busy || isMutating}
                   >
-                    <Trash2 className="size-3.5" />
+                        <IconTrash className="size-3.5" stroke={1.5} />
                     {t("actions.delete")}
                   </Button>
                 </div>

@@ -3,14 +3,20 @@
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  ChevronDown,
-  CircleAlert,
-  Loader2,
-  Plus,
-  RefreshCcw,
-  Trash2,
-  X,
-} from "lucide-react";
+  IconAlertCircle,
+  IconBell,
+  IconChevronDown,
+  IconClock,
+  IconLink,
+  IconLoader2,
+  IconPlus,
+  IconRefresh,
+  IconSearch,
+  IconShieldCheck,
+  IconTrash,
+  IconTrendingDown,
+  IconX,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
@@ -22,10 +28,12 @@ import type {
 import { formatPrice, getDomainLabel } from "@/features/tracking/components/trackers-dashboard/utils";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Radio } from "@/components/ui/radio";
 import { TrackingModePicker } from "@/features/tracking/components/trackers-dashboard/ui/tracking-mode-picker";
 import { cn } from "@/lib/utils";
 
@@ -154,120 +162,226 @@ export function CreateTrackerModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[oklch(0.15_0_0_/_0.45)] p-4">
+    <div className="w-full">
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-tracker-title"
+        role="region"
+        aria-labelledby={modalStep === 2 ? "create-tracker-title" : undefined}
+        aria-label={modalStep === 1 ? t("titleStepOne") : undefined}
         className={cn(
-          "w-full max-w-[920px] rounded-xl border border-border/70 bg-card shadow-xl",
-          "max-h-[90vh] overflow-y-auto"
+          "w-full",
+          modalStep === 1
+            ? "space-y-4"
+            : "overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm"
         )}
       >
-        <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
-          <div className="space-y-1">
-            <p id="create-tracker-title" className="text-2xl font-semibold leading-tight text-foreground">
-              {modalStep === 1 ? t("titleStepOne") : t("titleStepTwo")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t("stepLabel", { step: modalStep, slots: remainingSlots })}
-            </p>
+        {modalStep === 2 ? (
+          <div className="flex items-start justify-between border-b border-border px-5 py-4 sm:px-6">
+            <div className="space-y-1">
+              <p id="create-tracker-title" className="text-2xl font-semibold leading-tight text-foreground">
+                {t("titleStepTwo")}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t("stepLabel", { step: modalStep, slots: remainingSlots })}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="ghost"
+              className="mt-0.5"
+              onClick={closeModal}
+              disabled={isPreviewPending || isSavePending}
+              aria-label={t("close")}
+            >
+              <IconX className="size-4" stroke={1.5} />
+            </Button>
           </div>
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            className="mt-0.5"
-            onClick={closeModal}
-            disabled={isPreviewPending || isSavePending}
-            aria-label={t("close")}
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
+        ) : null}
 
-        <div className="space-y-6 p-5 sm:p-6">
+        <div className={cn(modalStep === 1 ? "space-y-4" : "space-y-6 p-4 sm:p-5")}>
           {modalStep === 1 ? (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold text-foreground">{t("productUrls")}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t("productUrlsDescription")}
-                </p>
-              </div>
-
-              <div className="space-y-2.5">
-                {urlRows.map((row, index) => {
-                  const hasValue = row.value.trim().length > 0;
-                  const invalid = hasValue && !isHttpUrl(row.value);
-                  return (
-                    <div key={row.id} className="space-y-1.5">
-                      <div className="relative">
-                        <Input
-                          value={row.value}
-                          onChange={(event) => setUrlRowValue(row.id, event.target.value)}
-                          onPaste={(event) => {
-                            const handled = handleUrlRowPaste(
-                              row.id,
-                              event.clipboardData.getData("text")
-                            );
-                            if (handled) {
-                              event.preventDefault();
-                            }
-                          }}
-                          placeholder={t("urlPlaceholder")}
-                          className={cn(
-                            "h-11 border-input bg-background/70 pr-20 dark:bg-muted/25",
-                            invalid && "border-destructive/60 focus-visible:ring-destructive/20"
-                          )}
-                          disabled={isPreviewPending}
-                          aria-label={t("productUrlAria", { index: index + 1 })}
-                        />
-                        <div className="absolute inset-y-0 right-1 flex items-center gap-1">
-                          <Button
-                            type="button"
-                            size="icon-xs"
-                            variant="ghost"
-                            className="size-6 text-muted-foreground hover:text-foreground"
-                            onClick={() => addUrlRow(row.id)}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Product URL</CardTitle>
+                  <CardDescription>Add any product page to start tracking.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2.5 pb-4">
+                  {urlRows.map((row, index) => {
+                    const hasValue = row.value.trim().length > 0;
+                    const invalid = hasValue && !isHttpUrl(row.value);
+                    return (
+                      <div key={row.id} className="space-y-1.5">
+                        <div className="relative">
+                          <IconLink className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" stroke={1.5} />
+                          <Input
+                            value={row.value}
+                            onChange={(event) => setUrlRowValue(row.id, event.target.value)}
+                            onPaste={(event) => {
+                              const handled = handleUrlRowPaste(
+                                row.id,
+                                event.clipboardData.getData("text")
+                              );
+                              if (handled) {
+                                event.preventDefault();
+                              }
+                            }}
+                            placeholder={t("urlPlaceholder")}
+                            className={cn(
+                              "h-10 bg-muted pl-9 pr-20",
+                              invalid && "border-destructive/60 focus-visible:ring-destructive/20"
+                            )}
                             disabled={isPreviewPending}
-                            aria-label={t("addUrlRow")}
-                          >
-                            <Plus className="size-3.5" />
-                          </Button>
-                          {urlRows.length > 1 ? (
+                            aria-label={t("productUrlAria", { index: index + 1 })}
+                          />
+                          <div className="absolute inset-y-0 right-1 flex items-center gap-1">
                             <Button
                               type="button"
                               size="icon-xs"
                               variant="ghost"
-                              className="size-6 text-muted-foreground hover:text-destructive"
-                              onClick={() => removeUrlRow(row.id)}
+                              className="size-6 text-muted-foreground hover:text-foreground"
+                              onClick={() => addUrlRow(row.id)}
                               disabled={isPreviewPending}
-                              aria-label={t("removeUrlRow")}
+                              aria-label={t("addUrlRow")}
                             >
-                              <Trash2 className="size-3.5" />
+                              <IconPlus className="size-3.5" stroke={1.5} />
                             </Button>
-                          ) : null}
+                            {urlRows.length > 1 ? (
+                              <Button
+                                type="button"
+                                size="icon-xs"
+                                variant="ghost"
+                                className="size-6 text-muted-foreground hover:text-destructive"
+                                onClick={() => removeUrlRow(row.id)}
+                                disabled={isPreviewPending}
+                                aria-label={t("removeUrlRow")}
+                              >
+                                <IconTrash className="size-3.5" stroke={1.5} />
+                              </Button>
+                            ) : null}
+                          </div>
                         </div>
+                        {invalid ? (
+                          <p className="text-xs text-destructive">{t("invalidUrl")}</p>
+                        ) : null}
                       </div>
-                      {invalid ? (
-                        <p className="text-xs text-destructive">{t("invalidUrl")}</p>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <p className="text-xs text-muted-foreground">Paste one URL or add multiple rows.</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={!canReview}
+                    aria-busy={isPreviewPending ? true : undefined}
+                    onClick={reviewUrlRows}
+                  >
+                    {isPreviewPending ? <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} /> : null}
+                    Add
+                  </Button>
+                </CardFooter>
+              </Card>
 
-              <Button
-                type="button"
-                className="h-11 w-full disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
-                disabled={!canReview}
-                aria-busy={isPreviewPending ? true : undefined}
-                onClick={reviewUrlRows}
-              >
-                {isPreviewPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                {t("reviewProducts")}
-              </Button>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tracking mode</CardTitle>
+                  <CardDescription>Choose when Dealvinci should notify you.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => setSharedTrackingMode("alert")}
+                    className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/45"
+                  >
+                    <span className="flex items-center gap-3">
+                      <IconTrendingDown className="size-4 text-foreground" stroke={1.5} />
+                      <span>
+                        <span className="block text-sm font-medium text-foreground">Price Alert</span>
+                        <span className="block text-xs text-muted-foreground">Notify when target is reached.</span>
+                      </span>
+                    </span>
+                    <Radio checked={sharedTrackingMode === "alert"} readOnly aria-hidden="true" tabIndex={-1} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSharedTrackingMode("monitor")}
+                    className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/45"
+                  >
+                    <span className="flex items-center gap-3">
+                      <IconSearch className="size-4 text-foreground" stroke={1.5} />
+                      <span>
+                        <span className="block text-sm font-medium text-foreground">Price Drop</span>
+                        <span className="block text-xs text-muted-foreground">Notify on each detected drop.</span>
+                      </span>
+                    </span>
+                    <Radio checked={sharedTrackingMode === "monitor"} readOnly aria-hidden="true" tabIndex={-1} />
+                  </button>
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <p className="text-xs text-muted-foreground">Mode applies to new trackers.</p>
+                </CardFooter>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Check interval</CardTitle>
+                  <CardDescription>Set how often prices should be refreshed.</CardDescription>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <AnimatedDropdown
+                    value={sharedInterval}
+                    onValueChange={setSharedInterval}
+                    options={intervalOptions}
+                    className="w-40"
+                    disabled={isPreviewPending}
+                  />
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <p className="text-xs text-muted-foreground">Higher plans unlock faster checks.</p>
+                  <IconClock className="size-4 text-muted-foreground" stroke={1.5} />
+                </CardFooter>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notifications</CardTitle>
+                  <CardDescription>Control extra Telegram alerts.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2 pb-4">
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5">
+                    <span className="flex items-center gap-3">
+                      <IconBell className="size-4 text-foreground" stroke={1.5} />
+                      <span>
+                        <span className="block text-sm font-medium text-foreground">Price increases</span>
+                        <span className="block text-xs text-muted-foreground">Also notify when prices move up.</span>
+                      </span>
+                    </span>
+                    <Checkbox
+                      checked={sharedNotifyOnPriceIncrease}
+                      onCheckedChange={(checked) => setSharedNotifyOnPriceIncrease(Boolean(checked))}
+                      disabled={isPreviewPending}
+                    />
+                  </label>
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5">
+                    <span className="flex items-center gap-3">
+                      <IconShieldCheck className="size-4 text-foreground" stroke={1.5} />
+                      <span>
+                        <span className="block text-sm font-medium text-foreground">Stock changes</span>
+                        <span className="block text-xs text-muted-foreground">Notify restock and stock-out events.</span>
+                      </span>
+                    </span>
+                    <Checkbox
+                      checked={sharedNotifyOnStockChange}
+                      onCheckedChange={(checked) => setSharedNotifyOnStockChange(Boolean(checked))}
+                      disabled={isPreviewPending}
+                    />
+                  </label>
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <p className="text-xs text-muted-foreground">Telegram required for delivery.</p>
+                </CardFooter>
+              </Card>
             </div>
           ) : (
             <div className="space-y-4">
@@ -280,8 +394,9 @@ export function CreateTrackerModal({
                       </p>
                       <p className="text-[11px] text-muted-foreground">{t("sharedDefaultsHint")}</p>
                     </div>
-                    <ChevronDown
+                    <IconChevronDown
                       className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
+                      stroke={1.5}
                     />
                   </summary>
                   <div className="overflow-hidden border-t border-border/60 px-3 py-3">
@@ -432,7 +547,7 @@ export function CreateTrackerModal({
                   {!activeDraft ? (
                     <div className="grid min-h-[240px] place-items-center text-center">
                       <div className="space-y-2">
-                        <CircleAlert className="mx-auto size-5 text-muted-foreground" />
+                        <IconAlertCircle className="mx-auto size-5 text-muted-foreground" stroke={1.5} />
                           <p className="text-sm font-medium text-foreground">{t("selectItem")}</p>
                         </div>
                       </div>
@@ -467,7 +582,11 @@ export function CreateTrackerModal({
                         onClick={() => retryDraftPreview(activeDraft.clientId)}
                         disabled={isPreviewPending || isSavePending}
                       >
-                        {isPreviewPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCcw className="size-3.5" />}
+                        {isPreviewPending ? (
+                          <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} />
+                        ) : (
+                          <IconRefresh className="size-3.5" stroke={1.5} />
+                        )}
                         {t("retryPreview")}
                       </Button>
                     </div>
@@ -617,7 +736,8 @@ export function CreateTrackerModal({
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border bg-muted/20 px-5 py-4">
+        {modalStep === 2 ? (
+          <div className="flex items-center justify-between border-t border-border bg-muted/20 px-5 py-4">
           {modalStep === 2 ? (
             <Button
               type="button"
@@ -639,13 +759,14 @@ export function CreateTrackerModal({
               onClick={saveTracker}
               disabled={!canSaveDrafts}
             >
-              {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              {isSavePending ? <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} /> : null}
               {t("send")} {selectedReadyCount > 0 ? `(${selectedReadyCount})` : ""}
             </Button>
           ) : (
             <div />
           )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

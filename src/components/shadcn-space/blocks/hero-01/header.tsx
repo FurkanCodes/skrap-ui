@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import Logo from "@/assets/marketing/logo";
@@ -151,7 +151,7 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger id="mobile-menu-trigger">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00000008] text-slate-ink">
-              <Menu width={20} height={20} />
+              <IconMenu2 width={20} height={20} stroke={1.5} />
               <span className="sr-only">Menu</span>
             </span>
           </SheetTrigger>
@@ -167,7 +167,7 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
               </a>
               <SheetClose id="mobile-menu-close">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00000008] text-slate-ink">
-                  <X width={18} height={18} />
+                    <IconX width={18} height={18} stroke={1.5} />
                   <span className="sr-only">Close menu</span>
                 </span>
               </SheetClose>

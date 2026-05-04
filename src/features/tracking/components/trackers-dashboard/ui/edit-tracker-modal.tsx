@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
@@ -181,7 +181,7 @@ export function EditTrackerModal({
             onClick={onSave}
             disabled={isSavePending}
           >
-            {isSavePending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            {isSavePending ? <IconLoader2 className="size-3.5 animate-spin" stroke={1.5} /> : null}
             {t("save")}
           </Button>
         </div>

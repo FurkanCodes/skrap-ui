@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Mail } from "lucide-react";
+import { IconLoader2, IconMail } from "@tabler/icons-react";
 import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
 
@@ -189,10 +189,10 @@ export function ForgotPasswordForm() {
               disabled={isPending || !email.trim()}
             >
               {isPending ? (
-                <Loader2 className="size-4 animate-spin" />
+                  <IconLoader2 className="size-4 animate-spin" stroke={1.5} />
               ) : (
                 <>
-                  <Mail className="size-4" />
+                  <IconMail className="size-4" stroke={1.5} />
                   {t("submit")}
                 </>
               )}

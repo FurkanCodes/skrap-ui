@@ -1,6 +1,11 @@
 "use client";
 
-import { BellRing, CheckCircle2, Gauge, Send } from "lucide-react";
+import {
+  IconBellRinging,
+  IconCircleCheck,
+  IconGauge,
+  IconSend,
+} from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
 export interface BrandList {
@@ -68,7 +73,7 @@ const ProductPreview = () => (
                 </h3>
               </div>
               <div className="flex w-fit items-center gap-2 rounded-full bg-pale-mint px-3 py-2 text-caption font-semibold leading-none text-slate-ink">
-                <BellRing className="size-3.5 text-radiant-violet" aria-hidden="true" />
+              <IconBellRinging className="size-3.5 text-radiant-violet" aria-hidden="true" stroke={1.5} />
                 Telegram ready
               </div>
             </div>
@@ -113,7 +118,7 @@ const ProductPreview = () => (
                 <p className="text-caption font-semibold uppercase leading-caption text-muted-gray">
                   Credits
                 </p>
-                <Gauge className="size-4 text-radiant-violet" aria-hidden="true" />
+                  <IconGauge className="size-4 text-radiant-violet" aria-hidden="true" stroke={1.5} />
               </div>
               <p className="mt-4 text-4xl font-bold leading-none text-slate-ink">7,420</p>
               <p className="mt-2 text-body leading-body text-medium-gray">
@@ -126,7 +131,7 @@ const ProductPreview = () => (
 
             <div className="rounded-2xl bg-slate-ink p-4 text-canvas-white">
               <div className="flex items-center gap-2">
-                <Send className="size-4 text-radiant-violet" aria-hidden="true" />
+                  <IconSend className="size-4 text-radiant-violet" aria-hidden="true" stroke={1.5} />
                 <p className="text-caption font-semibold uppercase leading-caption text-canvas-white/58">
                   Last alert
                 </p>
@@ -166,7 +171,7 @@ function BrandSlider({ brandList }: { brandList: BrandList[] }) {
               key={brand.label}
               className="flex items-center gap-2 rounded-full bg-[#00000008] px-4 py-2"
             >
-              <CheckCircle2 className="size-4 text-radiant-violet" aria-hidden="true" />
+                  <IconCircleCheck className="size-4 text-radiant-violet" aria-hidden="true" stroke={1.5} />
               <span className="text-body font-semibold leading-body">{brand.label}</span>
             </div>
           ))}

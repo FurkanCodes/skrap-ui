@@ -1,22 +1,27 @@
 "use client";
 import Feature from "@/components/shadcn-space/blocks/feature-01/feature";
-import { ArrowDownUp, BellRing, Gauge, ShieldCheck } from "lucide-react";
+import {
+  IconArrowsSort,
+  IconBellRinging,
+  IconGauge,
+  IconShieldCheck,
+} from "@tabler/icons-react";
 
 const featureData = [
   {
-    icon: ArrowDownUp,
+    icon: IconArrowsSort,
     content: "Track hundreds of product URLs with one clean dashboard and no spreadsheet chaos.",
   },
   {
-    icon: BellRing,
+    icon: IconBellRinging,
     content: "Get instant Telegram alerts when your target price hits, not hours later.",
   },
   {
-    icon: Gauge,
+    icon: IconGauge,
     content: "Spend credits where it matters most with tier-based limits and flexible check frequency.",
   },
   {
-    icon: ShieldCheck,
+    icon: IconShieldCheck,
     content: "Run reliable monitoring with clear statuses, retry logic, and transparent tracker controls.",
   },
 ];

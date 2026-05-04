@@ -131,13 +131,13 @@ export const TrackerRow = memo(function TrackerRow({
     <article
       ref={rowRef}
       className={cn(
-        "relative grid gap-3 rounded-lg border border-border/80 bg-card p-4 shadow-[0_1px_0_0_hsl(var(--border)/0.4)] transition-[border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        "relative grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] transition-[border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
         highlightVisible &&
           "border-primary/55 ring-2 ring-primary/25 ring-offset-2 ring-offset-background"
       )}
     >
       <div className="flex gap-3">
-        <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-zinc-100 text-lg font-semibold text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-300">
+        <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border/70 bg-muted text-lg font-semibold text-muted-foreground">
           {productImageUrl ? (
             <Image
               src={productImageUrl}
@@ -224,9 +224,9 @@ export const TrackerRow = memo(function TrackerRow({
                   {formattedTargetAmount ?? "-"}
                 </span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-sm bg-zinc-200 dark:bg-zinc-800">
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-sm bg-zinc-900 transition-all duration-500 dark:bg-zinc-100"
+                  className="h-full rounded-full bg-foreground transition-all duration-500"
                   style={{ width: `${progress.percent}%` }}
                 />
               </div>
