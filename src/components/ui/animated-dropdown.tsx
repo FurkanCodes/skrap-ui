@@ -169,16 +169,16 @@ export function AnimatedDropdown({
           setOpen((prev) => !prev);
         }}
         className={cn(
-          "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border bg-background/80 px-3 text-sm text-foreground transition-colors dark:bg-muted/30",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-transparent bg-bg-2 px-4 text-sm font-medium text-fg-4 backdrop-blur-md transition-all outline-2 outline-transparent",
+          "focus:outline-purple-4 focus:ring-2 focus:ring-purple-2 focus-visible:outline-purple-4 focus-visible:ring-2 focus-visible:ring-purple-2",
           "disabled:cursor-not-allowed disabled:opacity-60"
         )}
       >
-        <span className={cn("truncate", !selectedOption && "text-muted-foreground")}>
+        <span className={cn("truncate", !selectedOption && "text-fg-1")}>
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronDown
-          className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")}
+          className={cn("size-4 text-fg-1 transition-transform", open && "rotate-180")}
         />
       </button>
 
@@ -204,7 +204,7 @@ export function AnimatedDropdown({
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={searchPlaceholder}
-                    className="h-9 w-full rounded-lg border border-transparent bg-muted/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/40 focus:bg-background"
+                    className="h-10 w-full rounded-lg border border-transparent bg-bg-2 px-4 text-sm font-medium text-fg-4 backdrop-blur-md transition-all outline-2 outline-transparent placeholder:text-fg-1 focus:outline-purple-4 focus:ring-2 focus:ring-purple-2"
                   />
                 </div>
               </div>
@@ -233,8 +233,8 @@ export function AnimatedDropdown({
                         setSearchQuery("");
                       }}
                       className={cn(
-                        "flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left transition-colors",
-                        isSelected ? "bg-primary/10 text-foreground" : "hover:bg-muted/50"
+                        "flex w-full cursor-pointer select-none items-center gap-3 px-3 py-2.5 text-left transition-all",
+                        isSelected ? "bg-bg-a2 text-fg-3" : "text-fg-3 hover:bg-bg-a2"
                       )}
                     >
                       <div className="min-w-0 flex-1">

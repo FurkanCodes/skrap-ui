@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { loadPaddle, subscribePaddleEvents } from "@/features/billing/client/paddle-js";
 import type {
   BillingCheckoutResponse,
@@ -519,38 +520,38 @@ export function BillingCheckoutClient({
 
 function CheckoutSkeleton({ label }: { label: string }) {
   return (
-    <div className="space-y-5 rounded-[20px] bg-white p-4">
+    <div className="space-y-5 rounded-[20px] bg-card p-4">
       <div className="flex items-center gap-3">
-        <div className="h-5 w-20 animate-pulse rounded bg-slate-200" />
-        <p className="text-sm text-slate-500">{label}</p>
+        <Skeleton className="h-5 w-20 rounded-full bg-bg-a1" />
+        <p className="text-sm font-medium text-fg-1">{label}</p>
       </div>
 
       <div className="space-y-4 pt-1">
         <div className="space-y-2">
-          <div className="h-4 w-28 animate-pulse rounded bg-slate-200" />
-          <div className="h-12 w-full animate-pulse rounded-xl bg-slate-200" />
+          <Skeleton className="h-4 w-28 rounded-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
 
         <div className="space-y-2">
-          <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
-          <div className="h-12 w-full animate-pulse rounded-xl bg-slate-200" />
+          <Skeleton className="h-4 w-32 rounded-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
 
         <div className="space-y-2">
-          <div className="h-4 w-24 animate-pulse rounded bg-slate-200" />
-          <div className="h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+          <Skeleton className="h-4 w-24 rounded-full" />
+          <Skeleton className="h-24 w-full" />
         </div>
 
         <div className="space-y-2">
-          <div className="h-4 w-20 animate-pulse rounded bg-slate-200" />
-          <div className="h-12 w-full animate-pulse rounded-xl bg-slate-200" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
       </div>
 
-      <div className="my-1 h-px w-full bg-slate-200" />
-      <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
-      <div className="my-1 h-px w-full bg-slate-200" />
-      <div className="mt-2 h-12 w-full animate-pulse rounded-xl bg-slate-200" />
+      <div className="my-1 h-px w-full bg-border" />
+      <Skeleton className="h-4 w-32 rounded-full" />
+      <div className="my-1 h-px w-full bg-border" />
+      <Skeleton className="mt-2 h-11 w-full rounded-full bg-bg-a1" />
     </div>
   );
 }

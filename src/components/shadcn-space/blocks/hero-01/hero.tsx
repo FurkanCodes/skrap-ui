@@ -1,17 +1,8 @@
 "use client";
 
-import { Instrument_Serif } from "next/font/google";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["italic"],
-});
 
 function HeroSection({
   isAuthenticated,
@@ -23,115 +14,79 @@ function HeroSection({
   const ctaLabel = isAuthenticated ? "Go to Dashboard" : "Start free";
   const ctaPath = isAuthenticated ? "/dashboard" : "/auth/sign-up?next=/dashboard";
 
+  const revealTransition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: 0.62, ease: [0.22, 1, 0.36, 1] as const };
+
   return (
-    <section>
-      <div className="w-full h-full relative">
-        <div className="relative w-full pt-0 md:pt-20 pb-6 md:pb-10 before:absolute before:w-full before:h-full before:bg-linear-to-r before:from-accent/50 before:via-background before:to-muted/50 before:rounded-full before:top-24 before:blur-3xl before:-z-10">
-          <div className="container mx-auto relative z-10">
-            <div className="grid max-w-6xl mx-auto gap-8 lg:gap-12 lg:grid-cols-[1.05fr_0.95fr] items-center">
-              <div className="flex flex-col gap-8">
-                <div className="relative flex flex-col text-center lg:text-left items-center lg:items-start sm:gap-6 gap-4">
-                  <motion.h1
-                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 32 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={
-                      shouldReduceMotion
-                        ? { duration: 0 }
-                        : { duration: 1, ease: "easeInOut" }
-                    }
-                    className="lg:text-7xl md:text-6xl text-5xl font-medium leading-14 md:leading-18 lg:leading-20"
-                  >
-                    Never miss a price drop with{" "}
-                    <span className={`${instrumentSerif.className} tracking-tight`}>
-                      credit-powered tracking
-                    </span>
-                  </motion.h1>
-                  <motion.p
-                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 32 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={
-                      shouldReduceMotion
-                        ? { duration: 0 }
-                        : { duration: 1, delay: 0.1, ease: "easeInOut" }
-                    }
-                    className="text-base font-normal max-w-2xl text-muted-foreground"
-                  >
-                    Dealvinci helps operators turn product URLs into live trackers,
-                    run checks with credits, and deliver alerts straight to Telegram
-                    the moment prices move.
-                  </motion.p>
-                </div>
+    <section className="relative overflow-hidden bg-canvas-white font-openrunde">
+      <div className="mx-auto flex min-h-[560px] max-w-6xl flex-col items-center justify-start px-4 pb-20 pt-14 text-center sm:min-h-[620px] sm:justify-center sm:px-6 sm:pt-20 lg:px-8">
+        <motion.a
+          href="#pricing"
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={revealTransition}
+          className="mb-9 inline-flex h-10 items-center gap-2 rounded-full bg-whisper-purple/45 px-2.5 text-body font-medium leading-body text-electric-blue transition-colors hover:bg-whisper-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/60"
+        >
+          <span className="rounded-full bg-radiant-violet px-2 py-1 text-caption font-semibold leading-none text-canvas-white">
+            NEW
+          </span>
+          Price alerts in Telegram
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </motion.a>
 
-                <motion.div
-                  initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 32 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={
-                    shouldReduceMotion
-                      ? { duration: 0 }
-                      : { duration: 1, delay: 0.2, ease: "easeInOut" }
-                  }
-                  className="flex items-center justify-center lg:justify-start"
-                >
-                  <Button
-                    onClick={() => router.push(ctaPath)}
-                    className="relative text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
-                  >
-                    <span className="relative z-10 transition-all duration-500">
-                      {ctaLabel}
-                    </span>
-                    <span className="absolute right-1 w-10 h-10 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                      <ArrowUpRight size={16} />
-                    </span>
-                  </Button>
-                </motion.div>
-              </div>
+        <motion.h1
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { ...revealTransition, delay: 0.08 }
+          }
+          className="max-w-4xl text-5xl font-bold leading-[1.04] text-slate-ink sm:text-6xl lg:text-7xl"
+        >
+          Price tracking for teams that move before margins disappear
+        </motion.h1>
 
-              <motion.div
-                initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={
-                  shouldReduceMotion
-                    ? { duration: 0 }
-                    : { duration: 1, delay: 0.15, ease: "easeInOut" }
-                }
-                className="w-full"
-              >
-                <div className="relative mx-auto max-w-xl">
-                  <motion.div
-                    animate={
-                      shouldReduceMotion
-                        ? undefined
-                        : {
-                            y: [0, -8, 0],
-                            rotate: [0, 0.6, 0],
-                            scale: [1, 1.01, 1],
-                          }
-                    }
-                    transition={
-                      shouldReduceMotion
-                        ? undefined
-                        : {
-                            duration: 6,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: "easeInOut",
-                          }
-                    }
-                    className="will-change-transform"
-                  >
-                    <Image
-                      src="/illustrations/money-income.svg"
-                      alt="Money income illustration"
-                      width={750}
-                      height={500}
-                      priority
-                      className="h-auto w-full"
-                    />
-                  </motion.div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
+        <motion.p
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { ...revealTransition, delay: 0.16 }
+          }
+          className="mt-7 max-w-2xl text-heading-sm font-medium leading-heading-sm text-medium-gray sm:text-heading"
+        >
+          Turn product URLs into live trackers, spend credits with control, and
+          get Telegram alerts the moment a target price hits.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { ...revealTransition, delay: 0.24 }
+          }
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
+          <button
+            type="button"
+            onClick={() => router.push(ctaPath)}
+            className="inline-flex h-[52px] min-w-44 items-center justify-center rounded-full bg-radiant-violet px-7 text-heading-sm font-semibold leading-none text-canvas-white shadow-subtle transition-colors hover:bg-deep-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2"
+          >
+            {ctaLabel}
+          </button>
+          <a
+            href="#features"
+            className="inline-flex h-[52px] min-w-36 items-center justify-center gap-2 rounded-full bg-[#00000008] px-6 text-heading-sm font-semibold leading-none text-medium-gray transition-colors hover:bg-light-gray/70 hover:text-slate-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/60 focus-visible:ring-offset-2"
+          >
+            See how it works
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </a>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
 import HeroSection from "@/components/shadcn-space/blocks/hero-01/hero";
 import type { NavigationSection } from "@/components/shadcn-space/blocks/hero-01/header";
 import Header from "@/components/shadcn-space/blocks/hero-01/header";
-import BrandSlider, { BrandList } from "@/components/shadcn-space/blocks/hero-01/brand-slider";
+import BrandSlider, { type BrandList } from "@/components/shadcn-space/blocks/hero-01/brand-slider";
 
 export default function AgencyHeroSection({
   isAuthenticated,
@@ -9,11 +9,6 @@ export default function AgencyHeroSection({
   isAuthenticated: boolean;
 }) {
   const navigationData: NavigationSection[] = [
-    {
-      title: "Home",
-      href: "#home",
-      isActive: true,
-    },
     {
       title: "Features",
       href: "#features",
@@ -30,24 +25,20 @@ export default function AgencyHeroSection({
 
   const brandList: BrandList[] = [
     {
-      label: "Price alerts routed to Telegram",
-      context: "Core workflow reliability",
+      label: "Telegram alerts",
+      context: "Delivered when target prices hit",
     },
     {
-      label: "Trackers with explicit credit limits",
+      label: "Credit control",
       context: "Transparent monthly usage",
     },
     {
-      label: "Built for rapid deal decisions",
-      context: "Operator-first product direction",
+      label: "Fast tracker setup",
+      context: "URL to monitoring in minutes",
     },
     {
-      label: "No spreadsheet-heavy tracking loops",
-      context: "Cleaner monitoring workflow",
-    },
-    {
-      label: "Faster reactions to price movement",
-      context: "High-signal notifications",
+      label: "Margin-first workflow",
+      context: "Built for sourcing decisions",
     },
   ];
 

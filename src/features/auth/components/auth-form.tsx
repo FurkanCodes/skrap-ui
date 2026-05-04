@@ -1,12 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import {
-  Loader2,
-  LogIn,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
 
@@ -41,10 +39,21 @@ type AuthFormField = keyof AuthFormValues;
 type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
 type ParsedAuthError = { message: string; code: string | null };
 const SESSION_EXPIRED_SEARCH_PARAM = "expired";
+const authLogoVars = {
+  "--brand-logo-accent": "#918df6",
+  "--brand-logo-wordmark": "#181925",
+  "--brand-logo-cutout": "#ffffff",
+} as CSSProperties;
+const visitorsInputClassName =
+  "h-10 rounded-[12px] border-0 !bg-[#f5f5f5] px-4 py-0 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-[#181925] shadow-none outline-2 outline-transparent placeholder:!text-[#b3b3b3] focus:!outline-[#918df6] focus:!ring-2 focus:!ring-[#dad9fc] focus-visible:!outline-[#918df6] focus-visible:!ring-2 focus-visible:!ring-[#dad9fc] disabled:opacity-50 md:text-[16px]";
+const visitorsPrimaryButtonClassName =
+  "h-11 w-full rounded-full border-0 !bg-[#918df6] px-5 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-white shadow-none transition-all hover:!bg-[#918df6] hover:opacity-90 disabled:!bg-[#dad9fc] disabled:!text-white disabled:opacity-100";
+const visitorsSocialButtonClassName =
+  "h-11 w-full rounded-full border-0 !bg-[rgba(0,0,0,0.03)] px-5 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-[#666666] shadow-none transition-all hover:!bg-[rgba(0,0,0,0.05)] hover:!text-[#666666] disabled:!bg-[#f5f5f5] disabled:!text-[#999999]";
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
       <path
         d="M21.8 12.2c0-.75-.06-1.3-.2-1.9H12v3.5h5.64c-.11.87-.74 2.17-2.14 3.05l-.02.12 3.05 2.32.2.02c1.85-1.69 2.92-4.19 2.92-7.11Z"
         fill="#4285F4"
@@ -67,7 +76,7 @@ function GoogleIcon() {
 
 function GithubMark() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true" fill="currentColor">
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true" fill="currentColor">
       <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6V21c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.4 3.5 1.1.1-.8.4-1.4.8-1.8-2.7-.3-5.6-1.4-5.6-6a4.7 4.7 0 0 1 1.2-3.2 4.3 4.3 0 0 1 .1-3.2s1-.3 3.3 1.2a11 11 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2a4.3 4.3 0 0 1 .1 3.2 4.7 4.7 0 0 1 1.2 3.2c0 4.7-2.9 5.7-5.7 6 .5.5.9 1.2.9 2.4v3.6c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z" />
     </svg>
   );
@@ -147,6 +156,95 @@ function getAuthFormFieldErrors(
   }
 
   return mapAuthFieldErrors(parsed.error.issues);
+}
+
+const radarPoints = [
+  {
+    label: "Amazon",
+    position: "left-[18%] top-[31%]",
+    className: "bg-radiant-violet",
+    count: "12",
+  },
+  {
+    label: "Target",
+    position: "left-[36%] top-[22%]",
+    className: "bg-electric-blue",
+    count: "8",
+  },
+  {
+    label: "Best Buy",
+    position: "left-[51%] top-[36%]",
+    className: "bg-accent-pink",
+    count: "5",
+  },
+  {
+    label: "Walmart",
+    position: "left-[68%] top-[27%]",
+    className: "bg-warning-yellow",
+    count: "4",
+  },
+  {
+    label: "Shopify",
+    position: "left-[77%] top-[49%]",
+    className: "bg-vivid-orange",
+    count: "2",
+  },
+] as const;
+
+function PriceRadarGlobe() {
+  return (
+    <div className="pointer-events-none absolute -bottom-[15rem] left-1/2 h-[760px] w-[760px] -translate-x-1/2 overflow-hidden rounded-full bg-[radial-gradient(circle_at_33%_24%,rgba(255,255,255,0.95),rgba(218,217,252,0.62)_24%,rgba(44,120,252,0.42)_42%,rgba(44,120,252,0.24)_64%,rgba(44,120,252,0.12)_100%)] shadow-[inset_0_0_0_1px_rgba(145,141,246,0.16),inset_0_20px_80px_rgba(255,255,255,0.72)]">
+      <div className="absolute inset-[7%] rounded-full bg-[radial-gradient(circle_at_62%_42%,rgba(222,246,228,0.92),transparent_0_10%,transparent_10%),radial-gradient(circle_at_43%_34%,rgba(222,246,228,0.88),transparent_0_14%,transparent_14%),radial-gradient(circle_at_61%_57%,rgba(222,246,228,0.78),transparent_0_18%,transparent_18%),radial-gradient(circle_at_30%_53%,rgba(250,250,250,0.82),transparent_0_12%,transparent_12%)]" />
+      <div className="absolute left-[12%] top-[42%] text-[18px] font-medium leading-none tracking-[0.28em] text-electric-blue/45">
+        PRICE
+      </div>
+      <div className="absolute left-[14%] top-[47%] text-[18px] font-medium leading-none tracking-[0.3em] text-electric-blue/35">
+        RADAR
+      </div>
+      <div className="absolute left-[36%] top-[33%] h-px w-[42%] rotate-12 bg-radiant-violet/25" />
+      <div className="absolute left-[39%] top-[44%] h-px w-[40%] -rotate-6 bg-radiant-violet/20" />
+      <div className="absolute left-[29%] top-[56%] h-px w-[48%] rotate-[18deg] bg-radiant-violet/20" />
+      {radarPoints.map((point) => (
+        <div key={point.label} className={`absolute ${point.position}`}>
+          <div className="relative flex items-center gap-2">
+            <span
+              className={`flex size-12 items-center justify-center rounded-full text-body font-bold leading-none text-canvas-white shadow-[0_0_0_5px_rgba(255,255,255,0.82),0_10px_28px_rgba(24,25,37,0.14)] ${point.className}`}
+            >
+              {point.count}
+            </span>
+            <span className="rounded-full bg-canvas-white/82 px-2.5 py-1 text-caption font-semibold leading-none text-slate-ink shadow-subtle-2">
+              {point.label}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AuthVisualPanel({ mode }: { mode: AuthMode }) {
+  return (
+    <motion.aside
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.48, ease: "easeOut" }}
+      className="relative hidden min-h-screen overflow-hidden bg-[#fafafa] lg:block"
+      aria-hidden="true"
+    >
+      <div className="absolute inset-x-0 top-[28%] z-10 mx-auto max-w-lg px-8 text-center">
+        <h2 className="text-balance text-4xl font-semibold leading-[1.12] text-muted-gray xl:text-5xl">
+          {mode === "sign-up"
+            ? "Track target prices in realtime, across every store"
+            : "Welcome back to your live price radar"}
+        </h2>
+        <p className="mx-auto mt-6 max-w-md text-heading-sm font-medium leading-heading-sm text-muted-gray/80">
+          Turn product pages into monitored opportunities, then get the alert
+          before the margin is gone.
+        </p>
+      </div>
+      <PriceRadarGlobe />
+    </motion.aside>
+  );
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
@@ -418,41 +516,38 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute -left-24 top-[-6rem] size-64 rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 top-4 size-72 rounded-full bg-accent/40 blur-3xl" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-muted/50 to-transparent" />
-
-      <div className="relative mx-auto flex min-h-screen w-full max-w-5xl items-center px-5 py-8 sm:px-7 sm:py-10">
-        <div className="grid w-full items-stretch gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.82fr)] lg:gap-10">
-          <motion.section
-            initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={
-              shouldReduceMotion
-                ? { duration: 0 }
-                : { duration: 0.45, ease: "easeOut" }
-            }
-            className="mx-auto flex w-full max-w-md flex-col justify-center"
-          >
+    <div className="auth-light-surface min-h-screen bg-canvas-white font-openrunde text-slate-ink">
+      <div className="grid min-h-screen lg:grid-cols-2">
+        <motion.section
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
+          }
+          className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8"
+        >
+          <div className="w-full max-w-[344px]">
             <Link
               href="/"
-              className="mb-6 inline-flex w-fit items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="mx-auto mb-8 flex w-fit items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
+              aria-label="Dealvinci home"
             >
-              <Logo />
+              <Logo iconOnly className="[&_svg]:h-14 [&_svg]:w-14" style={authLogoVars} />
             </Link>
 
-            <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              {isSignUp ? t("signUp.title") : t("signIn.title")}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {isSignUp
-                ? t("signUp.subtitle")
-                : t("signIn.subtitle")}
-            </p>
+            <div className="text-center">
+              <h1 className="text-[20px] font-medium leading-7 tracking-[-0.32px] text-[#181925]">
+                {isSignUp ? t("signUp.title") : t("signIn.title")}
+              </h1>
+              <p className="mt-0.5 text-[16px] font-normal leading-6 tracking-[-0.32px] text-[#666666]">
+                {isSignUp ? t("signUp.subtitle") : t("signIn.subtitle")}
+              </p>
+            </div>
 
             <form
-              className="mt-6 space-y-3.5"
+              className="mt-10 space-y-3.5"
               onSubmit={(event) => {
                 event.preventDefault();
                 startTransition(async () => {
@@ -463,7 +558,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               {error ? (
                 <div
                   role="alert"
-                  className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                  className="rounded-2xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-body leading-body text-destructive"
                 >
                   {error}
                 </div>
@@ -471,7 +566,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               {!isSignUp && signInNotice ? (
                 <div
                   role="status"
-                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-300"
+                  className="rounded-2xl border border-warning-yellow/35 bg-warning-yellow/10 px-4 py-3 text-body leading-body text-slate-ink"
                 >
                   {signInNotice}
                 </div>
@@ -479,13 +574,13 @@ export function AuthForm({ mode }: AuthFormProps) {
               {isSignUp && signUpNotice ? (
                 <div
                   role="status"
-                  className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-700 dark:text-emerald-300"
+                  className="rounded-2xl border border-success-green/35 bg-pale-mint px-4 py-3 text-body leading-body text-slate-ink"
                 >
                   {signUpNotice}
                 </div>
               ) : null}
               {isSignUp && process.env.NODE_ENV !== "production" ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-caption leading-caption text-muted-gray">
                   Local dev tip: if external email delivery is unavailable, use the
                   verification link printed in the server logs with
                   <span className="font-mono"> [auth-email][dev-link] </span>.
@@ -494,7 +589,9 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               {isSignUp ? (
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{t("fields.name")}</Label>
+                  <Label htmlFor="name" className="sr-only">
+                    {t("fields.name")}
+                  </Label>
                   <Input
                     id="name"
                     autoComplete="name"
@@ -506,14 +603,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                     }}
                     onBlur={() => markFieldTouched("name")}
                     placeholder={t("fields.namePlaceholder")}
+                    className={visitorsInputClassName}
                     disabled={isBusy}
                     aria-invalid={Boolean(nameError)}
                     aria-describedby={nameError ? "name-error" : undefined}
-                    className="h-10 rounded-lg border-border bg-card"
                     required
                   />
                   {nameError ? (
-                    <p id="name-error" className="text-xs text-destructive">
+                    <p id="name-error" className="text-caption leading-caption text-destructive">
                       {nameError}
                     </p>
                   ) : null}
@@ -521,7 +618,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               ) : null}
 
               <div className="grid gap-2">
-                <Label htmlFor="email">
+                <Label htmlFor="email" className="sr-only">
                   {t("fields.email")}
                 </Label>
                 <Input
@@ -536,21 +633,21 @@ export function AuthForm({ mode }: AuthFormProps) {
                   }}
                   onBlur={() => markFieldTouched("email")}
                   placeholder={t("fields.emailPlaceholder")}
+                  className={visitorsInputClassName}
                   disabled={isBusy}
                   aria-invalid={Boolean(emailError)}
                   aria-describedby={emailError ? "email-error" : undefined}
-                  className="h-10 rounded-lg border-border bg-card"
                   required
                 />
                 {emailError ? (
-                  <p id="email-error" className="text-xs text-destructive">
+                  <p id="email-error" className="text-caption leading-caption text-destructive">
                     {emailError}
                   </p>
                 ) : null}
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="password">
+                <Label htmlFor="password" className="sr-only">
                   {t("fields.password")}
                 </Label>
                 <Input
@@ -568,19 +665,19 @@ export function AuthForm({ mode }: AuthFormProps) {
                   }}
                   onBlur={() => markFieldTouched("password")}
                   placeholder={t("fields.passwordPlaceholder")}
+                  className={visitorsInputClassName}
                   disabled={isBusy}
                   minLength={isSignUp ? PASSWORD_MIN_LENGTH : 1}
                   aria-invalid={Boolean(passwordError)}
                   aria-describedby={passwordError ? "password-error" : undefined}
-                  className="h-10 rounded-lg border-border bg-card"
                   required
                 />
                 {passwordError ? (
-                  <p id="password-error" className="text-xs text-destructive">
+                  <p id="password-error" className="text-caption leading-caption text-destructive">
                     {passwordError}
                   </p>
                 ) : isSignUp ? (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption leading-caption text-muted-gray">
                     {t("signUp.passwordHint")}
                   </p>
                 ) : null}
@@ -588,7 +685,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               {isSignUp ? (
                 <div className="grid gap-2">
-                  <Label htmlFor="confirm-password">
+                  <Label htmlFor="confirm-password" className="sr-only">
                     {t("fields.confirmPassword")}
                   </Label>
                   <Input
@@ -603,6 +700,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     }}
                     onBlur={() => markFieldTouched("confirmPassword")}
                     placeholder={t("fields.confirmPasswordPlaceholder")}
+                    className={visitorsInputClassName}
                     disabled={isBusy}
                     minLength={PASSWORD_MIN_LENGTH}
                     aria-invalid={Boolean(confirmPasswordError)}
@@ -611,30 +709,29 @@ export function AuthForm({ mode }: AuthFormProps) {
                         ? "confirm-password-error"
                         : undefined
                     }
-                    className="h-10 rounded-lg border-border bg-card"
                     required
                   />
                   {confirmPasswordError ? (
-                    <p id="confirm-password-error" className="text-xs text-destructive">
+                    <p id="confirm-password-error" className="text-caption leading-caption text-destructive">
                       {confirmPasswordError}
                     </p>
                   ) : null}
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-4 pt-1 text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-4 pt-1 text-body text-medium-gray">
                   <Label htmlFor="remember-device" className="inline-flex cursor-pointer items-center gap-2.5">
                     <Checkbox
                       id="remember-device"
                       checked={rememberDevice}
                       onCheckedChange={(checked) => setRememberDevice(Boolean(checked))}
                       disabled={isBusy}
-                      className="data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground"
+                      className="border-light-gray data-checked:border-radiant-violet data-checked:bg-radiant-violet data-checked:text-canvas-white"
                     />
                     {t("signIn.rememberDevice")}
                   </Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="font-medium text-foreground underline underline-offset-4"
+                    className="font-semibold text-electric-blue transition-colors hover:text-deep-purple"
                   >
                     {t("signIn.forgotPassword")}
                   </Link>
@@ -643,7 +740,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               <Button
                 type="submit"
-                className="h-10 w-full rounded-lg text-sm font-semibold"
+                className={visitorsPrimaryButtonClassName}
                 disabled={
                   isBusy || !email.trim() || !password || (isSignUp && (!name.trim() || !confirmPassword))
                 }
@@ -651,51 +748,16 @@ export function AuthForm({ mode }: AuthFormProps) {
                 {isEmailActionPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <>
-                    <LogIn className="size-4" />
-                    {isSignUp ? t("signUp.submit") : t("signIn.submit")}
-                  </>
+                  isSignUp ? t("signUp.submit") : t("signIn.submit")
                 )}
               </Button>
             </form>
 
-            <p className="mt-5 text-center text-sm text-muted-foreground">
-              {isSignUp ? t("links.alreadyHaveAccount") : t("links.dontHaveAccount")}{" "}
-              <Link
-                href={
-                  isSignUp
-                    ? `/auth/sign-in?next=${encodeURIComponent(redirectTo)}`
-                    : `/auth/sign-up?next=${encodeURIComponent(redirectTo)}`
-                }
-                className="font-semibold text-foreground underline underline-offset-4"
-              >
-                {isSignUp ? t("links.signIn") : t("links.createAccount")}
-              </Link>
-            </p>
-          </motion.section>
-
-          <motion.aside
-            initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={
-              shouldReduceMotion
-                ? { duration: 0 }
-                : { duration: 0.45, delay: 0.08, ease: "easeOut" }
-            }
-            className="mx-auto flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl bg-card/60 p-5 lg:max-w-md lg:border-l lg:border-border/70 lg:rounded-none lg:bg-transparent lg:pl-8 lg:pr-0"
-          >
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold tracking-tight">{t("social.title")}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t("social.subtitle")}
-              </p>
-            </div>
-
-            <div className="space-y-3">
+            <div className="mt-8 grid grid-cols-2 gap-4">
               <Button
                 type="button"
-                variant="outline"
-                className="h-10 w-full justify-center rounded-lg border-border bg-background text-sm"
+                variant="ghost"
+                className={visitorsSocialButtonClassName}
                 disabled={isBusy}
                 onClick={() => runSocialAuth("google")}
               >
@@ -704,15 +766,15 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : (
                   <>
                     <GoogleIcon />
-                    {t("social.google")}
+                    Google
                   </>
                 )}
               </Button>
 
               <Button
                 type="button"
-                variant="outline"
-                className="h-10 w-full justify-center rounded-lg border-border bg-background text-sm"
+                variant="ghost"
+                className={visitorsSocialButtonClassName}
                 disabled={isBusy}
                 onClick={() => runSocialAuth("github")}
               >
@@ -721,26 +783,41 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : (
                   <>
                     <GithubMark />
-                    {t("social.github")}
+                    GitHub
                   </>
                 )}
               </Button>
             </div>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="mt-4 text-center text-[14px] font-normal leading-5 tracking-[-0.32px] text-[#666666]">
+              {isSignUp ? t("links.alreadyHaveAccount") : t("links.dontHaveAccount")}{" "}
+              <Link
+                href={
+                  isSignUp
+                    ? `/auth/sign-in?next=${encodeURIComponent(redirectTo)}`
+                    : `/auth/sign-up?next=${encodeURIComponent(redirectTo)}`
+                }
+                className="font-normal text-[#2c78fc] transition-colors hover:text-[#2c78fc]/80"
+              >
+                {isSignUp ? t("links.signIn") : t("links.createAccount")}
+              </Link>
+            </p>
+
+            <p className="mt-5 text-center text-caption leading-caption text-muted-gray">
               {t("legal.prefix")}{" "}
-              <Link href="/terms" className="font-semibold text-foreground underline underline-offset-4">
+              <Link href="/terms" className="font-semibold text-slate-ink underline underline-offset-4">
                 {t("legal.terms")}
               </Link>{" "}
               {t("legal.and")}{" "}
-              <Link href="/privacy" className="font-semibold text-foreground underline underline-offset-4">
+              <Link href="/privacy" className="font-semibold text-slate-ink underline underline-offset-4">
                 {t("legal.privacy")}
               </Link>
               .
             </p>
+          </div>
+        </motion.section>
 
-          </motion.aside>
-        </div>
+        <AuthVisualPanel mode={mode} />
       </div>
     </div>
   );

@@ -2,20 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
-import type { BillingPlanKey } from "@/features/billing/types";
+import { ArrowRight, Check } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+
 import {
   MARKETING_PRICING_PLANS,
   type MarketingPricingPlan,
 } from "@/components/shadcn-space/blocks/pricing-content";
+import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
+import type { BillingPlanKey } from "@/features/billing/types";
 import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Check } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 
 interface PricingProps {
   isAuthenticated: boolean;
@@ -32,150 +29,148 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   const buildCheckoutIntent = (planKey: BillingPlanKey) =>
     `${localizePathname("/auth/sign-up", currentLocale)}?next=${encodeURIComponent(buildBillingCheckoutPath(planKey))}`;
 
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: shouldReduceMotion ? 0 : 80,
-    },
-    visible: (index: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: shouldReduceMotion
-        ? { duration: 0 }
-        : {
-            delay: index * 0.2,
-            duration: 0.6,
-            ease: [0.22, 1, 0.36, 1] as const,
-          },
-    }),
+  const handlePlanClick = (plan: MarketingPricingPlan) => {
+    if (plan.planKey === "free") {
+      router.push(isAuthenticated ? "/dashboard" : "/auth/sign-up?next=/dashboard");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      router.push(buildCheckoutIntent(plan.planKey as BillingPlanKey));
+      return;
+    }
+
+    router.push(buildBillingCheckoutPath(plan.planKey as BillingPlanKey));
   };
 
   return (
-    <section className="bg-background py-10 xl:py-0">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 xl:px-16 lg:py-20 sm:py-16 py-8">
-        <div className="flex flex-col gap-8 md:gap-12 justify-center items-center w-full">
-          <div className="flex flex-col gap-4 justify-center items-center animate-in fade-in slide-in-from-top-8 duration-700 ease-in-out">
-            <Badge
-              variant={"outline"}
-              className="py-1 px-3 text-sm font-normal leading-5 w-fit h-7"
-            >
-              Credits + Tiers
-            </Badge>
-            <div className="max-w-3xs sm:max-w-md mx-auto text-center">
-              <h2 className="text-foreground text-3xl sm:text-5xl font-medium">
-                Pick the credit plan that matches your tracking volume
-              </h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 items-stretch justify-center gap-6 w-full">
-            {MARKETING_PRICING_PLANS.map((plan: MarketingPricingPlan, index: number) => (
-              <motion.div
+    <section className="bg-canvas-white py-16 font-openrunde sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.58, ease: [0.22, 1, 0.36, 1] }
+          }
+          className="flex flex-col items-center gap-5 text-center"
+        >
+          <span className="rounded-full bg-[#00000008] px-3 py-1.5 text-caption font-semibold uppercase leading-none text-muted-gray">
+            Pricing
+          </span>
+          <h2 className="max-w-2xl text-4xl font-bold leading-[1.08] text-slate-ink sm:text-5xl">
+            Pick the credit plan that matches your tracking volume
+          </h2>
+          <p className="max-w-2xl text-heading-sm font-medium leading-heading-sm text-medium-gray">
+            Start with a few high-intent products, then scale checks and active
+            trackers as your sourcing workflow grows.
+          </p>
+        </motion.div>
+
+        <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {MARKETING_PRICING_PLANS.map((plan, index) => {
+            const isFeatured = plan.planKey === "plus";
+            const showManageBilling =
+              isAuthenticated && hasPaidSubscription && plan.planKey !== "free";
+
+            return (
+              <motion.article
                 key={plan.planKey}
-                variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 26 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                custom={index}
-                className="w-full"
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : {
+                        delay: index * 0.08,
+                        duration: 0.54,
+                        ease: [0.22, 1, 0.36, 1],
+                      }
+                }
+                className={cn(
+                  "flex min-h-[520px] flex-col rounded-2xl border border-transparent p-6",
+                  plan.surfaceClassName,
+                  isFeatured && "border-radiant-violet/35 shadow-subtle-2",
+                )}
               >
-                <Card
-                  className={cn(
-                    plan.surfaceClassName,
-                    "p-8 sm:p-10 rounded-2xl ring-0 w-full h-full",
-                  )}
-                >
-                  <CardContent className="flex flex-col gap-6 px-0 h-full w-full">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
-                        <Badge className="py-1 px-3 text-sm font-normal leading-5 w-fit h-7">
-                          {plan.name}
-                        </Badge>
-                        {plan.highlight ? (
-                          <Badge variant="outline" className="py-1 px-3 text-xs font-normal">
-                            {plan.highlight}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-sm font-normal text-muted-foreground max-w-56">
-                        {plan.description}
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-caption font-semibold uppercase leading-none",
+                      isFeatured
+                        ? "bg-radiant-violet text-canvas-white"
+                        : "bg-canvas-white text-slate-ink shadow-subtle-2",
+                    )}
+                  >
+                    {plan.name}
+                  </span>
+                  {plan.highlight ? (
+                    <span className="rounded-full bg-canvas-white px-3 py-1.5 text-caption font-semibold leading-none text-deep-purple shadow-subtle-2">
+                      {plan.highlight}
+                    </span>
+                  ) : null}
+                </div>
 
-                    <div className="flex flex-col gap-4 mt-auto">
-                      <p className="text-4xl sm:text-5xl font-semibold text-card-foreground flex items-end">
-                        ${plan.price}
-                        <span className="text-base font-normal text-muted-foreground">
-                          /month
-                        </span>
-                      </p>
-                      {plan.planKey === "free" ? (
-                        <Button
-                          onClick={() =>
-                            router.push(isAuthenticated ? "/dashboard" : "/auth/sign-up?next=/dashboard")
-                          }
-                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
-                        >
-                          <span className="relative z-10 transition-all duration-500">
-                            {plan.ctaLabel}
-                          </span>
-                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                            <ArrowUpRight size={16} />
-                          </div>
-                        </Button>
-                      ) : !isAuthenticated ? (
-                        <Button
-                          onClick={() => router.push(buildCheckoutIntent(plan.planKey as BillingPlanKey))}
-                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
-                        >
-                          <span className="relative z-10 transition-all duration-500">
-                            {plan.ctaLabel}
-                          </span>
-                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                            <ArrowUpRight size={16} />
-                          </div>
-                        </Button>
-                      ) : hasPaidSubscription ? (
-                        <ManageBillingButton label="Manage billing" />
-                      ) : (
-                        <Button
-                          onClick={() => router.push(buildBillingCheckoutPath(plan.planKey as BillingPlanKey))}
-                          className="relative bg-card text-foreground border border-border hover:bg-card text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
-                        >
-                          <span className="relative z-10 transition-all duration-500">
-                            {plan.ctaLabel}
-                          </span>
-                          <div className="absolute right-1 w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                            <ArrowUpRight size={16} />
-                          </div>
-                        </Button>
+                <p className="mt-5 min-h-16 text-body font-medium leading-body text-medium-gray">
+                  {plan.description}
+                </p>
+
+                <div className="mt-8 flex items-end gap-1">
+                  <span className="text-5xl font-bold leading-none text-slate-ink">
+                    ${plan.price}
+                  </span>
+                  <span className="pb-1 text-body font-medium leading-body text-medium-gray">
+                    /month
+                  </span>
+                </div>
+
+                <div className="mt-8">
+                  {showManageBilling ? (
+                    <ManageBillingButton label="Manage billing" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handlePlanClick(plan)}
+                      className={cn(
+                        "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 text-body font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2",
+                        isFeatured
+                          ? "bg-radiant-violet text-canvas-white shadow-subtle hover:bg-deep-purple"
+                          : "bg-canvas-white text-slate-ink shadow-subtle-2 hover:bg-light-gray/60",
                       )}
-                    </div>
+                    >
+                      {plan.ctaLabel}
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
 
-                    <Separator orientation="horizontal" className="block" />
+                <div className="mt-8 h-px bg-light-gray" />
 
-                    <div className="flex flex-col items-start gap-3 grow">
-                      <p className="text-card-foreground text-base sm:text-xl font-normal sm:font-medium">
-                        Included
-                      </p>
-                      <ul className="flex flex-col items-start self-stretch gap-3">
-                        {plan.features.map((feature: string) => {
-                          return (
-                            <li
-                              key={feature}
-                              className="flex items-center gap-3 text-card-foreground text-base font-normal tracking-normal"
-                            >
-                              <Check size={16} aria-hidden="true" />
-                              {feature}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                <div className="mt-7">
+                  <p className="text-body font-semibold leading-body text-slate-ink">
+                    Included
+                  </p>
+                  <ul className="mt-4 flex flex-col gap-3">
+                    {plan.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-start gap-3 text-body font-medium leading-body text-medium-gray"
+                      >
+                        <Check
+                          className="mt-0.5 size-4 shrink-0 text-radiant-violet"
+                          aria-hidden="true"
+                        />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </section>
