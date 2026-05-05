@@ -6,6 +6,7 @@ import {
   IconCirclePlus,
   IconPointer,
   IconLayoutGrid,
+  IconMessageCircle,
   IconSelector,
   IconSettings,
   IconWorld,
@@ -39,6 +40,11 @@ const navItems = [
     icon: IconPointer,
   },
   {
+    titleKey: "notifications",
+    href: "/notifications",
+    icon: IconMessageCircle,
+  },
+  {
     titleKey: "settings",
     href: "/settings",
     icon: IconSettings,
@@ -51,6 +57,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
   const trackingUnauthenticatedT = useTranslations("tracking.dashboard.unauthenticated");
   const extensionsT = useTranslations("extensions");
   const settingsT = useTranslations("settings");
+  const notificationsT = useTranslations("notificationsPage");
   const pathname = usePathname();
   const { isAuthenticated } = useViewer();
   const pageHero =
@@ -68,6 +75,11 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             title: settingsT("title"),
             description: settingsT("subtitle"),
           }
+        : pathname === "/notifications"
+          ? {
+              title: notificationsT("title"),
+              description: notificationsT("subtitle"),
+            }
         : pathname === "/extensions"
           ? {
               title: extensionsT("title"),

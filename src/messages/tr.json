@@ -28,7 +28,8 @@
       "nav": {
         "dashboard": "Panel",
         "extensions": "Eklentiler",
-        "settings": "Ayarlar"
+        "settings": "Ayarlar",
+        "notifications": "Bildirimler"
       }
     },
     "language": {
@@ -154,7 +155,7 @@
   },
   "settings": {
     "title": "Ayarlar",
-    "subtitle": "Entegrasyonlari ve bildirimleri yonetin.",
+    "subtitle": "Plan, gorunum ve desteklenen magazalar.",
     "appearance": {
       "title": "Gorunum",
       "description": "Arayuzun uygulama genelinde nasil gorunecegini secin.",
@@ -167,6 +168,7 @@
     "adapters": {
       "title": "Magaza Adaptorlari",
       "description": "Arka uc ozelliklerinden cekilir. Her URL yine de genel cikarma kullanabilir.",
+      "summary": "{count} desteklenen magaza",
       "empty": "Henuz adaptor metaverisi donmedi.",
       "fallbackDescription": "Bu magaza icin arka uc adaptoru mevcut."
     },
@@ -202,6 +204,17 @@
     },
     "errors": {
       "supportedSites": "Desteklenen magazalar yuklenemedi."
+    }
+  },
+  "notificationsPage": {
+    "title": "Bildirimler",
+    "subtitle": "Kanallari ve bildirim davranisini yonetin.",
+    "channels": {
+      "title": "Diger kanallar",
+      "description": "Gelecek bildirim hedefleri burada gorunecek.",
+      "discord": "Discord",
+      "slack": "Slack",
+      "comingSoon": "Yakinda"
     }
   },
   "billingCheckout": {

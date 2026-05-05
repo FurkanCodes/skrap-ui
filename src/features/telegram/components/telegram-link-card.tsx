@@ -287,17 +287,14 @@ export function TelegramLinkCard({
 
   return (
     <Card className="rounded-2xl bg-card/95">
-      <CardHeader className="gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
-        <div className="space-y-1">
+      <CardHeader className="gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div>
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle>{t("title")}</CardTitle>
             <Chip tone={isConnected ? "success" : "muted"}>
               {isConnected ? t("connected") : t("notLinked")}
             </Chip>
           </div>
-          <CardDescription className="max-w-2xl">
-            {t("description")}
-          </CardDescription>
         </div>
         <Button
           type="button"
@@ -329,6 +326,7 @@ export function TelegramLinkCard({
           </p>
         ) : null}
 
+        {isConnected || pendingSession ? (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
           {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
@@ -339,6 +337,7 @@ export function TelegramLinkCard({
             </Chip>
           ) : null}
         </div>
+        ) : null}
 
         {qrTargetUrl ? (
           <div className="grid gap-5 rounded-2xl bg-muted/20 p-4 md:grid-cols-[auto_1fr] md:items-center">
@@ -403,14 +402,9 @@ export function TelegramLinkCard({
                   <IconMessageCircle className="size-5" stroke={1.5} />
                 )}
               </span>
-              <div className="space-y-1">
+              <div>
                 <p className="text-sm font-semibold text-foreground">
                   {isConnected ? t("linkedTitle") : t("connectTitle")}
-                </p>
-                <p className="max-w-lg text-sm text-muted-foreground">
-                  {isConnected
-                    ? t("linkedDescription")
-                    : t("connectDescription")}
                 </p>
               </div>
             </div>

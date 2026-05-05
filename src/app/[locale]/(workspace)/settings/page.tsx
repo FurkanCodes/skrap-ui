@@ -5,25 +5,10 @@ import { SettingsPageClient } from "@/features/settings/components/settings-page
 import { getBillingCurrentQuery } from "@/features/billing/server/queries";
 import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
 import { listSupportedSitesQuery } from "@/features/settings/server/queries";
-import { getTelegramStatusQuery } from "@/features/telegram/server/queries";
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import type { SiteInfoResponse } from "@/features/scraper/types";
-import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { getAuthContext } from "@/lib/auth-dal";
-
-function mapError(error: unknown, fallback: string): string {
-  if (typeof error === "string" && error.trim()) {
-    return error;
-  }
-  if (error && typeof error === "object") {
-    const maybe = error as { message?: unknown };
-    if (typeof maybe.message === "string" && maybe.message.trim()) {
-      return maybe.message;
-    }
-  }
-  return fallback;
-}
 
 interface SettingsPageProps {
   params: Promise<{ locale: string }>;
@@ -47,10 +32,7 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
     redirect(`${localizePathname("/billing/checkout", currentLocale)}?plan=${checkoutPlan}`);
   }
 
-  const t = await getTranslations("telegram.errors");
   const settingsT = await getTranslations("settings.errors");
-  let initialStatus: TelegramActiveStatusResponse | null = null;
-  let initialError: string | null = null;
   let trackedCount = 0;
   let supportedSites: SiteInfoResponse[] = [];
   let supportedSitesError: string | null = null;
@@ -68,17 +50,10 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
   }
 
   if (auth) {
-    const [telegramResult, trackedResult, billingResult] = await Promise.allSettled([
-      getTelegramStatusQuery(),
+    const [trackedResult, billingResult] = await Promise.allSettled([
       listTrackedItemsQuery(),
       getBillingCurrentQuery(),
     ]);
-
-    if (telegramResult.status === "fulfilled") {
-      initialStatus = telegramResult.value;
-    } else {
-      initialError = mapError(telegramResult.reason, t("loadStatus"));
-    }
 
     if (trackedResult.status === "fulfilled") {
       trackedCount = trackedResult.value.items.length;
@@ -92,8 +67,6 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
   }
   return (
     <SettingsPageClient
-      initialStatus={initialStatus}
-      initialError={initialError}
       trackedCount={trackedCount}
       supportedSites={supportedSites}
       supportedSitesError={supportedSitesError}

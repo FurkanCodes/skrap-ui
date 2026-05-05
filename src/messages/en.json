@@ -28,7 +28,8 @@
       "nav": {
         "dashboard": "Dashboard",
         "extensions": "Extensions",
-        "settings": "Settings"
+        "settings": "Settings",
+        "notifications": "Notifications"
       }
     },
     "language": {
@@ -154,7 +155,7 @@
   },
   "settings": {
     "title": "Settings",
-    "subtitle": "Manage integrations and notifications.",
+    "subtitle": "Plan, appearance, and supported stores.",
     "appearance": {
       "title": "Appearance",
       "description": "Choose how the interface looks across the app.",
@@ -167,6 +168,7 @@
     "adapters": {
       "title": "Store Adapters",
       "description": "Pulled from backend capabilities. Any URL can still use generic extraction.",
+      "summary": "{count} supported stores",
       "empty": "No adapter metadata returned yet.",
       "fallbackDescription": "Backend adapter available for this store."
     },
@@ -202,6 +204,17 @@
     },
     "errors": {
       "supportedSites": "Unable to load supported store adapters."
+    }
+  },
+  "notificationsPage": {
+    "title": "Notifications",
+    "subtitle": "Manage delivery channels and alert behavior.",
+    "channels": {
+      "title": "More channels",
+      "description": "Future delivery targets will appear here.",
+      "discord": "Discord",
+      "slack": "Slack",
+      "comingSoon": "Soon"
     }
   },
   "billingCheckout": {
