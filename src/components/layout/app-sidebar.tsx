@@ -49,6 +49,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
   const t = useTranslations("layout.sidebar");
   const trackingHeaderT = useTranslations("tracking.dashboard.header");
   const trackingUnauthenticatedT = useTranslations("tracking.dashboard.unauthenticated");
+  const extensionsT = useTranslations("extensions");
   const settingsT = useTranslations("settings");
   const pathname = usePathname();
   const { isAuthenticated } = useViewer();
@@ -67,6 +68,11 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             title: settingsT("title"),
             description: settingsT("subtitle"),
           }
+        : pathname === "/extensions"
+          ? {
+              title: extensionsT("title"),
+              description: extensionsT("subtitle"),
+            }
         : null;
 
   return (

@@ -345,37 +345,37 @@
   },
   "extensions": {
     "eyebrow": "Tarayici eklentisi",
-    "title": "Urunleri tarayicinizdan takip edin.",
-    "subtitle": "Dealvinci eklentisini kurun, bir kez giris yapin ve mevcut urun sayfasini panele link kopyalamadan takip listenize ekleyin.",
+    "title": "Tarayici eklentisi",
+    "subtitle": "Mevcut urun sayfasini link kopyalamadan ekleyin.",
     "chrome": {
       "title": "Chrome eklentisi",
-      "description": "Dealvinci'yi Chrome, Edge, Brave ve diger Chromium tarayicilarinda kullanin.",
+      "description": "Chrome, Edge, Brave ve Chromium tarayicilari icin.",
       "cta": "Chrome icin kur"
     },
     "firefox": {
       "title": "Firefox eklentisi",
-      "description": "Ayni takip akisini Firefox'a ozel paketle kullanin.",
+      "description": "Ayni takip akisi icin Firefox paketi.",
       "cta": "Firefox icin kur"
     },
     "howItWorks": "Nasil calisir",
-    "howItWorksDescription": "Eklenti gezinmeyi tarayicida tutar ve yalnizca takip etmeyi sectiginiz sayfayi gonderir.",
+    "howItWorksDescription": "Uc kisa adim.",
     "steps": {
       "install": {
         "title": "Kur",
-        "description": "Eklenti paketini tarayiciniza ekleyin ve adres cubugunun yanina sabitleyin."
+        "description": "Ekleyin ve sabitleyin."
       },
       "connect": {
         "title": "Baglan",
-        "description": "Dealvinci web girisiyle kimlik dogrulayin. Giris yapmadan takipci olusturulamaz."
+        "description": "Bir kez giris yapin."
       },
       "track": {
         "title": "Takip et",
-        "description": "Herhangi bir urun sayfasini acin, eklentiye tiklayin, takip ayarlarini secin ve ekleyin."
+        "description": "Urunu acip ekleyin."
       }
     },
     "auth": {
       "title": "Kimlik dogrulama zorunlu",
-      "description": "Eklenti istekleri ozel bir eklenti tokeni kullanir. Token suresi dolarsa veya iptal edilirse kullanici takipten once Dealvinci ile yeniden baglanir.",
+      "description": "Eklenti tokeni sona ererse panelden yeniden baglanin.",
       "dashboard": "Paneli ac"
     }
   },

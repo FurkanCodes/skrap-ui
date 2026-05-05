@@ -3,7 +3,6 @@ import {
   IconDownload,
   IconKey,
   IconPuzzle,
-  IconShieldCheck,
   IconWorld,
 } from "@tabler/icons-react";
 import { getTranslations } from "next-intl/server";
@@ -16,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Link } from "@/i18n/navigation";
 
 const DEFAULT_CHROME_EXTENSION_URL = "#chrome-extension";
 const DEFAULT_FIREFOX_EXTENSION_URL = "#firefox-extension";
@@ -48,19 +46,6 @@ export default async function ExtensionsPage() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-col gap-2">
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-          <IconPuzzle className="size-3.5" stroke={1.5} />
-          {t("eyebrow")}
-        </div>
-        <div className="max-w-3xl space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-            {t("title")}
-          </h1>
-          <p className="text-sm leading-6 text-muted-foreground">{t("subtitle")}</p>
-        </div>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <InstallCard
           title={t("chrome.title")}
@@ -78,46 +63,36 @@ export default async function ExtensionsPage() {
         />
       </div>
 
-      <Card className="rounded-lg">
-        <CardHeader>
-          <CardTitle>{t("howItWorks")}</CardTitle>
-          <CardDescription>{t("howItWorksDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-3">
+      <Card size="sm">
+        <CardContent className="grid gap-4 pt-0 md:grid-cols-[10rem_minmax(0,1fr)] md:items-start">
+          <div>
+            <CardTitle>{t("howItWorks")}</CardTitle>
+            <CardDescription className="mt-1">
+              {t("howItWorksDescription")}
+            </CardDescription>
+          </div>
+          <div className="grid gap-2 md:grid-cols-3">
             {steps.map((step) => (
               <div
                 key={step.title}
-                className="rounded-lg border border-border/80 bg-background p-4"
+                className="flex gap-2.5 rounded-lg bg-muted/35 p-3"
               >
-                <step.icon className="mb-3 size-4 text-primary" stroke={1.5} />
-                <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  {step.description}
-                </p>
+                <step.icon
+                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                  stroke={1.5}
+                />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-lg border-primary/20 bg-primary/5">
-        <CardContent className="flex flex-col gap-4 pt-0 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
-            <IconShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" stroke={1.5} />
-            <div>
-              <p className="text-sm font-semibold text-foreground">{t("auth.title")}</p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {t("auth.description")}
-              </p>
-            </div>
-          </div>
-          <Link href="/dashboard" className={buttonVariants({ variant: "outline" })}>
-            {t("auth.dashboard")}
-            <IconArrowRight className="size-4" stroke={1.5} />
-          </Link>
-        </CardContent>
-      </Card>
     </section>
   );
 }
@@ -138,9 +113,9 @@ function InstallCard({
   const isPlaceholder = href.startsWith("#");
 
   return (
-    <Card className="rounded-lg">
+    <Card size="sm">
       <CardHeader>
-        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-muted text-foreground">
+        <div className="mb-1 flex size-9 items-center justify-center rounded-lg bg-muted text-foreground">
           {icon}
         </div>
         <CardTitle>{title}</CardTitle>
