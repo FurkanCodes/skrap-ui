@@ -8,7 +8,6 @@ import type {
   ModeFilterKey,
   StatusFilterKey,
 } from "@/features/tracking/components/trackers-dashboard/types";
-import { Chip } from "@/components/ui/chip";
 import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +18,36 @@ interface SearchFilterBarProps {
   setStatusFilter: (filter: StatusFilterKey) => void;
   modeFilter: ModeFilterKey;
   setModeFilter: (filter: ModeFilterKey) => void;
+}
+
+function FilterGroup<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  label: string;
+  options: Array<{ value: T; label: string }>;
+  value: T;
+  onChange: (value: T) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-[11px] font-semibold uppercase leading-none text-muted-foreground">
+        {label}
+      </span>
+      <SegmentedSwitch
+        options={options}
+        value={value}
+        onChange={onChange}
+        ariaLabel={ariaLabel}
+        fullWidth
+        className="border-0 bg-muted/45 p-1 sm:w-auto"
+      />
+    </div>
+  );
 }
 
 export function SearchFilterBar({
@@ -50,43 +79,32 @@ export function SearchFilterBar({
   }));
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-card p-2 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)]">
-      <div className="relative min-w-[240px] flex-1">
+    <div className="space-y-2.5">
+      <div className="relative min-w-0">
         <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" stroke={1.5} />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("searchPlaceholder")}
-          className="h-9 bg-muted pl-9"
+          className="h-10 bg-muted pl-9"
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background p-1">
-          <Chip tone="subtle" className="uppercase tracking-wide">
-            {t("statusLabel")}
-          </Chip>
-          <SegmentedSwitch
-            options={statusOptions}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            ariaLabel={t("statusAria")}
-            className="border-0 bg-transparent p-0"
-          />
-        </div>
-
-        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background p-1">
-          <Chip tone="subtle" className="uppercase tracking-wide">
-            {t("modeLabel")}
-          </Chip>
-          <SegmentedSwitch
-            options={modeOptions}
-            value={modeFilter}
-            onChange={setModeFilter}
-            ariaLabel={t("modeAria")}
-            className="border-0 bg-transparent p-0"
-          />
-        </div>
+      <div className="grid gap-2 lg:grid-cols-2">
+        <FilterGroup
+          label={t("statusLabel")}
+          options={statusOptions}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          ariaLabel={t("statusAria")}
+        />
+        <FilterGroup
+          label={t("modeLabel")}
+          options={modeOptions}
+          value={modeFilter}
+          onChange={setModeFilter}
+          ariaLabel={t("modeAria")}
+        />
       </div>
     </div>
   );

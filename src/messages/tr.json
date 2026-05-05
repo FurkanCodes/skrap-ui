@@ -430,7 +430,8 @@
         "title": "Takipciler",
         "description": "Fiyat dususlerini takip edin ve Telegram bildirimi alin.",
         "refresh": "Yenile",
-        "newTracker": "Yeni Takipci"
+        "newTracker": "Yeni Takipci",
+        "backToDashboard": "Panele geri don"
       },
       "summary": {
         "checksLeft": "Bu donemde kalan kontrol",

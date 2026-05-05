@@ -71,7 +71,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="visitors-shell min-h-svh bg-background text-foreground">
-      <header className="fixed left-1/2 top-0 z-40 w-full max-w-3xl -translate-x-1/2">
+      <header className="fixed left-1/2 top-0 z-40 w-full max-w-5xl -translate-x-1/2">
         <div className="absolute inset-x-0 top-0 -bottom-4 bg-background/80 backdrop-blur-lg [mask:linear-gradient(to_top,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_50%)]" />
         <div className="relative flex w-full items-center justify-between px-5 py-4">
           <div className="flex min-w-0 items-center gap-3">
@@ -92,11 +92,11 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 
       <BottomDock pathname={pathname} />
 
-      <div className="mx-auto w-full max-w-3xl px-5 pb-32 pt-20">
+      <div className="mx-auto w-full max-w-5xl px-5 pb-32 pt-20">
         {pageHero ? <PageHero title={pageHero.title} description={pageHero.description} /> : null}
 
-        <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[14rem_minmax(0,1fr)]", pageHero ? "mt-20" : "")}>
-          <aside className="w-full md:w-56">
+        <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10", pageHero ? "mt-20" : "")}>
+          <aside className="w-full md:w-48">
             <nav
               className="flex w-full items-start gap-6 overflow-x-auto border-b border-[var(--bg-3)] md:sticky md:top-20 md:flex-col md:gap-2 md:border-b-0"
               aria-label={t("workspace")}

@@ -47,9 +47,9 @@ interface SummaryMetricProps {
 
 function SummaryMetric({ label, value, title }: SummaryMetricProps) {
   return (
-    <div className="min-w-[132px]" title={title}>
-      <dt className="text-[11px] font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-semibold text-foreground">{value}</dd>
+    <div className="min-w-0 space-y-1" title={title}>
+      <dt className="text-[11px] font-medium leading-none text-muted-foreground">{label}</dt>
+      <dd className="text-[15px] font-semibold leading-none text-foreground">{value}</dd>
     </div>
   );
 }
@@ -72,33 +72,45 @@ export function SummaryBar({
   const activeAlertsLabel = `${formatNumber(active, locale)} / ${formatNumber(alerts, locale)}`;
   const planLabel = t("planLabel", { plan: planKey.toUpperCase() });
   const hasLiveTracking = active > 0;
+  const creditProgress =
+    monthlyCredits > 0 ? Math.min(100, Math.max(0, (consumedCredits / monthlyCredits) * 100)) : 0;
 
   return (
-    <div className="rounded-xl border border-border/70 bg-card px-4 py-3 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)]">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-1">
-          <p className="text-[11px] font-semibold text-muted-foreground">{t("checksLeft")}</p>
-          <p className="flex items-end gap-1 text-[24px] font-semibold leading-none text-foreground">
-            {hasLiveTracking ? (
-              <LiveNumberTicker
-                value={remainingCredits}
-                live
-                locale={locale}
-                className="text-foreground"
-              />
-            ) : (
-              <span className="tabular-nums">{formatNumber(remainingCredits, locale)}</span>
-            )}
-            <span className="text-sm font-medium text-muted-foreground">
-              / {formatNumber(monthlyCredits, locale)}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("consumedSoFar", { value: formatNumber(consumedCredits, locale) })}
-          </p>
+    <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] sm:p-5">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.95fr)] lg:items-end">
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">{t("checksLeft")}</p>
+              <p className="flex items-end gap-1.5 text-[28px] font-semibold leading-none text-foreground">
+                {hasLiveTracking ? (
+                  <LiveNumberTicker
+                    value={remainingCredits}
+                    live
+                    locale={locale}
+                    className="text-foreground"
+                  />
+                ) : (
+                  <span className="tabular-nums">{formatNumber(remainingCredits, locale)}</span>
+                )}
+                <span className="pb-0.5 text-sm font-medium text-muted-foreground">
+                  / {formatNumber(monthlyCredits, locale)}
+                </span>
+              </p>
+            </div>
+            <p className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+              {t("consumedSoFar", { value: formatNumber(consumedCredits, locale) })}
+            </p>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-foreground transition-[width] duration-200 ease-out"
+              style={{ width: `${creditProgress}%` }}
+            />
+          </div>
         </div>
 
-        <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 md:grid-cols-3">
+        <dl className="grid gap-4 sm:grid-cols-3">
           <SummaryMetric
             label={t("activeAlerts")}
             value={activeAlertsLabel}
@@ -116,7 +128,7 @@ export function SummaryBar({
         </dl>
       </div>
 
-      <div className="mt-2 text-[11px] text-muted-foreground">
+      <div className="mt-4 flex flex-wrap gap-1 text-[11px] text-muted-foreground">
         <span>{planLabel}</span>
         {resetDateLabel ? <span>{t("resets", { date: resetDateLabel })}</span> : null}
       </div>

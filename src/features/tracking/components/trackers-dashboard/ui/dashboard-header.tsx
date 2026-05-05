@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2, IconPlus, IconRefresh } from "@tabler/icons-react";
+import { IconArrowLeft, IconLoader2, IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { TelegramConnectionStatusChip } from "@/features/tracking/components/trackers-dashboard/ui/telegram-connection-banner";
@@ -13,8 +13,10 @@ interface DashboardHeaderProps {
   canCreateTracker: boolean;
   createTrackerDisabledReason: string | null;
   telegramConnected: boolean | null;
+  isCreateTrackerView: boolean;
   onRefresh: () => void;
   onOpenModal: () => void;
+  onBackToDashboard: () => void;
 }
 
 export function DashboardHeader({
@@ -23,14 +25,28 @@ export function DashboardHeader({
   canCreateTracker,
   createTrackerDisabledReason,
   telegramConnected,
+  isCreateTrackerView,
   onRefresh,
   onOpenModal,
+  onBackToDashboard,
 }: DashboardHeaderProps) {
   const t = useTranslations("tracking.dashboard.header");
 
   return (
     <header className="space-y-2">
       <div className="flex flex-wrap items-center justify-end gap-2">
+        {isCreateTrackerView ? (
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            onClick={onBackToDashboard}
+            disabled={isMutating || isRefreshPending}
+            aria-label={t("backToDashboard")}
+          >
+            <IconArrowLeft className="size-4" stroke={1.5} />
+          </Button>
+        ) : null}
         <TelegramConnectionStatusChip telegramConnected={telegramConnected} />
         <Button type="button" size="sm" variant="outline" onClick={onRefresh} disabled={isMutating}>
           {isRefreshPending ? (
@@ -50,7 +66,7 @@ export function DashboardHeader({
                     size="sm"
                     className="px-4"
                     onClick={onOpenModal}
-                    disabled={!canCreateTracker}
+                    disabled={!canCreateTracker || isCreateTrackerView}
                   >
                     <IconPlus className="size-3.5" stroke={1.5} />
                     {t("newTracker")}
@@ -66,7 +82,7 @@ export function DashboardHeader({
             size="sm"
             className="px-4"
             onClick={onOpenModal}
-            disabled={!canCreateTracker}
+            disabled={!canCreateTracker || isCreateTrackerView}
           >
             <IconPlus className="size-3.5" stroke={1.5} />
             {t("newTracker")}

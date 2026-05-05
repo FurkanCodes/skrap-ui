@@ -430,7 +430,8 @@
         "title": "Trackers",
         "description": "Track price drops and receive Telegram alerts.",
         "refresh": "Refresh",
-        "newTracker": "New Tracker"
+        "newTracker": "New Tracker",
+        "backToDashboard": "Back to dashboard"
       },
       "summary": {
         "checksLeft": "Checks left this cycle",

@@ -6,15 +6,12 @@ import {
   IconAlertCircle,
   IconBell,
   IconChevronDown,
-  IconClock,
   IconLink,
   IconLoader2,
   IconPlus,
   IconRefresh,
-  IconSearch,
   IconShieldCheck,
   IconTrash,
-  IconTrendingDown,
   IconX,
 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
@@ -33,7 +30,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Radio } from "@/components/ui/radio";
 import { TrackingModePicker } from "@/features/tracking/components/trackers-dashboard/ui/tracking-mode-picker";
 import { cn } from "@/lib/utils";
 
@@ -170,7 +166,7 @@ export function CreateTrackerModal({
         className={cn(
           "w-full",
           modalStep === 1
-            ? "space-y-4"
+            ? "space-y-5"
             : "overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm"
         )}
       >
@@ -283,104 +279,72 @@ export function CreateTrackerModal({
                 </CardFooter>
               </Card>
 
-              <Card>
+              <Card size="sm" className="overflow-visible">
                 <CardHeader>
-                  <CardTitle>Tracking mode</CardTitle>
-                  <CardDescription>Choose when Dealvinci should notify you.</CardDescription>
+                  <CardTitle>Tracker defaults</CardTitle>
+                  <CardDescription>Apply once to this batch. Fine-tune individual items after preview.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3 pb-4">
-                  <button
-                    type="button"
-                    onClick={() => setSharedTrackingMode("alert")}
-                    className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/45"
-                  >
-                    <span className="flex items-center gap-3">
-                      <IconTrendingDown className="size-4 text-foreground" stroke={1.5} />
-                      <span>
-                        <span className="block text-sm font-medium text-foreground">Price Alert</span>
-                        <span className="block text-xs text-muted-foreground">Notify when target is reached.</span>
-                      </span>
-                    </span>
-                    <Radio checked={sharedTrackingMode === "alert"} readOnly aria-hidden="true" tabIndex={-1} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSharedTrackingMode("monitor")}
-                    className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted/45"
-                  >
-                    <span className="flex items-center gap-3">
-                      <IconSearch className="size-4 text-foreground" stroke={1.5} />
-                      <span>
-                        <span className="block text-sm font-medium text-foreground">Price Drop</span>
-                        <span className="block text-xs text-muted-foreground">Notify on each detected drop.</span>
-                      </span>
-                    </span>
-                    <Radio checked={sharedTrackingMode === "monitor"} readOnly aria-hidden="true" tabIndex={-1} />
-                  </button>
-                </CardContent>
-                <CardFooter className="justify-between">
-                  <p className="text-xs text-muted-foreground">Mode applies to new trackers.</p>
-                </CardFooter>
-              </Card>
+                <CardContent className="grid gap-4 pb-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(0,0.9fr)] lg:items-start">
+                  <div>
+                    <TrackingModePicker
+                      trackingMode={sharedTrackingMode}
+                      setTrackingMode={setSharedTrackingMode}
+                    />
+                  </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Check interval</CardTitle>
-                  <CardDescription>Set how often prices should be refreshed.</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-4">
-                  <AnimatedDropdown
-                    value={sharedInterval}
-                    onValueChange={setSharedInterval}
-                    options={intervalOptions}
-                    className="w-40"
-                    disabled={isPreviewPending}
-                  />
-                </CardContent>
-                <CardFooter className="justify-between">
-                  <p className="text-xs text-muted-foreground">Higher plans unlock faster checks.</p>
-                  <IconClock className="size-4 text-muted-foreground" stroke={1.5} />
-                </CardFooter>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notifications</CardTitle>
-                  <CardDescription>Control extra Telegram alerts.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2 pb-4">
-                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5">
-                    <span className="flex items-center gap-3">
-                      <IconBell className="size-4 text-foreground" stroke={1.5} />
-                      <span>
-                        <span className="block text-sm font-medium text-foreground">Price increases</span>
-                        <span className="block text-xs text-muted-foreground">Also notify when prices move up.</span>
-                      </span>
-                    </span>
-                    <Checkbox
-                      checked={sharedNotifyOnPriceIncrease}
-                      onCheckedChange={(checked) => setSharedNotifyOnPriceIncrease(Boolean(checked))}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground">Check every</Label>
+                    <AnimatedDropdown
+                      value={sharedInterval}
+                      onValueChange={setSharedInterval}
+                      options={intervalOptions}
+                      className="w-full"
                       disabled={isPreviewPending}
                     />
-                  </label>
-                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5">
-                    <span className="flex items-center gap-3">
-                      <IconShieldCheck className="size-4 text-foreground" stroke={1.5} />
-                      <span>
-                        <span className="block text-sm font-medium text-foreground">Stock changes</span>
-                        <span className="block text-xs text-muted-foreground">Notify restock and stock-out events.</span>
+                    <p className="text-[11px] leading-snug text-muted-foreground">
+                      Higher plans unlock faster checks.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground">Extra alerts</Label>
+                    <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
+                      <span className="flex items-center gap-3">
+                        <IconBell className="size-4 text-muted-foreground" stroke={1.5} />
+                        <span>
+                          <span className="block text-xs font-medium text-foreground">Price increases</span>
+                          <span className="block text-[11px] leading-snug text-muted-foreground">
+                            Notify upward moves.
+                          </span>
+                        </span>
                       </span>
-                    </span>
-                    <Checkbox
-                      checked={sharedNotifyOnStockChange}
-                      onCheckedChange={(checked) => setSharedNotifyOnStockChange(Boolean(checked))}
-                      disabled={isPreviewPending}
-                    />
-                  </label>
+                      <Checkbox
+                        checked={sharedNotifyOnPriceIncrease}
+                        onCheckedChange={(checked) => setSharedNotifyOnPriceIncrease(Boolean(checked))}
+                        disabled={isPreviewPending}
+                      />
+                    </label>
+                    <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
+                      <span className="flex items-center gap-3">
+                        <IconShieldCheck className="size-4 text-muted-foreground" stroke={1.5} />
+                        <span>
+                          <span className="block text-xs font-medium text-foreground">Stock changes</span>
+                          <span className="block text-[11px] leading-snug text-muted-foreground">
+                            Restock and stock-out.
+                          </span>
+                        </span>
+                      </span>
+                      <Checkbox
+                        checked={sharedNotifyOnStockChange}
+                        onCheckedChange={(checked) => setSharedNotifyOnStockChange(Boolean(checked))}
+                        disabled={isPreviewPending}
+                      />
+                    </label>
+                    <p className="text-[11px] leading-snug text-muted-foreground">
+                      Telegram required for delivery.
+                    </p>
+                  </div>
                 </CardContent>
-                <CardFooter className="justify-between">
-                  <p className="text-xs text-muted-foreground">Telegram required for delivery.</p>
-                </CardFooter>
               </Card>
             </div>
           ) : (

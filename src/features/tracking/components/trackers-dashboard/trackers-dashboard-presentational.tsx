@@ -38,6 +38,7 @@ export function TrackersDashboardAuthenticatedView({
   const t = useTranslations("tracking.dashboard");
   const locale = useLocale();
   const resetDateLabel = formatResetDate(controller.creditsResetAt, locale);
+  const isCreateTrackerView = controller.isModalOpen;
   const hasActiveFilters =
     controller.query.trim().length > 0 ||
     controller.statusFilter !== "all" ||
@@ -51,8 +52,10 @@ export function TrackersDashboardAuthenticatedView({
         isMutating={controller.isMutating}
         isRefreshPending={controller.isRefreshPending}
         telegramConnected={controller.telegramConnected}
+        isCreateTrackerView={isCreateTrackerView}
         onRefresh={controller.refresh}
         onOpenModal={controller.openModal}
+        onBackToDashboard={controller.closeModal}
       />
 
       <CreateTrackerModal
@@ -97,62 +100,66 @@ export function TrackersDashboardAuthenticatedView({
         saveTracker={controller.saveTracker}
       />
 
-      <TelegramConnectionBanner telegramConnected={controller.telegramConnected} />
+      {!isCreateTrackerView ? (
+        <>
+          <TelegramConnectionBanner telegramConnected={controller.telegramConnected} />
 
-      <SummaryBar
-        active={controller.summary.active}
-        alerts={controller.summary.alerts}
-        savedBreakdown={controller.summary.savedBreakdown}
-        consumedCredits={controller.summary.consumedCredits}
-        remainingCredits={controller.summary.remainingCredits}
-        monthlyCredits={controller.summary.monthlyCredits}
-        trackersUsed={controller.items.length}
-        maxTrackers={controller.maxTrackers}
-        planKey={controller.me?.entitlement.plan_key ?? "current"}
-        resetDateLabel={resetDateLabel}
-      />
+          <SummaryBar
+            active={controller.summary.active}
+            alerts={controller.summary.alerts}
+            savedBreakdown={controller.summary.savedBreakdown}
+            consumedCredits={controller.summary.consumedCredits}
+            remainingCredits={controller.summary.remainingCredits}
+            monthlyCredits={controller.summary.monthlyCredits}
+            trackersUsed={controller.items.length}
+            maxTrackers={controller.maxTrackers}
+            planKey={controller.me?.entitlement.plan_key ?? "current"}
+            resetDateLabel={resetDateLabel}
+          />
 
-      <SearchFilterBar
-        statusFilter={controller.statusFilter}
-        modeFilter={controller.modeFilter}
-        query={controller.query}
-        setModeFilter={controller.setModeFilter}
-        setQuery={controller.setQuery}
-        setStatusFilter={controller.setStatusFilter}
-      />
+          <SearchFilterBar
+            statusFilter={controller.statusFilter}
+            modeFilter={controller.modeFilter}
+            query={controller.query}
+            setModeFilter={controller.setModeFilter}
+            setQuery={controller.setQuery}
+            setStatusFilter={controller.setStatusFilter}
+          />
 
-      {controller.displayError ? (
-        <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-          {controller.displayError}
-        </p>
+          {controller.displayError ? (
+            <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+              {controller.displayError}
+            </p>
+          ) : null}
+
+          <TrackersList
+            filteredItems={controller.filteredItems}
+            isRefreshPending={controller.isRefreshPending}
+            deleteConfirmItemId={controller.deleteConfirmItemId}
+            dismissRowActionError={controller.dismissRowActionError}
+            exitingDeleteItemIds={controller.exitingDeleteItemIds}
+            pendingActionItemIds={controller.pendingActionItemIds}
+            pendingDeleteItemIds={controller.pendingDeleteItemIds}
+            pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
+            rowActionErrorByItemId={controller.rowActionErrorByItemId}
+            resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
+            cancelDeleteAction={controller.cancelDeleteAction}
+            confirmDeleteAction={controller.confirmDeleteAction}
+            openEditModal={controller.openEditModal}
+            runItemAction={controller.runItemAction}
+            requestDeleteAction={controller.requestDeleteAction}
+            hasAnyItems={controller.items.length > 0}
+            hasActiveFilters={hasActiveFilters}
+            canCreateTracker={controller.canCreateTracker}
+            createTrackerDisabledReason={controller.createTrackerDisabledReason}
+            onClearFilters={controller.clearFilters}
+            onOpenModal={controller.openModal}
+            highlightedTrackerId={controller.highlightedTrackerId}
+          />
+        </>
       ) : null}
 
-      <TrackersList
-        filteredItems={controller.filteredItems}
-        isRefreshPending={controller.isRefreshPending}
-        deleteConfirmItemId={controller.deleteConfirmItemId}
-        dismissRowActionError={controller.dismissRowActionError}
-        exitingDeleteItemIds={controller.exitingDeleteItemIds}
-        pendingActionItemIds={controller.pendingActionItemIds}
-        pendingDeleteItemIds={controller.pendingDeleteItemIds}
-        pauseFeedbackByItemId={controller.pauseFeedbackByItemId}
-        rowActionErrorByItemId={controller.rowActionErrorByItemId}
-        resumeFeedbackByItemId={controller.resumeFeedbackByItemId}
-        cancelDeleteAction={controller.cancelDeleteAction}
-        confirmDeleteAction={controller.confirmDeleteAction}
-        openEditModal={controller.openEditModal}
-        runItemAction={controller.runItemAction}
-        requestDeleteAction={controller.requestDeleteAction}
-        hasAnyItems={controller.items.length > 0}
-        hasActiveFilters={hasActiveFilters}
-        canCreateTracker={controller.canCreateTracker}
-        createTrackerDisabledReason={controller.createTrackerDisabledReason}
-        onClearFilters={controller.clearFilters}
-        onOpenModal={controller.openModal}
-        highlightedTrackerId={controller.highlightedTrackerId}
-      />
-
-      {controller.creditsExhausted ? (
+      {!isCreateTrackerView && controller.creditsExhausted ? (
         <p className="rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
           {t("creditsExhausted")}
         </p>
