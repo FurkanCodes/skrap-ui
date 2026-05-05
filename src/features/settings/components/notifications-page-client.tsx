@@ -14,21 +14,14 @@ import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TelegramLinkCard } from "@/features/telegram/components/telegram-link-card";
-import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
+import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { useWorkspaceData } from "@/features/workspace-data/workspace-data-provider";
 
-interface NotificationsPageClientProps {
-  isAuthenticated: boolean;
-  initialStatus: TelegramActiveStatusResponse | null;
-  initialError: string | null;
-}
-
-export function NotificationsPageClient({
-  isAuthenticated,
-  initialStatus,
-  initialError,
-}: NotificationsPageClientProps) {
+export function NotificationsPageClient() {
   const t = useTranslations("settings.notifications");
   const pageT = useTranslations("notificationsPage");
+  const { isAuthenticated } = useViewer();
+  const { telegramStatus } = useWorkspaceData();
   const [dailySummary, setDailySummary] = useState(true);
   const [muteWeekends, setMuteWeekends] = useState(false);
   const [minimumDrop, setMinimumDrop] = useState("1");
@@ -43,8 +36,8 @@ export function NotificationsPageClient({
     <div className="space-y-5">
       <TelegramLinkCard
         isAuthenticated={isAuthenticated}
-        initialStatus={initialStatus}
-        initialError={initialError}
+        initialStatus={telegramStatus.data}
+        initialError={telegramStatus.error}
       />
 
       <Card className="rounded-lg border-border bg-card">

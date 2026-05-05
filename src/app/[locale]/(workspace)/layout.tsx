@@ -1,7 +1,5 @@
 import WorkspaceShell from "@/app/[locale]/(workspace)/workspace-shell";
 
-export const dynamic = "force-dynamic";
-
 export default function WorkspaceLayout({
   children,
 }: Readonly<{

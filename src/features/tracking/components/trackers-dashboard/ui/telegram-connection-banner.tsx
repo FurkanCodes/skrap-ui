@@ -41,7 +41,6 @@ export function TelegramConnectionBanner({ telegramConnected }: TelegramConnecti
     return (
       <Link
         href="/settings"
-        prefetch={false}
         className="block rounded-lg border border-border bg-card px-4 py-3"
       >
         <div className="flex items-center justify-between gap-2">

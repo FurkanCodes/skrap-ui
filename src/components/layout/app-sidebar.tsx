@@ -95,7 +95,6 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/dashboard"
-              prefetch={false}
               className="grid size-8 shrink-0 place-items-center text-foreground transition-opacity duration-150 hover:opacity-80"
               aria-label={t("goToDashboard")}
             >
@@ -123,7 +122,6 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                   <Link
                     key={item.titleKey}
                     href={item.href}
-                    prefetch={false}
                     className={cn(
                       "flex shrink-0 items-center gap-2 border-b-2 py-2.5 text-sm font-medium transition-colors md:border-b-0 md:py-0",
                       isActive

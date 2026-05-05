@@ -46,8 +46,8 @@ import {
   resumeTrackedItemAction,
 } from "@/features/tracking/server/actions";
 import type { TrackedItemSummary } from "@/features/tracking/types";
-import { useRouter } from "@/i18n/navigation";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { useWorkspaceData } from "@/features/workspace-data/workspace-data-provider";
 
 interface UseTrackersDashboardControllerParams {
   initialItems: TrackedItemSummary[];
@@ -91,9 +91,11 @@ export function useTrackersDashboardController({
   telegramBotUsername,
   highlightedTrackerId,
 }: UseTrackersDashboardControllerParams) {
-  const router = useRouter();
   const t = useTranslations("tracking.dashboard.controller");
   const { me } = useViewer();
+  const { refreshers, patchers } = useWorkspaceData();
+  const { loadTrackedItems, loadTelegramStatus } = refreshers;
+  const { setTrackedItems, upsertTrackedItem, removeTrackedItem } = patchers;
 
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
   const [locallyDeletedItemIds, setLocallyDeletedItemIds] = useState<Set<string>>(
@@ -1041,9 +1043,12 @@ export function useTrackersDashboardController({
   const refresh = useCallback(() => {
     setPageError(null);
     startRefreshTransition(() => {
-      router.refresh();
+      void Promise.all([
+        loadTrackedItems({ force: true }),
+        loadTelegramStatus({ force: true }),
+      ]);
     });
-  }, [router, startRefreshTransition]);
+  }, [loadTelegramStatus, loadTrackedItems, startRefreshTransition]);
 
   const clearFilters = useCallback(() => {
     setQuery("");
@@ -1083,6 +1088,12 @@ export function useTrackersDashboardController({
               setItemsState((current) =>
                 mergePatchedItem(current, itemId, patchResult, "active")
               );
+              const patched = mergePatchedItem(items, itemId, patchResult, "active").find(
+                (item) => item.item_id === itemId
+              );
+              if (patched) {
+                upsertTrackedItem(patched);
+              }
               setResumeFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
@@ -1123,6 +1134,12 @@ export function useTrackersDashboardController({
               setItemsState((current) =>
                 mergePatchedItem(current, itemId, patchResult, "paused")
               );
+              const patched = mergePatchedItem(items, itemId, patchResult, "paused").find(
+                (item) => item.item_id === itemId
+              );
+              if (patched) {
+                upsertTrackedItem(patched);
+              }
               setPauseFeedbackState(itemId, "idle");
             }, ACTION_SUCCESS_DURATION_MS);
           } catch (error) {
@@ -1152,6 +1169,7 @@ export function useTrackersDashboardController({
           const exitTimer = setTimeout(() => {
             deleteExitTimersRef.current.delete(itemId);
             setItemsState((current) => applyItemAction(current, itemAction));
+            removeTrackedItem(itemId);
             setLocallyDeletedItemIds((current) => {
               const next = new Set(current);
               next.add(itemId);
@@ -1178,6 +1196,7 @@ export function useTrackersDashboardController({
       pendingActionItemIds,
       schedulePauseFeedback,
       scheduleResumeFeedback,
+      removeTrackedItem,
       setDeletePending,
       setDeleteExiting,
       setItemActionPending,
@@ -1187,6 +1206,8 @@ export function useTrackersDashboardController({
       setTimedRowActionError,
       startActionTransition,
       t,
+      items,
+      upsertTrackedItem,
     ]
   );
 
@@ -1294,6 +1315,15 @@ export function useTrackersDashboardController({
             latest?.status ?? currentItem.status
           );
         });
+        const patched = mergePatchedItem(
+          items,
+          itemId,
+          patchResult,
+          currentItem.status
+        ).find((item) => item.item_id === itemId);
+        if (patched) {
+          upsertTrackedItem(patched);
+        }
         closeEditModal();
       } catch (error) {
         setEditModalError(mapError(error, t("requestFailed")));
@@ -1315,6 +1345,7 @@ export function useTrackersDashboardController({
     minInterval,
     setItemActionPending,
     t,
+    upsertTrackedItem,
   ]);
 
   const saveTracker = useCallback(() => {
@@ -1404,6 +1435,9 @@ export function useTrackersDashboardController({
             const merged = current.filter((item) => !incomingById.has(item.item_id));
             return [...successItems, ...merged];
           });
+          const incomingById = new Map(successItems.map((item) => [item.item_id, item]));
+          const merged = items.filter((item) => !incomingById.has(item.item_id));
+          setTrackedItems([...successItems, ...merged]);
         }
 
         const updatedRemainingSlots = Math.max(0, remainingSlots - successItems.length);
@@ -1441,7 +1475,7 @@ export function useTrackersDashboardController({
         setIsSavePending(false);
       }
     })();
-  }, [canSaveDrafts, closeModal, remainingSlots, selectedReadyDrafts, t]);
+  }, [canSaveDrafts, closeModal, remainingSlots, selectedReadyDrafts, t, setTrackedItems, items]);
 
   return {
     botUsername,

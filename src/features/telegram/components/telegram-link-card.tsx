@@ -23,6 +23,7 @@ import {
 } from "@/features/telegram/server/actions";
 import type { TelegramActiveStatusResponse } from "@/features/telegram/types";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { useOptionalWorkspaceData } from "@/features/workspace-data/workspace-data-provider";
 import { Link } from "@/i18n/navigation";
 
 interface TelegramLinkCardProps {
@@ -90,6 +91,9 @@ export function TelegramLinkCard({
   const t = useTranslations("telegram");
   const locale = useLocale();
   const { me } = useViewer();
+  const workspaceData = useOptionalWorkspaceData();
+  const setTelegramStatus = workspaceData?.patchers.setTelegramStatus;
+  const loadTelegramStatus = workspaceData?.refreshers.loadTelegramStatus;
   const [status, setStatus] = useState<TelegramActiveStatusResponse | null>(initialStatus);
   const [baseError, setBaseError] = useState<string | null>(initialError);
   const [pendingSession, setPendingSession] = useState<PendingConnectSession | null>(null);
@@ -157,11 +161,13 @@ export function TelegramLinkCard({
       try {
         const latest = await refreshTelegramStatusAction();
         setStatus(latest);
+        setTelegramStatus?.(latest);
         if (latest.connected) {
           setPendingSession(null);
         }
       } catch (error) {
         setActionError(mapError(error, t("errors.fallback")));
+        void loadTelegramStatus?.({ force: true });
       } finally {
         setPendingAction(null);
       }
@@ -225,11 +231,16 @@ export function TelegramLinkCard({
         }
 
         if (response.status === "connected") {
-          setStatus((current) => ({
+          const nextStatus: TelegramActiveStatusResponse = {
             connected: true,
             active_chat_id: response.telegram_chat_id,
-            bot_username: pendingSession.botUsername || current?.bot_username || "",
+            bot_username: pendingSession.botUsername || status?.bot_username || "",
+          };
+          setStatus((current) => ({
+            ...nextStatus,
+            bot_username: pendingSession.botUsername || current?.bot_username || nextStatus.bot_username,
           }));
+          setTelegramStatus?.(nextStatus);
           setPendingSession(null);
           setActionError(null);
           setBaseError(null);
@@ -265,7 +276,7 @@ export function TelegramLinkCard({
         window.clearTimeout(timeoutId);
       }
     };
-  }, [pendingSession, t]);
+  }, [loadTelegramStatus, pendingSession, setTelegramStatus, status?.bot_username, t]);
 
   if (!isAuthenticated) {
     return (

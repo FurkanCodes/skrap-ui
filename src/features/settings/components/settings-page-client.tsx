@@ -16,19 +16,12 @@ import { useTheme } from "@/components/theme/theme-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ManageBillingButton } from "@/features/billing/components/manage-billing-button";
 import { Radio } from "@/components/ui/radio";
-import type { BillingCurrentResponse, BillingPlanKey } from "@/features/billing/types";
-import type { SiteInfoResponse } from "@/features/scraper/types";
+import type { BillingPlanKey } from "@/features/billing/types";
 import { resolveEffectiveMinIntervalMinutes } from "@/features/tracking/interval-policy";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
+import { useWorkspaceData } from "@/features/workspace-data/workspace-data-provider";
 import { isAppLocale, localizePathname } from "@/i18n/paths";
 import { cn } from "@/lib/utils";
-
-interface SettingsPageClientProps {
-  trackedCount: number;
-  supportedSites: SiteInfoResponse[];
-  supportedSitesError: string | null;
-  initialBilling: BillingCurrentResponse | null;
-}
 
 const PAID_ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
 
@@ -71,16 +64,13 @@ function formatSiteKey(siteKey: string): string {
     .join(" ");
 }
 
-export function SettingsPageClient({
-  trackedCount,
-  supportedSites,
-  supportedSitesError,
-  initialBilling,
-}: SettingsPageClientProps) {
+export function SettingsPageClient() {
   const t = useTranslations("settings");
   const router = useRouter();
   const locale = useLocale();
   const { me } = useViewer();
+  const { trackedItems, supportedSites, billingCurrent, refreshers } = useWorkspaceData();
+  const { loadSupportedSites } = refreshers;
   const { theme, resolvedTheme, setTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
@@ -92,6 +82,13 @@ export function SettingsPageClient({
     const timeoutId = window.setTimeout(() => setMounted(true), 0);
     return () => window.clearTimeout(timeoutId);
   }, []);
+
+  useEffect(() => {
+    if (!adaptersOpen) {
+      return;
+    }
+    void loadSupportedSites();
+  }, [adaptersOpen, loadSupportedSites]);
 
   const maxTrackers = Number(me?.entitlement.max_active_trackers) || 10;
   const minInterval = resolveEffectiveMinIntervalMinutes({
@@ -110,7 +107,7 @@ export function SettingsPageClient({
   const cycleResetLabel = formatPeriodEnd(me?.usage?.period_end ?? null, locale);
   const planKey = me?.entitlement.plan_key ?? "free";
   const hasPaidEntitlement = planKey !== "free";
-  const billingSubscription = initialBilling?.subscription ?? null;
+  const billingSubscription = billingCurrent.data?.subscription ?? null;
   const hasPaddleSubscription = Boolean(
     billingSubscription?.provider === "paddle" &&
       billingSubscription.provider_customer_id &&
@@ -118,6 +115,7 @@ export function SettingsPageClient({
       PAID_ACCESS_STATUSES.has(billingSubscription.status)
   );
   const needsBillingSync = hasPaidEntitlement && !hasPaddleSubscription;
+  const trackedCount = trackedItems.data?.length ?? 0;
 
   const trackerUsagePercent = useMemo(() => {
     if (maxTrackers <= 0) {
@@ -260,9 +258,9 @@ export function SettingsPageClient({
           <span>
             <span className="block text-sm font-semibold text-foreground">{t("adapters.title")}</span>
             <span className="mt-1 block text-xs text-muted-foreground">
-              {supportedSitesError
-                ? supportedSitesError
-                : t("adapters.summary", { count: supportedSites.length })}
+              {supportedSites.error
+                ? supportedSites.error
+                : t("adapters.summary", { count: supportedSites.data?.length ?? 0 })}
             </span>
           </span>
           <IconChevronDown
@@ -281,21 +279,21 @@ export function SettingsPageClient({
               className="overflow-hidden"
             >
               <CardContent className="space-y-3 border-t border-border/70 pt-3">
-                {supportedSitesError ? (
+                {supportedSites.error ? (
                   <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                    {supportedSitesError}
+                    {supportedSites.error}
                   </p>
                 ) : null}
 
-                {!supportedSitesError && supportedSites.length === 0 ? (
+                {!supportedSites.error && (supportedSites.data?.length ?? 0) === 0 ? (
                   <p className="rounded-md border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
                     {t("adapters.empty")}
                   </p>
                 ) : null}
 
-                {!supportedSitesError && supportedSites.length > 0 ? (
+                {!supportedSites.error && (supportedSites.data?.length ?? 0) > 0 ? (
                   <ul className="grid gap-2 sm:grid-cols-2">
-                    {supportedSites.map((site, index) => (
+                    {(supportedSites.data ?? []).map((site, index) => (
                       <motion.li
                         key={site.key}
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
