@@ -96,9 +96,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      <BottomDock pathname={pathname} />
-
-      <div className="mx-auto w-full max-w-5xl px-5 pb-32 pt-20">
+      <div className="mx-auto w-full max-w-5xl px-5 pb-20 pt-20">
         {pageHero ? <PageHero title={pageHero.title} description={pageHero.description} /> : null}
 
         <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10", pageHero ? "mt-20" : "")}>
@@ -129,7 +127,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             </nav>
           </aside>
 
-        <main className="min-w-0 px-0">{children}</main>
+          <main className="min-w-0 px-0">{children}</main>
         </div>
       </div>
     </div>
@@ -141,52 +139,6 @@ function PageHero({ title, description }: { title: string; description: string }
     <div className="flex flex-col items-center gap-1 text-center">
       <h1 className="text-2xl font-medium tracking-tight text-foreground">{title}</h1>
       <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
-function BottomDock({ pathname }: { pathname: string }) {
-  const dockItems = [
-    {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: IconWorld,
-      value: "0",
-    },
-    {
-      href: "/settings",
-      label: "Settings",
-      icon: IconSettings,
-    },
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-1/2 z-50 max-w-full -translate-x-1/2 px-5 pb-4">
-      <nav className="flex h-[42px] items-center justify-center gap-1 rounded-[20px] bg-foreground px-1 py-1 text-background shadow-md">
-        {dockItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch={false}
-              aria-label={item.label}
-              className={cn(
-                "relative flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-full px-2 text-sm font-medium transition-colors",
-                isActive ? "text-background" : "text-background/62 hover:text-background"
-              )}
-            >
-              {isActive ? (
-                <span className="absolute inset-0 rounded-full bg-background/18" aria-hidden="true" />
-              ) : null}
-              <span className="relative z-10 flex items-center gap-1">
-                <item.icon className="size-5" stroke={1.5} />
-                {item.value ? <span>{item.value}</span> : null}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
     </div>
   );
 }
