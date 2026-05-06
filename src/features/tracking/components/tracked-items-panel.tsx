@@ -1,9 +1,8 @@
-import { getTranslations } from "next-intl/server";
-
 import { listTrackedItemsQuery } from "@/features/tracking/server/queries";
 import { TrackedItemsPanelClient } from "@/features/tracking/components/tracked-items-panel-client";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { getAuthContext } from "@/lib/auth-dal";
+import { getMessages } from "@/lib/messages";
 
 function mapError(error: unknown, fallback: string): string {
   if (typeof error === "string" && error.trim()) {
@@ -19,7 +18,7 @@ function mapError(error: unknown, fallback: string): string {
 }
 
 export async function TrackedItemsPanel() {
-  const t = await getTranslations("tracking.errors");
+  const t = getMessages("tracking.errors");
   const auth = await getAuthContext();
   if (!auth) {
     return (

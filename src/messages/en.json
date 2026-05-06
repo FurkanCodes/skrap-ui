@@ -34,8 +34,7 @@
     },
     "language": {
       "options": {
-        "en": "English",
-        "tr": "Turkish"
+        "en": "English"
       }
     },
     "auth": {

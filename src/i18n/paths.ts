@@ -1,7 +1,7 @@
 import { routing, type AppLocale } from "@/i18n/routing";
 
 export function isAppLocale(value: string | null | undefined): value is AppLocale {
-  return routing.locales.includes(value as AppLocale);
+  return value === routing.defaultLocale;
 }
 
 export function splitLocalePathname(pathname: string): {
@@ -12,10 +12,10 @@ export function splitLocalePathname(pathname: string): {
   const segments = pathname.split("/");
   const firstSegment = segments[1];
 
-  if (isAppLocale(firstSegment)) {
+  if (firstSegment === "en" || firstSegment === "tr") {
     const withoutLocale = `/${segments.slice(2).join("/")}`.replace(/\/+$/, "");
     return {
-      locale: firstSegment,
+      locale: routing.defaultLocale,
       pathname: withoutLocale === "" ? "/" : withoutLocale,
       hasLocalePrefix: true,
     };
@@ -28,15 +28,7 @@ export function splitLocalePathname(pathname: string): {
   };
 }
 
-export function localizePathname(pathname: string, locale: AppLocale): string {
-  const normalized = pathname.startsWith("/") ? pathname : `/${pathname}`;
-  if (locale === routing.defaultLocale) {
-    return normalized;
-  }
-
-  if (normalized === "/") {
-    return `/${locale}`;
-  }
-
-  return `/${locale}${normalized}`;
+export function localizePathname(pathname: string, locale?: string | null): string {
+  void locale;
+  return pathname.startsWith("/") ? pathname : `/${pathname}`;
 }

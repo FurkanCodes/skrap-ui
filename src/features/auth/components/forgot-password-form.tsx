@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { IconLoader2, IconMail } from "@tabler/icons-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 
 import Logo from "@/assets/marketing/logo";
@@ -28,7 +28,6 @@ function mapApiError(error: unknown, fallback: string): string {
 export function ForgotPasswordForm() {
   const t = useTranslations("auth.forgotPassword");
   const fieldT = useTranslations("auth.validation");
-  const locale = useLocale();
   const schema = z.object({
     email: z
       .string()
@@ -63,7 +62,7 @@ export function ForgotPasswordForm() {
     }
 
     const normalizedEmail = parsedEmail.data.email;
-    const redirectPath = localizePathname("/auth/reset-password", locale === "tr" ? "tr" : "en");
+    const redirectPath = localizePathname("/auth/reset-password", "en");
     const redirectTo = `${window.location.origin}${redirectPath}`;
 
     try {

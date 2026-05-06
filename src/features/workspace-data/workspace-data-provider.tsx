@@ -81,7 +81,7 @@ interface WorkspaceDataContextValue {
 
 interface WorkspaceDataProviderProps {
   children: React.ReactNode;
-  initialUserKey: string;
+  initialUserKey: string | null;
 }
 
 const WORKSPACE_CACHE_STORAGE_KEY = "skrap.workspace-cache.v1";
@@ -300,7 +300,8 @@ export function WorkspaceDataProvider({
   children,
   initialUserKey,
 }: WorkspaceDataProviderProps) {
-  const userKey = normalizeUserKey(initialUserKey);
+  const userKey = normalizeUserKey(initialUserKey ?? "");
+  const userKeyRef = useRef(userKey);
   const inFlightRef = useRef<
     Partial<Record<WorkspaceDomainKey, Promise<unknown>>>
   >({});
@@ -310,6 +311,20 @@ export function WorkspaceDataProvider({
     }
     return toWorkspaceState(readPersistedState(userKey));
   });
+
+  useEffect(() => {
+    if (userKeyRef.current === userKey) {
+      return;
+    }
+
+    userKeyRef.current = userKey;
+    inFlightRef.current = {};
+    setState(
+      userKey
+        ? toWorkspaceState(readPersistedState(userKey))
+        : createEmptyWorkspaceState()
+    );
+  }, [userKey]);
 
   const updateDomainState = useCallback(
     <K extends WorkspaceDomainKey>(

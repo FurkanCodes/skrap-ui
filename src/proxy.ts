@@ -1,9 +1,7 @@
 import { getCookieCache, getSessionCookie } from "better-auth/cookies";
-import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
-import { localizePathname, splitLocalePathname } from "@/i18n/paths";
-import { routing } from "@/i18n/routing";
+import { splitLocalePathname } from "@/i18n/paths";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -21,7 +19,6 @@ const PUBLIC_ROUTES = [
 
 const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
 const SESSION_COOKIE_CACHE_VERSION = "skrap-auth-v1";
-const handleI18nRouting = createMiddleware(routing);
 
 function isExtensionConnectRoute(pathname: string): boolean {
   return pathname === "/extension/connect" || pathname === "/extension/connect/";
@@ -35,18 +32,21 @@ function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
-function buildRedirectToSignIn(request: NextRequest, locale: (typeof routing.locales)[number], normalizedPathname: string): NextResponse {
-  const url = new URL(localizePathname("/auth/sign-in", locale), request.url);
-  const next = `${localizePathname(normalizedPathname, locale)}${request.nextUrl.search}`;
+function buildRedirectToSignIn(request: NextRequest, normalizedPathname: string): NextResponse {
+  const url = new URL("/auth/sign-in", request.url);
+  const next = `${normalizedPathname}${request.nextUrl.search}`;
   url.searchParams.set("next", next);
   return NextResponse.redirect(url);
 }
 
-function buildRedirectToDashboard(
-  request: NextRequest,
-  locale: (typeof routing.locales)[number]
-): NextResponse {
-  return NextResponse.redirect(new URL(localizePathname("/dashboard", locale), request.url));
+function buildRedirectToDashboard(request: NextRequest): NextResponse {
+  return NextResponse.redirect(new URL("/dashboard", request.url));
+}
+
+function buildRedirectWithoutLocale(request: NextRequest, normalizedPathname: string): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = normalizedPathname;
+  return NextResponse.redirect(url);
 }
 
 async function hasValidSessionCache(request: NextRequest): Promise<boolean> {
@@ -81,27 +81,26 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const i18nResponse = handleI18nRouting(request);
-  if (i18nResponse.status >= 300 && i18nResponse.status < 400) {
-    return i18nResponse;
+  const { pathname: normalizedPathname, hasLocalePrefix } = splitLocalePathname(request.nextUrl.pathname);
+  if (hasLocalePrefix) {
+    return buildRedirectWithoutLocale(request, normalizedPathname);
   }
 
-  const { locale, pathname: normalizedPathname } = splitLocalePathname(request.nextUrl.pathname);
   const hasSessionCookie = Boolean(getSessionCookie(request));
   const onPublicRoute = isPublicRoute(normalizedPathname);
 
   if (!hasSessionCookie && !onPublicRoute) {
-    return buildRedirectToSignIn(request, locale, normalizedPathname);
+    return buildRedirectToSignIn(request, normalizedPathname);
   }
 
   if (hasSessionCookie && isAuthRoute(normalizedPathname)) {
     const hasValidSession = await hasValidSessionCache(request);
     if (hasValidSession) {
-      return buildRedirectToDashboard(request, locale);
+      return buildRedirectToDashboard(request);
     }
   }
 
-  return i18nResponse;
+  return NextResponse.next();
 }
 
 export const config = {

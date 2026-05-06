@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 
@@ -28,10 +29,12 @@ interface ViewerProviderProps {
   initialMe: MeResponse | null;
   initialUserKey: string | null;
   initialSessionUser: ViewerSessionUser | null;
+  initialAuthState?: "authenticated" | "anonymous";
 }
 
 interface ViewerContextValue {
   me: MeResponse | null;
+  userKey: string | null;
   fetchedAt: number | null;
   expiresAt: number | null;
   isFresh: boolean;
@@ -39,12 +42,17 @@ interface ViewerContextValue {
   sessionPending: boolean;
   sessionUser: ViewerSessionUser | null;
   clearViewerCache: () => void;
-  refreshViewer: (options?: { expectedPlanKey?: string }) => Promise<MeResponse | null>;
+  refreshViewer: (options?: {
+    expectedPlanKey?: string;
+    refreshRoute?: boolean;
+  }) => Promise<MeResponse | null>;
 }
 
 const ViewerContext = createContext<ViewerContextValue | null>(null);
 const USAGE_STREAM_PATH = "/api/tracking/me/usage/stream";
 const ROUTER_REFRESH_THROTTLE_MS = 5_000;
+const VIEWER_REFRESH_RETRY_COUNT = 8;
+const VIEWER_REFRESH_RETRY_DELAY_MS = 1_000;
 
 function isUsagePayload(value: unknown): value is MeResponse["usage"] {
   if (!value || typeof value !== "object") {
@@ -77,18 +85,26 @@ export function ViewerProvider({
   initialMe,
   initialUserKey,
   initialSessionUser,
+  initialAuthState,
 }: ViewerProviderProps) {
   const router = useRouter();
+  const [authState, setAuthState] = useState<"authenticated" | "anonymous">(
+    initialAuthState ?? (initialUserKey ? "authenticated" : "anonymous")
+  );
   const eventSourceRef = useRef<EventSource | null>(null);
   const wasHiddenRef = useRef(false);
   const hasMountedRef = useRef(false);
   const refreshScheduledRef = useRef(false);
   const lastRefreshAtRef = useRef(0);
+  const viewerRefreshInFlightRef = useRef<Promise<MeResponse | null> | null>(null);
   const viewerRecord = useSyncExternalStore(
     subscribeViewerCache,
     readViewerCache,
     () => null
   );
+  const cachedUserKey = viewerRecord?.userKey ?? null;
+  const resolvedUserKey = cachedUserKey ?? initialUserKey ?? initialSessionUser?.id ?? null;
+  const isAuthenticated = authState === "authenticated" || Boolean(resolvedUserKey);
 
   useEffect(() => {
     hasMountedRef.current = true;
@@ -180,34 +196,34 @@ export function ViewerProvider({
 
   const applyUsageUpdate = useCallback(
     (usage: MeResponse["usage"]) => {
-      if (!initialUserKey) {
+      if (!resolvedUserKey) {
         return;
       }
 
       const snapshot = getViewerCacheSnapshot();
       if (
         snapshot &&
-        snapshot.userKey === initialUserKey &&
+        snapshot.userKey === resolvedUserKey &&
         snapshot.data.usage.updated_at >= usage.updated_at
       ) {
         return;
       }
 
-      if (!mergeViewerUsageCache(usage, initialUserKey) && initialMe) {
+      if (!mergeViewerUsageCache(usage, resolvedUserKey) && initialMe) {
         writeViewerCache(
           {
             ...initialMe,
             usage,
           },
-          initialUserKey
+          resolvedUserKey
         );
       }
     },
-    [initialMe, initialUserKey]
+    [initialMe, resolvedUserKey]
   );
 
   const connectUsageStream = useCallback(() => {
-    if (!initialUserKey || eventSourceRef.current) {
+    if (!resolvedUserKey || eventSourceRef.current) {
       return;
     }
     if (typeof window === "undefined") {
@@ -242,18 +258,23 @@ export function ViewerProvider({
     stream.onerror = () => {
       // Let EventSource retry; avoid full-route refresh loops on transient failures.
     };
-  }, [applyUsageUpdate, initialUserKey]);
+  }, [applyUsageUpdate, resolvedUserKey]);
 
   useEffect(() => {
-    if (!initialUserKey) {
+    if (!isAuthenticated) {
       closeUsageStream();
       clearViewerCacheStore();
       wasHiddenRef.current = false;
       return;
     }
 
+    if (!resolvedUserKey) {
+      closeUsageStream();
+      return;
+    }
+
     const snapshot = getViewerCacheSnapshot();
-    if (snapshot && snapshot.userKey !== initialUserKey) {
+    if (snapshot && snapshot.userKey !== resolvedUserKey) {
       clearViewerCacheStore();
     }
 
@@ -262,10 +283,10 @@ export function ViewerProvider({
     return () => {
       closeUsageStream();
     };
-  }, [closeUsageStream, connectUsageStream, initialUserKey]);
+  }, [closeUsageStream, connectUsageStream, isAuthenticated, resolvedUserKey]);
 
   useEffect(() => {
-    if (!initialUserKey) {
+    if (!isAuthenticated) {
       return;
     }
 
@@ -281,7 +302,7 @@ export function ViewerProvider({
         wasHiddenRef.current = false;
         const snapshot = readViewerCache();
         const shouldRefresh =
-          !snapshot || snapshot.userKey !== initialUserKey;
+          !snapshot || (resolvedUserKey ? snapshot.userKey !== resolvedUserKey : false);
         if (shouldRefresh) {
           clearViewerCacheStore();
           refreshRouterSafely();
@@ -297,7 +318,8 @@ export function ViewerProvider({
   }, [
     closeUsageStream,
     connectUsageStream,
-    initialUserKey,
+    isAuthenticated,
+    resolvedUserKey,
     refreshRouterSafely,
   ]);
 
@@ -305,43 +327,96 @@ export function ViewerProvider({
     clearViewerCacheStore();
   }, []);
 
-  const refreshViewer = useCallback(async (options?: { expectedPlanKey?: string }) => {
-    clearViewerCacheStore();
-    if (initialUserKey) {
-      for (let attempt = 0; attempt < 8; attempt += 1) {
-        if (attempt > 0) {
-          await wait(1000);
-        }
-
-        try {
-          const response = await fetch("/api/tracking/me", {
-            method: "GET",
-            credentials: "include",
-            cache: "no-store",
-          });
-          if (!response.ok) {
-            continue;
-          }
-
-          const payload = (await response.json()) as MeResponse;
-          if (
-            options?.expectedPlanKey &&
-            payload.entitlement.plan_key !== options.expectedPlanKey
-          ) {
-            continue;
-          }
-
-          writeViewerCache(payload, initialUserKey);
-          refreshRouterSafely({ force: true });
-          return payload;
-        } catch {
-          // Retry briefly, then fall back to route refresh below.
-        }
-      }
+  const redirectToExpiredSession = useCallback(() => {
+    if (typeof window === "undefined") {
+      router.replace("/auth/sign-in?expired=1&next=/dashboard");
+      return;
     }
-    refreshRouterSafely({ force: true });
-    return null;
-  }, [initialUserKey, refreshRouterSafely]);
+
+    const next = `${window.location.pathname}${window.location.search}`;
+    router.replace(`/auth/sign-in?expired=1&next=${encodeURIComponent(next)}`);
+  }, [router]);
+
+  const refreshViewer = useCallback(
+    async (options?: { expectedPlanKey?: string; refreshRoute?: boolean }) => {
+      clearViewerCacheStore();
+
+      if (viewerRefreshInFlightRef.current) {
+        return viewerRefreshInFlightRef.current;
+      }
+
+      const request = (async () => {
+        for (let attempt = 0; attempt < VIEWER_REFRESH_RETRY_COUNT; attempt += 1) {
+          if (attempt > 0) {
+            await wait(VIEWER_REFRESH_RETRY_DELAY_MS);
+          }
+
+          try {
+            const response = await fetch("/api/tracking/me", {
+              method: "GET",
+              credentials: "include",
+              cache: "no-store",
+            });
+
+            if (response.status === 401) {
+              setAuthState("anonymous");
+              clearViewerCacheStore();
+              redirectToExpiredSession();
+              return null;
+            }
+
+            if (!response.ok) {
+              continue;
+            }
+
+            const payload = (await response.json()) as MeResponse;
+            if (
+              options?.expectedPlanKey &&
+              payload.entitlement.plan_key !== options.expectedPlanKey
+            ) {
+              continue;
+            }
+
+            const nextUserKey = payload.user.user_id || resolvedUserKey;
+            if (nextUserKey) {
+              writeViewerCache(payload, nextUserKey);
+            }
+            setAuthState("authenticated");
+            if (options?.refreshRoute ?? true) {
+              refreshRouterSafely({ force: true });
+            }
+            return payload;
+          } catch {
+            // Retry briefly, then fall back to route refresh below.
+          }
+        }
+
+        if (options?.refreshRoute ?? true) {
+          refreshRouterSafely({ force: true });
+        }
+        return null;
+      })().finally(() => {
+        viewerRefreshInFlightRef.current = null;
+      });
+
+      viewerRefreshInFlightRef.current = request;
+      return request;
+    },
+    [redirectToExpiredSession, refreshRouterSafely, resolvedUserKey]
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const snapshot = readViewerCache();
+    if (snapshot) {
+      return;
+    }
+
+    void refreshViewer({ refreshRoute: false });
+  }, [isAuthenticated, refreshViewer]);
 
   const fallbackMe = useMemo(() => {
     if (!initialMe || !initialUserKey) {
@@ -356,10 +431,11 @@ export function ViewerProvider({
 
     return {
       me,
+      userKey: isFreshRecord ? viewerRecord?.userKey ?? resolvedUserKey : resolvedUserKey,
       fetchedAt: isFreshRecord ? viewerRecord?.fetchedAt ?? null : null,
       expiresAt: isFreshRecord ? viewerRecord?.expiresAt ?? null : null,
       isFresh: isFreshRecord || Boolean(fallbackMe),
-      isAuthenticated: Boolean(initialUserKey),
+      isAuthenticated,
       sessionPending: false,
       sessionUser: initialSessionUser,
       clearViewerCache,
@@ -368,8 +444,9 @@ export function ViewerProvider({
   }, [
     clearViewerCache,
     fallbackMe,
-    initialUserKey,
+    isAuthenticated,
     initialSessionUser,
+    resolvedUserKey,
     refreshViewer,
     viewerRecord,
   ]);

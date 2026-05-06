@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties } from "react";
+import { type CSSProperties, useEffect } from "react";
 import {
   IconBell,
   IconCirclePlus,
@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +58,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
   const extensionsT = useTranslations("extensions");
   const settingsT = useTranslations("settings");
   const notificationsT = useTranslations("notificationsPage");
+  const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useViewer();
   const pageHero =
@@ -87,6 +88,12 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             }
         : null;
 
+  useEffect(() => {
+    for (const item of navItems) {
+      router.prefetch(item.href);
+    }
+  }, [router]);
+
   return (
     <div className="visitors-shell min-h-svh bg-background text-foreground">
       <header className="fixed left-1/2 top-0 z-40 w-full max-w-5xl -translate-x-1/2">
@@ -95,6 +102,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/dashboard"
+              prefetch={true}
               className="grid size-8 shrink-0 place-items-center text-foreground transition-opacity duration-150 hover:opacity-80"
               aria-label={t("goToDashboard")}
             >
@@ -122,6 +130,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                   <Link
                     key={item.titleKey}
                     href={item.href}
+                    prefetch={true}
                     className={cn(
                       "flex shrink-0 items-center gap-2 border-b-2 py-2.5 text-sm font-medium transition-colors md:border-b-0 md:py-0",
                       isActive
