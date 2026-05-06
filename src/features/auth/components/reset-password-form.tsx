@@ -1,9 +1,9 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { IconLoader2, IconLock } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 import { z } from "zod";
 
 import Logo from "@/assets/marketing/logo";
@@ -31,8 +31,8 @@ function mapApiError(error: unknown, fallback: string): string {
 }
 
 export function ResetPasswordForm() {
-  const t = useTranslations("auth.resetPassword");
-  const fieldT = useTranslations("auth.validation");
+  const t = getMessages("auth.resetPassword");
+  const fieldT = getMessages("auth.validation");
   const params = useSearchParams();
   const resetPasswordSchema = useMemo(
     () =>

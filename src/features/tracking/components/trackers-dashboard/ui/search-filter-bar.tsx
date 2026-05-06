@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { IconSearch } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { MODE_FILTERS, STATUS_FILTERS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
@@ -58,7 +58,7 @@ export function SearchFilterBar({
   modeFilter,
   setModeFilter,
 }: SearchFilterBarProps) {
-  const t = useTranslations("tracking.dashboard.filters");
+  const t = getMessages("tracking.dashboard.filters");
   const statusOptions = STATUS_FILTERS.map((option) => ({
     value: option.key,
     label:

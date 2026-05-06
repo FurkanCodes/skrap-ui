@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useState } from "react";
 import {
   IconBell,
@@ -8,7 +9,6 @@ import {
   IconClock,
   IconVolumeOff,
 } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +18,8 @@ import { useViewer } from "@/features/tracking/viewer/viewer-provider";
 import { useWorkspaceData } from "@/features/workspace-data/workspace-data-provider";
 
 export function NotificationsPageClient() {
-  const t = useTranslations("settings.notifications");
-  const pageT = useTranslations("notificationsPage");
+  const t = getMessages("settings.notifications");
+  const pageT = getMessages("notificationsPage");
   const { isAuthenticated } = useViewer();
   const { telegramStatus } = useWorkspaceData();
   const [dailySummary, setDailySummary] = useState(true);

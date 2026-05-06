@@ -1,8 +1,8 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useState, useTransition } from "react";
 import { IconLoader2, IconMail } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 import { z } from "zod";
 
 import Logo from "@/assets/marketing/logo";
@@ -26,8 +26,8 @@ function mapApiError(error: unknown, fallback: string): string {
 }
 
 export function ForgotPasswordForm() {
-  const t = useTranslations("auth.forgotPassword");
-  const fieldT = useTranslations("auth.validation");
+  const t = getMessages("auth.forgotPassword");
+  const fieldT = getMessages("auth.validation");
   const schema = z.object({
     email: z
       .string()

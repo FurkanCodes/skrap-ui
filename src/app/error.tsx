@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const t = useTranslations("errors.page");
+  const t = getMessages("errors.page");
 
   useEffect(() => {
     console.error(error);

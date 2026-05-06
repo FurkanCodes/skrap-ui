@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
 import type { CheckoutEventsData } from "@paddle/paddle-js/types/checkout/events";
@@ -12,7 +13,6 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -74,7 +74,7 @@ export function BillingCheckoutClient({
   plan,
   paymentLinkTransactionId,
 }: BillingCheckoutClientProps) {
-  const t = useTranslations("billingCheckout");
+  const t = getMessages("billingCheckout");
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
 
@@ -191,7 +191,7 @@ export function BillingCheckoutClient({
         setErrorMessage(error instanceof Error ? error.message : t("errors.openCheckout"));
       }
     },
-    [buildReturnUrl, t]
+    [buildReturnUrl, setCheckoutState, setErrorMessage, t]
   );
 
   const recoverHostedCheckoutUrl = useCallback(async (targetTransactionId: string) => {
@@ -210,7 +210,7 @@ export function BillingCheckoutClient({
     }
 
     return null;
-  }, []);
+  }, [setCheckoutUrl]);
 
   const startCheckout = useCallback(async () => {
     if (startedRef.current) return;
@@ -253,7 +253,18 @@ export function BillingCheckoutClient({
       setCheckoutState("error");
       setErrorMessage(error instanceof Error ? error.message : t("errors.startCheckout"));
     }
-  }, [checkoutUrl, openInlineCheckout, paymentLinkTransactionId, plan, t]);
+  }, [
+    checkoutUrl,
+    openInlineCheckout,
+    paymentLinkTransactionId,
+    plan,
+    setCheckoutData,
+    setCheckoutState,
+    setCheckoutUrl,
+    setErrorMessage,
+    setTransactionId,
+    t,
+  ]);
 
   const reopenCheckout = useCallback(async () => {
     setCheckoutData(null);
@@ -276,6 +287,7 @@ export function BillingCheckoutClient({
     openInlineCheckout,
     paymentLinkTransactionId,
     recoverHostedCheckoutUrl,
+    setCheckoutData,
     startCheckout,
     transactionId,
   ]);

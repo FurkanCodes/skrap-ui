@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import {
@@ -10,7 +11,6 @@ import {
   IconMessageCircle,
   IconRefresh,
 } from "@tabler/icons-react";
-import { useLocale, useTranslations } from "next-intl";
 import QRCode from "qrcode";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -89,8 +89,8 @@ export function TelegramLinkCard({
   initialStatus,
   initialError,
 }: TelegramLinkCardProps) {
-  const t = useTranslations("telegram");
-  const locale = useLocale();
+  const t = getMessages("telegram");
+  const locale = "en";
   const { me } = useViewer();
   const workspaceData = useOptionalWorkspaceData();
   const setTelegramStatus = workspaceData?.patchers.setTelegramStatus;

@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
@@ -52,7 +52,7 @@ export function EditTrackerModal({
   onClose,
   onSave,
 }: EditTrackerModalProps) {
-  const t = useTranslations("tracking.dashboard.editModal");
+  const t = getMessages("tracking.dashboard.editModal");
 
   if (!isOpen || !item) {
     return null;

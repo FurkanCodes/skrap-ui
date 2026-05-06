@@ -1,8 +1,8 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useMemo, useState, useTransition } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,8 +52,8 @@ export function TrackResultPanel({
   currency,
   primarySeller = null,
 }: TrackResultPanelProps) {
-  const t = useTranslations("tracking.trackResult");
-  const locale = useLocale();
+  const t = getMessages("tracking.trackResult");
+  const locale = "en";
   const { isAuthenticated, me } = useViewer();
   const [isPending, startTransition] = useTransition();
 

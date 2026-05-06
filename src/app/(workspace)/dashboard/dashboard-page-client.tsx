@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { TrackersDashboard } from "@/features/tracking/components/trackers-dashboard";
@@ -13,7 +12,7 @@ function parseCheckoutPlan(value: string | null): "plus" | "pro" | null {
 
 export function DashboardPageClient() {
   const router = useRouter();
-  const locale = useLocale();
+  const locale = "en";
   const searchParams = useSearchParams();
   const currentLocale = isAppLocale(locale) ? locale : "en";
   const checkoutPlan = parseCheckoutPlan(searchParams.get("billing_plan"));

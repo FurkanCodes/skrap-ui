@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { IconBell, IconExternalLink } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { TelegramStatusChip } from "@/features/telegram/components/telegram-status-chip";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +17,7 @@ interface TelegramConnectionStatusChipProps {
 export function TelegramConnectionStatusChip({
   telegramConnected,
 }: TelegramConnectionStatusChipProps) {
-  const t = useTranslations("tracking.dashboard.telegram");
+  const t = getMessages("tracking.dashboard.telegram");
 
   if (telegramConnected !== true) {
     return null;
@@ -33,7 +33,7 @@ export function TelegramConnectionStatusChip({
 }
 
 export function TelegramConnectionBanner({ telegramConnected }: TelegramConnectionBannerProps) {
-  const t = useTranslations("tracking.dashboard.telegram");
+  const t = getMessages("tracking.dashboard.telegram");
 
   if (telegramConnected === false) {
     return (

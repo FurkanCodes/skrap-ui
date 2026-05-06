@@ -443,6 +443,7 @@
         "description": "Track price drops and receive Telegram alerts.",
         "refresh": "Refresh",
         "newTracker": "New Tracker",
+        "newTrackerAlreadyOpen": "Finish or leave the current tracker form before opening another one.",
         "backToDashboard": "Back to dashboard"
       },
       "summary": {
@@ -525,7 +526,7 @@
       "controller": {
         "requestFailed": "Request failed.",
         "trackerLimitReached": "Tracker limit reached ({maxTrackers}) for {plan} plan.",
-        "telegramRequiredToCreate": "Connect Telegram in Settings before creating trackers.",
+        "telegramRequiredToCreate": "Add Telegram in Settings before creating a tracker. We need Telegram connected to deliver tracker alerts.",
         "addValidProductUrl": "Add at least one valid product URL.",
         "previewUrlFailed": "Could not preview this URL.",
         "enterValidProductUrl": "Enter a valid product URL.",

@@ -1,7 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-
+import { getMessages } from "@/lib/messages";
 import { LiveNumberTicker } from "@/components/ui/live-number-ticker";
 import { formatCurrencyAmount } from "@/lib/currency";
 
@@ -66,8 +65,8 @@ export function SummaryBar({
   planKey,
   resetDateLabel,
 }: SummaryBarProps) {
-  const t = useTranslations("tracking.dashboard.summary");
-  const locale = useLocale();
+  const t = getMessages("tracking.dashboard.summary");
+  const locale = "en";
   const savedLabel = formatSavedLabel(savedBreakdown, (count) => t("moreCurrencies", { count }));
   const activeAlertsLabel = `${formatNumber(active, locale)} / ${formatNumber(alerts, locale)}`;
   const planLabel = t("planLabel", { plan: planKey.toUpperCase() });

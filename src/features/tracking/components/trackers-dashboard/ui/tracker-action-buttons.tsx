@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { getMessages } from "@/lib/messages";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   IconExternalLink,
@@ -9,7 +10,6 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { PauseActionIcon, ResumeActionIcon } from "@/features/tracking/components/trackers-dashboard/action-icons";
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
@@ -51,7 +51,7 @@ export function TrackerActionButtons({
   runItemAction,
   requestDeleteAction,
 }: TrackerActionButtonsProps) {
-  const t = useTranslations("tracking.dashboard.actions");
+  const t = getMessages("tracking.dashboard.actions");
   const controlsDisabled = busy || isRefreshPending;
   const shouldReduceMotion = useReducedMotion();
   const productHref = item.outbound_url ?? item.source_url;

@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useEffect, useMemo, useState } from "react";
 import {
   IconArrowUpRight,
@@ -9,7 +10,6 @@ import {
   IconSun,
 } from "@tabler/icons-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { useTheme } from "@/components/theme/theme-provider";
@@ -65,9 +65,9 @@ function formatSiteKey(siteKey: string): string {
 }
 
 export function SettingsPageClient() {
-  const t = useTranslations("settings");
+  const t = getMessages("settings");
   const router = useRouter();
-  const locale = useLocale();
+  const locale = "en";
   const { me } = useViewer();
   const { trackedItems, supportedSites, billingCurrent, refreshers } = useWorkspaceData();
   const { loadSupportedSites } = refreshers;

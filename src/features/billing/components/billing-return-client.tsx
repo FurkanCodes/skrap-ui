@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PaddleEventData } from "@paddle/paddle-js";
 import {
@@ -10,7 +11,6 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,7 +50,7 @@ export function BillingReturnClient({
   fromPaymentLink,
   autoStart,
 }: BillingReturnClientProps) {
-  const t = useTranslations("billingReturn");
+  const t = getMessages("billingReturn");
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const [flowState, setFlowState] = useState<FlowState>(

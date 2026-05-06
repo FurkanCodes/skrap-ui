@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
@@ -14,7 +15,6 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { INTERVAL_OPTIONS } from "@/features/tracking/components/trackers-dashboard/constants";
 import type {
@@ -133,7 +133,7 @@ export function CreateTrackerModal({
   retryDraftPreview,
   saveTracker,
 }: CreateTrackerModalProps) {
-  const t = useTranslations("tracking.dashboard.createModal");
+  const t = getMessages("tracking.dashboard.createModal");
   const shouldReduceMotion = useReducedMotion();
 
   if (!isModalOpen) {

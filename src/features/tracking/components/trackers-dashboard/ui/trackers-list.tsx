@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export function TrackersList({
   onOpenModal,
   highlightedTrackerId,
 }: TrackersListProps) {
-  const t = useTranslations("tracking.dashboard.list");
+  const t = getMessages("tracking.dashboard.list");
   const shouldReduceMotion = useReducedMotion();
   const rowTransition = shouldReduceMotion
     ? { duration: 0 }

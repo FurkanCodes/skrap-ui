@@ -1,8 +1,8 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { getMessages } from "@/lib/messages";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { IconLoader2 } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
@@ -248,7 +248,7 @@ function AuthVisualPanel({ mode }: { mode: AuthMode }) {
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
-  const t = useTranslations("auth");
+  const t = getMessages("auth");
   const router = useRouter();
   const params = useSearchParams();
   const shouldReduceMotion = useReducedMotion();

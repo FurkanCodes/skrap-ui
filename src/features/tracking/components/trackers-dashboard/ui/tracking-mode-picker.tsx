@@ -1,7 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-
+import { getMessages } from "@/lib/messages";
 import { Label } from "@/components/ui/label";
 import type { TrackingMode } from "@/features/tracking/components/trackers-dashboard/types";
 import { SegmentedSwitch } from "@/features/tracking/components/trackers-dashboard/ui/segmented-switch";
@@ -15,7 +14,7 @@ export function TrackingModePicker({
   trackingMode,
   setTrackingMode,
 }: TrackingModePickerProps) {
-  const t = useTranslations("tracking.dashboard.modePicker");
+  const t = getMessages("tracking.dashboard.modePicker");
   const options: Array<{
     value: TrackingMode;
     label: string;

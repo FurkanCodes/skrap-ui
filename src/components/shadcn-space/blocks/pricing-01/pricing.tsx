@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
 import { IconArrowRight, IconCheck } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 
@@ -21,7 +20,7 @@ interface PricingProps {
 
 const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   const router = useRouter();
-  const locale = useLocale();
+  const locale = "en";
   const currentLocale = isAppLocale(locale) ? locale : "en";
   const shouldReduceMotion = useReducedMotion();
   const buildBillingCheckoutPath = (planKey: BillingPlanKey) =>

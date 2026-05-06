@@ -1,8 +1,8 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { memo, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
 
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import {
@@ -55,8 +55,8 @@ export const TrackerRow = memo(function TrackerRow({
   requestDeleteAction,
   isHighlighted,
 }: TrackerRowProps) {
-  const t = useTranslations("tracking.dashboard.row");
-  const locale = useLocale();
+  const t = getMessages("tracking.dashboard.row");
+  const locale = "en";
   const rowRef = useRef<HTMLElement | null>(null);
   const [highlightVisible, setHighlightVisible] = useState(false);
   const visibleActionFeedbackState =

@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { type CSSProperties, useEffect } from "react";
 import {
   IconBell,
@@ -11,7 +12,6 @@ import {
   IconSettings,
   IconWorld,
 } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import Logo from "@/assets/marketing/logo";
 import AuthControls from "@/components/layout/auth-controls";
@@ -52,12 +52,12 @@ const navItems = [
 ];
 
 const AppSidebar = ({ children }: { children: React.ReactNode }) => {
-  const t = useTranslations("layout.sidebar");
-  const trackingHeaderT = useTranslations("tracking.dashboard.header");
-  const trackingUnauthenticatedT = useTranslations("tracking.dashboard.unauthenticated");
-  const extensionsT = useTranslations("extensions");
-  const settingsT = useTranslations("settings");
-  const notificationsT = useTranslations("notificationsPage");
+  const t = getMessages("layout.sidebar");
+  const trackingHeaderT = getMessages("tracking.dashboard.header");
+  const trackingUnauthenticatedT = getMessages("tracking.dashboard.unauthenticated");
+  const extensionsT = getMessages("extensions");
+  const settingsT = getMessages("settings");
+  const notificationsT = getMessages("notificationsPage");
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useViewer();

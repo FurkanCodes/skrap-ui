@@ -1,7 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-
+import { getMessages } from "@/lib/messages";
 import { CreateTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/create-tracker-modal";
 import { DashboardHeader } from "@/features/tracking/components/trackers-dashboard/ui/dashboard-header";
 import { EditTrackerModal } from "@/features/tracking/components/trackers-dashboard/ui/edit-tracker-modal";
@@ -35,8 +34,8 @@ export function TrackersDashboardAuthenticatedView({
 }: {
   controller: TrackersDashboardController;
 }) {
-  const t = useTranslations("tracking.dashboard");
-  const locale = useLocale();
+  const t = getMessages("tracking.dashboard");
+  const locale = "en";
   const resetDateLabel = formatResetDate(controller.creditsResetAt, locale);
   const isCreateTrackerView = controller.isModalOpen;
   const hasActiveFilters =

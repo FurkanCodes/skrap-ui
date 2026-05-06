@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useState, useTransition } from "react";
 import {
   IconArticle,
@@ -13,7 +14,6 @@ import {
   IconSettings,
   IconUserPlus,
 } from "@tabler/icons-react";
-import { useLocale, useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -33,9 +33,9 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 
 export default function AuthControls() {
-  const t = useTranslations("layout.auth");
-  const telegramT = useTranslations("telegram");
-  const locale = useLocale();
+  const t = getMessages("layout.auth");
+  const telegramT = getMessages("telegram");
+  const locale = "en";
   const router = useRouter();
   const authSession = authClient.useSession();
   const [isPending, startTransition] = useTransition();
@@ -143,31 +143,31 @@ export default function AuthControls() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            sideOffset={14}
-            className="w-[calc(100vw-2rem)] max-w-[22rem] overflow-hidden rounded-[22px] border-border/70 bg-popover p-0 text-popover-foreground shadow-[0_22px_46px_-24px_rgb(24_25_37_/_0.48),0_2px_10px_rgb(24_25_37_/_0.08)] dark:shadow-[0_22px_46px_-24px_rgb(0_0_0_/_0.7),0_0_0_1px_rgb(255_255_255_/_0.04)] sm:w-[22rem]"
+            sideOffset={8}
+            className="w-[calc(100vw-1.5rem)] max-w-72 overflow-hidden rounded-xl border-border/70 bg-popover p-0 text-popover-foreground shadow-[0_16px_36px_-24px_rgb(24_25_37_/_0.42),0_2px_8px_rgb(24_25_37_/_0.06)] dark:shadow-[0_16px_36px_-24px_rgb(0_0_0_/_0.68),0_0_0_1px_rgb(255_255_255_/_0.04)] sm:w-72"
           >
-            <div className="p-6 pb-5">
-              <div className="flex min-w-0 items-center gap-4">
-                <Avatar className="size-11">
+            <div className="p-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <Avatar className="size-8">
                   {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
                   <AvatarFallback>{avatarLabel}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <h6 className="truncate text-[18px] font-semibold leading-6 text-foreground">
+                  <h6 className="truncate text-[13px] font-semibold leading-5 text-foreground">
                     {displayName}
                   </h6>
-                  <p className="truncate text-[16px] leading-6 text-muted-foreground">
+                  <p className="truncate text-[12px] leading-4 text-muted-foreground">
                     {emailLabel}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between gap-4">
-                  <h5 className="text-[16px] font-semibold leading-5 text-foreground">
+              <div className="mt-3 rounded-xl bg-muted/35 p-3 ring-1 ring-border/45 dark:bg-muted/20">
+                <div className="flex items-center justify-between gap-3">
+                  <h5 className="text-[12px] font-semibold leading-4 text-foreground">
                     Credits remaining
                   </h5>
-                  <span className="text-[16px] leading-5">
+                  <span className="text-[12px] leading-4">
                     <span className="font-medium text-foreground">{remainingLabel}</span>
                     {hasUsage && !hasUnlimitedCredits ? (
                       <span className="text-muted-foreground"> / {limitLabel}</span>
@@ -175,7 +175,7 @@ export default function AuthControls() {
                   </span>
                 </div>
                 <div
-                  className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                  className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-background/80"
                   aria-hidden="true"
                 >
                   <div
@@ -183,7 +183,7 @@ export default function AuthControls() {
                     style={{ width: `${creditProgress}%` }}
                   />
                 </div>
-                <p className="text-[15px] leading-6 text-muted-foreground">
+                <p className="mt-2 text-[12px] leading-4 text-muted-foreground">
                   {planLabel
                     ? `${planLabel} plan. ${consumedLabel} credits used this cycle${
                         resetLabel ? `, resets ${resetLabel}` : ""
@@ -201,8 +201,8 @@ export default function AuthControls() {
                 </p>
               </div>
 
-              <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-muted/35 px-3 py-2.5 ring-1 ring-border/50 dark:bg-muted/20">
-                <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+              <div className="mt-2.5 flex min-h-8 items-center justify-between gap-3 rounded-lg px-2 py-1.5 ring-1 ring-border/45">
+                <span className="min-w-0 truncate text-[12px] font-medium text-foreground">
                   Telegram alerts
                 </span>
                 <TelegramStatusChip
@@ -210,11 +210,12 @@ export default function AuthControls() {
                   connectedLabel={telegramT("connected")}
                   disconnectedLabel={telegramT("notLinked")}
                   pendingLabel="Checking"
+                  className="h-6 px-2 text-[11px]"
                 />
               </div>
             </div>
 
-            <DropdownMenuGroup className="px-4 pb-4">
+            <DropdownMenuGroup className="p-1.5 pt-0">
               <AccountMenuItem
                 label="Account"
                 icon={IconSettings}
@@ -224,7 +225,7 @@ export default function AuthControls() {
 
             <DropdownMenuSeparator className="mx-0 my-0 bg-border/70" />
 
-            <DropdownMenuGroup className="space-y-1 px-4 py-4">
+            <DropdownMenuGroup className="p-1.5">
               <AccountMenuItem label="Docs" icon={IconBook} onClick={() => goTo("/terms")} />
               <AccountMenuItem label="Blog" icon={IconArticle} onClick={() => goTo("/")} />
               <AccountMenuItem
@@ -236,7 +237,7 @@ export default function AuthControls() {
 
             <DropdownMenuSeparator className="mx-0 my-0 bg-border/70" />
 
-            <DropdownMenuGroup className="space-y-1 px-4 py-4">
+            <DropdownMenuGroup className="p-1.5">
               <AccountMenuItem label="Homepage" icon={IconEye} onClick={() => goTo("/")} />
               <AccountMenuItem
                 label="Log out"
@@ -288,13 +289,13 @@ function AccountMenuItem({
 }) {
   return (
     <DropdownMenuItem
-      className="min-h-10 rounded-xl px-2 py-2 text-[18px] font-semibold leading-6 text-foreground focus:bg-muted/70 [&_svg]:text-muted-foreground"
+      className="min-h-8 rounded-lg px-2 py-1.5 text-[13px] font-medium leading-4 text-foreground focus:bg-muted/70 [&_svg]:text-muted-foreground"
       disabled={disabled}
       onClick={onClick}
     >
-      <span className="flex w-full items-center justify-between gap-4">
+      <span className="flex min-w-0 items-center gap-2">
+        <Icon className={iconClassName} stroke={1.6} />
         <span>{label}</span>
-        <Icon className={iconClassName} stroke={1.7} />
       </span>
     </DropdownMenuItem>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import {
   IconExternalLink,
@@ -9,7 +10,6 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react";
-import { useLocale, useTranslations } from "next-intl";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,8 +88,8 @@ export function TrackedItemsPanelClient({
   initialItems,
   initialError,
 }: TrackedItemsPanelClientProps) {
-  const t = useTranslations("tracking.itemsPanel");
-  const locale = useLocale();
+  const t = getMessages("tracking.itemsPanel");
+  const locale = "en";
   const router = useRouter();
   const [itemsState, setItemsState] = useState<TrackedItemSummary[]>(initialItems);
   const [items, applyOptimisticItemAction] = useOptimistic<

@@ -21,7 +21,19 @@ function interpolate(message: string, values?: MessageValues): string {
     return message;
   }
 
-  return message.replace(/\{(\w+)\}/g, (match, key) => {
+  const withPlurals = message.replace(
+    /\{(\w+),\s*plural,\s*one\s*\{([^{}]*)\}\s*other\s*\{([^{}]*)\}\}/g,
+    (match, key, one, other) => {
+      const value = values[key];
+      if (typeof value !== "number") {
+        return match;
+      }
+
+      return (value === 1 ? one : other).replace(/#/g, String(value));
+    }
+  );
+
+  return withPlurals.replace(/\{(\w+)\}/g, (match, key) => {
     const value = values[key];
     return value === undefined ? match : String(value);
   });

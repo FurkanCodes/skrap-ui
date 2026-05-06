@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { IconArrowLeft, IconLoader2, IconPlus, IconRefresh } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { TelegramConnectionStatusChip } from "@/features/tracking/components/trackers-dashboard/ui/telegram-connection-banner";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,11 @@ export function DashboardHeader({
   onOpenModal,
   onBackToDashboard,
 }: DashboardHeaderProps) {
-  const t = useTranslations("tracking.dashboard.header");
+  const t = getMessages("tracking.dashboard.header");
+  const newTrackerDisabledReason =
+    createTrackerDisabledReason ??
+    (isCreateTrackerView ? t("newTrackerAlreadyOpen") : null);
+  const isNewTrackerDisabled = !canCreateTracker || isCreateTrackerView;
 
   return (
     <header className="space-y-2">
@@ -56,17 +60,17 @@ export function DashboardHeader({
           )}
           {t("refresh")}
         </Button>
-        {createTrackerDisabledReason ? (
+        {newTrackerDisabledReason ? (
           <Tooltip>
             <TooltipTrigger
               render={
-                <span className="inline-flex">
+                <span className="inline-flex" tabIndex={0}>
                   <Button
                     type="button"
                     size="sm"
                     className="px-4"
                     onClick={onOpenModal}
-                    disabled={!canCreateTracker || isCreateTrackerView}
+                    disabled={isNewTrackerDisabled}
                   >
                     <IconPlus className="size-3.5" stroke={1.5} />
                     {t("newTracker")}
@@ -74,7 +78,7 @@ export function DashboardHeader({
                 </span>
               }
             />
-            <TooltipContent>{createTrackerDisabledReason}</TooltipContent>
+            <TooltipContent>{newTrackerDisabledReason}</TooltipContent>
           </Tooltip>
         ) : (
           <Button
@@ -82,7 +86,7 @@ export function DashboardHeader({
             size="sm"
             className="px-4"
             onClick={onOpenModal}
-            disabled={!canCreateTracker || isCreateTrackerView}
+            disabled={isNewTrackerDisabled}
           >
             <IconPlus className="size-3.5" stroke={1.5} />
             {t("newTracker")}

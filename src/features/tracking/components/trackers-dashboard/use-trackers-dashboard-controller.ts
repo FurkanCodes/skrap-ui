@@ -1,7 +1,7 @@
 "use client";
 
+import { getMessages } from "@/lib/messages";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
 
 import { extractUrls } from "@/features/scraper/utils";
 import {
@@ -91,7 +91,7 @@ export function useTrackersDashboardController({
   telegramBotUsername,
   highlightedTrackerId,
 }: UseTrackersDashboardControllerParams) {
-  const t = useTranslations("tracking.dashboard.controller");
+  const t = getMessages("tracking.dashboard.controller");
   const { me } = useViewer();
   const { refreshers, patchers } = useWorkspaceData();
   const { loadTrackedItems, loadTelegramStatus } = refreshers;
