@@ -6,7 +6,7 @@ import Pricing from "@/components/shadcn-space/blocks/pricing-01/pricing";
 
 export default function CopiedLandingPage() {
   return (
-    <main className="bg-canvas-white font-openrunde">
+    <main className="min-h-dvh overflow-x-hidden bg-background font-openrunde text-fg-3 antialiased">
       <section id="home">
         <AgencyHeroSection isAuthenticated={false} />
       </section>

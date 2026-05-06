@@ -53,8 +53,8 @@ jobs:
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
           if [ -z "$COOLIFY_WEBHOOK" ]; then
-            echo "::error::Missing COOLIFY_WEBHOOK repository secret."
-            exit 1
+            echo "::warning::COOLIFY_WEBHOOK is not set. Skipping Coolify deployment."
+            exit 0
           fi
 
           if [ -n "$COOLIFY_TOKEN" ]; then

@@ -43,8 +43,8 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
   };
 
   return (
-    <section className="bg-canvas-white py-16 font-openrunde sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-background py-14 font-openrunde sm:py-16">
+      <div className="mx-auto max-w-5xl px-5">
         <motion.div
           initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,13 +56,13 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
           }
           className="flex flex-col items-center gap-5 text-center"
         >
-          <span className="rounded-full bg-[#00000008] px-3 py-1.5 text-caption font-semibold uppercase leading-none text-muted-gray">
+          <span className="rounded-sm bg-bg-a1 px-3 py-1.5 text-caption font-semibold uppercase leading-none text-fg-1">
             Pricing
           </span>
-          <h2 className="max-w-2xl text-4xl font-bold leading-[1.08] text-slate-ink sm:text-5xl">
+          <h2 className="max-w-xl text-4xl font-semibold leading-[1.1] tracking-tight text-fg-4 sm:text-[44px]">
             Pick the credit plan that matches your tracking volume
           </h2>
-          <p className="max-w-2xl text-heading-sm font-medium leading-heading-sm text-medium-gray">
+          <p className="max-w-xl text-lg font-medium leading-6 text-fg-3">
             Start with a few high-intent products, then scale checks and active
             trackers as your sourcing workflow grows.
           </p>
@@ -90,7 +90,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                       }
                 }
                 className={cn(
-                  "flex min-h-[520px] flex-col rounded-2xl border border-transparent p-6",
+                  "flex min-h-[500px] flex-col rounded-xl border border-transparent p-6",
                   plan.surfaceClassName,
                   isFeatured && "border-radiant-violet/35 shadow-subtle-2",
                 )}
@@ -100,28 +100,28 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                     className={cn(
                       "rounded-full px-3 py-1.5 text-caption font-semibold uppercase leading-none",
                       isFeatured
-                        ? "bg-radiant-violet text-canvas-white"
-                        : "bg-canvas-white text-slate-ink shadow-subtle-2",
+                    ? "bg-electric-blue text-canvas-white"
+                        : "bg-background text-fg-4 shadow-subtle-2",
                     )}
                   >
                     {plan.name}
                   </span>
                   {plan.highlight ? (
-                    <span className="rounded-full bg-canvas-white px-3 py-1.5 text-caption font-semibold leading-none text-deep-purple shadow-subtle-2">
+                    <span className="rounded-full bg-background px-3 py-1.5 text-caption font-semibold leading-none text-electric-blue shadow-subtle-2">
                       {plan.highlight}
                     </span>
                   ) : null}
                 </div>
 
-                <p className="mt-5 min-h-16 text-body font-medium leading-body text-medium-gray">
+                <p className="mt-5 min-h-16 text-body font-medium leading-body text-fg-3">
                   {plan.description}
                 </p>
 
                 <div className="mt-8 flex items-end gap-1">
-                  <span className="text-5xl font-bold leading-none text-slate-ink">
+                  <span className="text-5xl font-semibold leading-none text-fg-4">
                     ${plan.price}
                   </span>
-                  <span className="pb-1 text-body font-medium leading-body text-medium-gray">
+                  <span className="pb-1 text-body font-medium leading-body text-fg-3">
                     /month
                   </span>
                 </div>
@@ -136,8 +136,8 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                       className={cn(
                         "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 text-body font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2",
                         isFeatured
-                          ? "bg-radiant-violet text-canvas-white shadow-subtle hover:bg-deep-purple"
-                          : "bg-canvas-white text-slate-ink shadow-subtle-2 hover:bg-light-gray/60",
+                          ? "bg-electric-blue text-canvas-white shadow-subtle hover:bg-radiant-violet"
+                          : "bg-background text-fg-4 shadow-subtle-2 hover:bg-bg-a1",
                       )}
                     >
                       {plan.ctaLabel}
@@ -149,17 +149,17 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                 <div className="mt-8 h-px bg-light-gray" />
 
                 <div className="mt-7">
-                  <p className="text-body font-semibold leading-body text-slate-ink">
+                  <p className="text-body font-semibold leading-body text-fg-4">
                     Included
                   </p>
                   <ul className="mt-4 flex flex-col gap-3">
                     {plan.features.map((feature) => (
                       <li
                         key={feature}
-                        className="flex items-start gap-3 text-body font-medium leading-body text-medium-gray"
+                        className="flex items-start gap-3 text-body font-medium leading-body text-fg-3"
                       >
                         <IconCheck
-                          className="mt-0.5 size-4 shrink-0 text-radiant-violet"
+                          className="mt-0.5 size-4 shrink-0 text-electric-blue"
                           aria-hidden="true"
                           stroke={1.5}
                         />

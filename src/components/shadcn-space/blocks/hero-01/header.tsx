@@ -29,19 +29,19 @@ type HeaderProps = {
 };
 
 const darkLogoVars = {
-  "--brand-logo-accent": "#918df6",
+  "--brand-logo-accent": "#7cc8ff",
   "--brand-logo-wordmark": "#ffffff",
   "--brand-logo-cutout": "#181925",
 } as CSSProperties;
 
 const lightLogoVars = {
-  "--brand-logo-accent": "#918df6",
+  "--brand-logo-accent": "#2c78fc",
   "--brand-logo-wordmark": "#181925",
   "--brand-logo-cutout": "#ffffff",
 } as CSSProperties;
 
 const navLinkClass =
-  "rounded-full px-3 py-2 text-[15px] font-medium leading-none text-canvas-white/68 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70";
+  "rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/68 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50";
 
 const MobileLink = ({
   href,
@@ -80,22 +80,23 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
   }, [router]);
 
   return (
-    <motion.header
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={
-        shouldReduceMotion
-          ? { duration: 0 }
-          : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
-      }
-      className={cn(
-        "sticky top-0 z-50 flex h-20 items-start justify-center px-4 pt-3 font-openrunde",
-        className,
-      )}
-    >
+    <>
+      <motion.header
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
+        }
+        className={cn(
+          "dark fixed top-8 left-1/2 -translate-x-1/2 z-99 w-[460px] bg-background backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xs corner-superellipse/1.125 hidden md:block font-openrunde",
+          className,
+        )}
+      >
       <nav
         aria-label="Main navigation"
-        className="hidden h-14 items-center gap-5 rounded-full bg-slate-ink px-4 shadow-subtle md:flex"
+        className="flex h-13 items-center gap-2 px-4 pr-3"
       >
         <a
           href="#home"
@@ -105,7 +106,7 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
           <Logo iconOnly className="text-canvas-white" style={darkLogoVars} />
         </a>
 
-        <div className="flex items-center gap-1">
+        <div className="flex flex-1 items-center gap-0.5">
           {navigationData.map((navItem) => (
             <a key={navItem.title} href={navItem.href} className={navLinkClass}>
               {navItem.title}
@@ -127,14 +128,14 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
               <button
                 type="button"
                 onClick={handleLogin}
-                className="rounded-full px-3 py-2 text-[15px] font-medium leading-none text-canvas-white/74 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
+                className="rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/74 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50"
               >
                 Login
               </button>
               <button
                 type="button"
                 onClick={handleRegister}
-                className="rounded-full bg-deep-purple px-4 py-2.5 text-[15px] font-medium leading-none text-canvas-white shadow-subtle transition-colors hover:bg-radiant-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
+                className="h-8 rounded-full bg-electric-blue px-3.5 text-sm font-medium leading-none text-canvas-white shadow-subtle transition-all hover:bg-radiant-violet active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50"
               >
                 Register
               </button>
@@ -142,8 +143,22 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
           )}
         </div>
       </nav>
+      </motion.header>
 
-      <div className="flex w-full items-center justify-between rounded-full border border-light-gray bg-canvas-white px-3 py-2 shadow-subtle md:hidden">
+      <motion.header
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
+        }
+        className={cn(
+          "fixed left-4 right-4 top-4 z-50 font-openrunde md:hidden",
+          className,
+        )}
+      >
+      <div className="flex h-13 w-full items-center justify-between rounded-[24px] border border-light-gray bg-canvas-white/95 px-3 shadow-subtle backdrop-blur-xl">
         <a href="#home" className="flex items-center" aria-label="Dealvinci home">
           <Logo iconOnly style={lightLogoVars} />
         </a>
@@ -228,7 +243,8 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
           </SheetContent>
         </Sheet>
       </div>
-    </motion.header>
+      </motion.header>
+    </>
   );
 };
 

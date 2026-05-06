@@ -19,16 +19,16 @@ function HeroSection({
     : { duration: 0.62, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
-    <section className="relative overflow-hidden bg-canvas-white font-openrunde">
-      <div className="mx-auto flex min-h-[560px] max-w-6xl flex-col items-center justify-start px-4 pb-20 pt-14 text-center sm:min-h-[620px] sm:justify-center sm:px-6 sm:pt-20 lg:px-8">
+    <section className="relative overflow-hidden bg-background font-openrunde">
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 px-5 pb-14 pt-34 text-center sm:pb-16 sm:pt-38">
         <motion.a
           href="#pricing"
           initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={revealTransition}
-          className="mb-9 inline-flex h-10 items-center gap-2 rounded-full bg-whisper-purple/45 px-2.5 text-body font-medium leading-body text-electric-blue transition-colors hover:bg-whisper-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/60"
+          className="inline-flex items-center gap-2 rounded-full bg-bg-a1 py-1.5 pl-1.5 pr-2.5 text-sm font-medium text-electric-blue transition-colors hover:bg-bg-a2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50"
         >
-          <span className="rounded-full bg-radiant-violet px-2 py-1 text-caption font-semibold leading-none text-canvas-white">
+          <span className="flex h-5 items-center justify-center rounded-full bg-gradient-to-r from-electric-blue to-radiant-violet px-1.5 text-xs font-medium uppercase text-canvas-white">
             NEW
           </span>
           Price alerts in Telegram
@@ -43,9 +43,9 @@ function HeroSection({
               ? { duration: 0 }
               : { ...revealTransition, delay: 0.08 }
           }
-          className="max-w-4xl text-5xl font-bold leading-[1.04] text-slate-ink sm:text-6xl lg:text-7xl"
+          className="max-w-md text-6xl/17 font-semibold tracking-tighter text-fg-4 md:text-balance"
         >
-          Price tracking for teams that move before margins disappear
+          Track prices before margins disappear
         </motion.h1>
 
         <motion.p
@@ -56,7 +56,7 @@ function HeroSection({
               ? { duration: 0 }
               : { ...revealTransition, delay: 0.16 }
           }
-          className="mt-7 max-w-2xl text-heading-sm font-medium leading-heading-sm text-medium-gray sm:text-heading"
+          className="w-full max-w-md text-lg/6 font-medium text-fg-3"
         >
           Turn product URLs into live trackers, spend credits with control, and
           get Telegram alerts the moment a target price hits.
@@ -70,18 +70,18 @@ function HeroSection({
               ? { duration: 0 }
               : { ...revealTransition, delay: 0.24 }
           }
-          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          className="flex flex-col items-center gap-4 md:flex-row"
         >
           <button
             type="button"
             onClick={() => router.push(ctaPath)}
-            className="inline-flex h-[52px] min-w-44 items-center justify-center rounded-full bg-radiant-violet px-7 text-heading-sm font-semibold leading-none text-canvas-white shadow-subtle transition-colors hover:bg-deep-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2"
+            className="inline-flex h-11 w-[320px] items-center justify-center rounded-full bg-electric-blue px-5 text-body font-semibold leading-none text-canvas-white shadow-subtle transition-all hover:bg-radiant-violet active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50 focus-visible:ring-offset-2 md:w-auto"
           >
             {ctaLabel}
           </button>
           <a
             href="#features"
-            className="inline-flex h-[52px] min-w-36 items-center justify-center gap-2 rounded-full bg-[#00000008] px-6 text-heading-sm font-semibold leading-none text-medium-gray transition-colors hover:bg-light-gray/70 hover:text-slate-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/60 focus-visible:ring-offset-2"
+            className="inline-flex h-11 w-[320px] items-center justify-center gap-2 rounded-full bg-bg-a1 px-5 text-body font-semibold leading-none text-fg-3 transition-all hover:bg-bg-a2 hover:text-fg-3 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50 focus-visible:ring-offset-2 md:w-auto"
           >
             See how it works
             <IconArrowRight className="size-4" aria-hidden="true" stroke={1.5} />
