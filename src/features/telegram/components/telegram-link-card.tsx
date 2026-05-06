@@ -16,6 +16,7 @@ import QRCode from "qrcode";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
+import { TelegramStatusChip } from "@/features/telegram/components/telegram-status-chip";
 import {
   checkTelegramConnectStatusAction,
   refreshTelegramStatusAction,
@@ -302,9 +303,11 @@ export function TelegramLinkCard({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle>{t("title")}</CardTitle>
-            <Chip tone={isConnected ? "success" : "muted"}>
-              {isConnected ? t("connected") : t("notLinked")}
-            </Chip>
+            <TelegramStatusChip
+              connected={isConnected}
+              connectedLabel={t("connected")}
+              disconnectedLabel={t("notLinked")}
+            />
           </div>
         </div>
         <Button
@@ -338,16 +341,16 @@ export function TelegramLinkCard({
         ) : null}
 
         {isConnected || pendingSession ? (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
-          {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
-          {pendingSession ? (
-            <Chip tone="muted" className="gap-1">
-              <IconLoader2 className="size-3 animate-spin" stroke={1.5} />
-              {t("waitingStart")}
-            </Chip>
-          ) : null}
-        </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {status?.active_chat_id ? <Chip tone="muted">Chat {status.active_chat_id}</Chip> : null}
+            {botUsername ? <Chip tone="muted">@{botUsername}</Chip> : null}
+            {pendingSession ? (
+              <Chip tone="muted" className="gap-1">
+                <IconLoader2 className="size-3 animate-spin" stroke={1.5} />
+                {t("waitingStart")}
+              </Chip>
+            ) : null}
+          </div>
         ) : null}
 
         {qrTargetUrl ? (

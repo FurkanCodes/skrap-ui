@@ -1,9 +1,9 @@
 "use client";
 
-import { IconBell, IconCircleCheck, IconExternalLink } from "@tabler/icons-react";
+import { IconBell, IconExternalLink } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
-import { Chip } from "@/components/ui/chip";
+import { TelegramStatusChip } from "@/features/telegram/components/telegram-status-chip";
 import { Link } from "@/i18n/navigation";
 
 interface TelegramConnectionBannerProps {
@@ -24,13 +24,11 @@ export function TelegramConnectionStatusChip({
   }
 
   return (
-    <Chip
-      tone="success"
-      className="rounded-full bg-emerald-500/14 text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-500/22 dark:text-emerald-200 dark:ring-emerald-400/30"
-    >
-      <IconCircleCheck className="size-3.5 text-emerald-600 dark:text-emerald-300" stroke={1.5} />
-      <span>{t("connectedChip")}</span>
-    </Chip>
+    <TelegramStatusChip
+      connected={true}
+      connectedLabel={t("connectedChip")}
+      disconnectedLabel=""
+    />
   );
 }
 

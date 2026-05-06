@@ -9,9 +9,10 @@ const chipVariants = cva(
     variants: {
       tone: {
         selected: "bg-background text-foreground shadow-sm",
-        muted: "bg-muted/35 text-muted-foreground",
+        muted: "bg-muted/45 text-muted-foreground dark:bg-muted/30",
         subtle: "bg-card/70 text-muted-foreground",
-        success: "bg-emerald-500/12 text-emerald-200",
+        success:
+          "bg-emerald-500/12 text-emerald-700 ring-1 ring-emerald-500/25 dark:bg-emerald-500/18 dark:text-emerald-200 dark:ring-emerald-400/25",
         danger: "bg-destructive/12 text-destructive",
       },
       size: {
