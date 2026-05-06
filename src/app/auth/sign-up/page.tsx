@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { AuthForm } from "@/features/auth/components/auth-form";
 import { getMessages } from "@/lib/messages";
@@ -12,5 +13,9 @@ export function generateMetadata(): Metadata {
 }
 
 export default function SignUpPage() {
-  return <AuthForm mode="sign-up" />;
+  return (
+    <Suspense fallback={null}>
+      <AuthForm mode="sign-up" />
+    </Suspense>
+  );
 }
