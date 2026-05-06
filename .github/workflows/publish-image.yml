@@ -42,20 +42,3 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Trigger Coolify deploy
-        env:
-          COOLIFY_FRONTEND_WEBHOOK: ${{ secrets.COOLIFY_FRONTEND_WEBHOOK }}
-          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
-        run: |
-          if [ -z "$COOLIFY_FRONTEND_WEBHOOK" ]; then
-            echo "COOLIFY_FRONTEND_WEBHOOK is not set; image was published but Coolify deploy was not triggered."
-            exit 0
-          fi
-
-          if [ -n "$COOLIFY_TOKEN" ]; then
-            curl --fail --request GET "$COOLIFY_FRONTEND_WEBHOOK" \
-              --header "Authorization: Bearer $COOLIFY_TOKEN"
-          else
-            curl --fail --request GET "$COOLIFY_FRONTEND_WEBHOOK"
-          fi
