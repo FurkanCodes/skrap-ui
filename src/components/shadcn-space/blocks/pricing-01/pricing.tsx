@@ -59,7 +59,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
           <span className="rounded-sm bg-bg-a1 px-3 py-1.5 text-caption font-semibold uppercase leading-none text-fg-1">
             Pricing
           </span>
-          <h2 className="max-w-xl text-4xl font-semibold leading-[1.1] tracking-tight text-fg-4 sm:text-[44px]">
+          <h2 className="max-w-xl text-4xl font-semibold leading-[1.1] text-fg-4 sm:text-[44px]">
             Pick the credit plan that matches your tracking volume
           </h2>
           <p className="max-w-xl text-lg font-medium leading-6 text-fg-3">
@@ -90,9 +90,9 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                       }
                 }
                 className={cn(
-                  "flex min-h-[500px] flex-col rounded-xl border border-transparent p-6",
+                  "flex min-h-[500px] flex-col rounded-[24px] border border-transparent p-6",
                   plan.surfaceClassName,
-                  isFeatured && "border-radiant-violet/35 shadow-subtle-2",
+                  isFeatured && "border-landing-ink shadow-subtle-2",
                 )}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -100,14 +100,14 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                     className={cn(
                       "rounded-full px-3 py-1.5 text-caption font-semibold uppercase leading-none",
                       isFeatured
-                    ? "bg-electric-blue text-canvas-white"
+                        ? "bg-landing-ink text-landing-yellow-strong"
                         : "bg-background text-fg-4 shadow-subtle-2",
                     )}
                   >
                     {plan.name}
                   </span>
                   {plan.highlight ? (
-                    <span className="rounded-full bg-background px-3 py-1.5 text-caption font-semibold leading-none text-electric-blue shadow-subtle-2">
+                    <span className="rounded-full bg-background px-3 py-1.5 text-caption font-semibold leading-none text-landing-ink shadow-subtle-2">
                       {plan.highlight}
                     </span>
                   ) : null}
@@ -134,9 +134,9 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                       type="button"
                       onClick={() => handlePlanClick(plan)}
                       className={cn(
-                        "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 text-body font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70 focus-visible:ring-offset-2",
+                        "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 text-body font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-ink/50 focus-visible:ring-offset-2",
                         isFeatured
-                          ? "bg-electric-blue text-canvas-white shadow-subtle hover:bg-radiant-violet"
+                          ? "bg-landing-ink text-landing-card shadow-subtle hover:bg-landing-muted"
                           : "bg-background text-fg-4 shadow-subtle-2 hover:bg-bg-a1",
                       )}
                     >
@@ -159,7 +159,7 @@ const Pricing = ({ isAuthenticated, hasPaidSubscription }: PricingProps) => {
                         className="flex items-start gap-3 text-body font-medium leading-body text-fg-3"
                       >
                         <IconCheck
-                          className="mt-0.5 size-4 shrink-0 text-electric-blue"
+                          className="mt-0.5 size-4 shrink-0 text-landing-ink"
                           aria-hidden="true"
                           stroke={1.5}
                         />

@@ -121,7 +121,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
         <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10", pageHero ? "mt-20" : "")}>
           <aside className="w-full md:w-48">
             <nav
-              className="flex w-full items-start gap-6 overflow-x-auto border-b border-[var(--bg-3)] md:sticky md:top-20 md:flex-col md:gap-2 md:border-b-0"
+              className="flex w-full items-start gap-3 overflow-x-auto rounded-[24px] border border-border bg-card p-2 shadow-subtle-2 md:sticky md:top-20 md:flex-col md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
               aria-label={t("workspace")}
             >
               {navItems.map((item) => {
@@ -132,10 +132,10 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                     href={item.href}
                     prefetch={true}
                     className={cn(
-                      "flex shrink-0 items-center gap-2 border-b-2 py-2.5 text-sm font-medium transition-colors md:border-b-0 md:py-0",
+                      "flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors md:h-auto md:rounded-none md:px-0",
                       isActive
-                        ? "border-primary text-[var(--fg-4)]"
-                        : "cursor-pointer border-transparent text-[var(--fg-2)] hover:text-[var(--fg-3)]"
+                        ? "bg-foreground text-background md:bg-transparent md:text-[var(--fg-4)]"
+                        : "cursor-pointer text-[var(--fg-2)] hover:bg-muted hover:text-[var(--fg-3)] md:hover:bg-transparent"
                     )}
                   >
                     <item.icon className="size-4 shrink-0" stroke={1.5} />

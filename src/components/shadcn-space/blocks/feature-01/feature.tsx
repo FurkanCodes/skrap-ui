@@ -7,10 +7,12 @@ import {
   IconBellRinging,
   IconCircleCheck,
   IconGauge,
+  IconLink,
   IconSend,
-  IconShieldCheck,
 } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
+
+import { cn } from "@/lib/utils";
 
 type Benefit = {
   icon: Icon;
@@ -18,81 +20,74 @@ type Benefit = {
   detail: string;
 };
 
-type FeatureCard = {
-  accent: string;
+type FeatureStory = {
   icon: Icon;
+  eyebrow: string;
   title: string;
-  description: string;
-  bullets: string[];
-  visual: "trackers" | "alerts" | "credits" | "timeline";
+  detail: string;
+  chips: string[];
+  visual: "tracker" | "alert" | "credits";
+  surfaceClassName: string;
 };
 
 const benefits: Benefit[] = [
   {
-    icon: IconArrowsSort,
+    icon: IconLink,
     title: "Paste a URL.",
-    detail: "Turn any product page into a live tracker in seconds.",
+    detail: "Start a tracker without manual setup.",
   },
   {
     icon: IconBellRinging,
-    title: "Target-price alerts.",
-    detail: "Get Telegram pings when a deal is ready.",
+    title: "Set the target.",
+    detail: "Only alert when the deal matters.",
   },
   {
     icon: IconGauge,
-    title: "Credits stay clear.",
-    detail: "See usage before checks eat your monthly plan.",
+    title: "Watch credits.",
+    detail: "Keep usage visible as you scale.",
   },
 ];
 
-const featureCards: FeatureCard[] = [
+const stories: FeatureStory[] = [
   {
-    accent: "text-electric-blue",
     icon: IconArrowsSort,
-    title: "Price drop tracking",
-    description: "Watch the products your team cares about and compare current price against target.",
-    bullets: ["Target price rules", "Store-aware checks", "Current vs target view"],
-    visual: "trackers",
+    eyebrow: "Track prices",
+    title: "Know when a product is close enough to buy",
+    detail: "Monitor the current price, target line, and last check in one calm product card.",
+    chips: ["Target price", "Store status", "Last checked"],
+    visual: "tracker",
+    surfaceClassName: "bg-landing-soft-blue",
   },
   {
-    accent: "text-radiant-violet",
     icon: IconBellRinging,
-    title: "Telegram alerts",
-    description: "Send the right signal when a tracker crosses the line your team set.",
-    bullets: ["Instant delivery", "Only when target hits", "Direct link back to tracker"],
-    visual: "alerts",
+    eyebrow: "Telegram alerts",
+    title: "Get the signal when the price crosses your line",
+    detail: "Notifications stay scarce, specific, and tied to the tracker that triggered them.",
+    chips: ["Target hit", "Telegram", "Direct link"],
+    visual: "alert",
+    surfaceClassName: "bg-landing-paper",
   },
   {
-    accent: "text-success-green",
     icon: IconGauge,
-    title: "Credit control",
-    description: "Keep check frequency and monthly usage visible before the budget gets noisy.",
-    bullets: ["Monthly credit balance", "Plan-based tracker limits", "Frequency control"],
+    eyebrow: "Credit control",
+    title: "See tracker volume before it eats the plan",
+    detail: "Credits, active trackers, and check frequency stay visible before the watchlist grows.",
+    chips: ["Monthly credits", "Tracker caps", "Check frequency"],
     visual: "credits",
-  },
-  {
-    accent: "text-warning-yellow",
-    icon: IconShieldCheck,
-    title: "Reliable monitoring",
-    description: "Give operators clear status, history, and retry signals for every tracked product.",
-    bullets: ["Last check status", "Retry-friendly workflow", "Price movement timeline"],
-    visual: "timeline",
+    surfaceClassName: "bg-landing-soft-green",
   },
 ];
 
 const trackerRows = [
-  { store: "Amazon", item: "Sony WH-1000XM5", price: "$298", target: "$289", width: "82%" },
-  { store: "Best Buy", item: "LG C3 OLED", price: "$1,196", target: "$1,099", width: "68%" },
-  { store: "Apple", item: "iPad Air 11", price: "$549", target: "$529", width: "54%" },
-  { store: "B&H", item: "Canon R8 Kit", price: "$1,399", target: "$1,299", width: "42%" },
-  { store: "Walmart", item: "Dyson V15", price: "$579", target: "$549", width: "33%" },
+  { store: "Amazon", item: "Sony WH-1000XM5", price: "$298", target: "$289", progress: 0.84 },
+  { store: "Best Buy", item: "LG C3 OLED", price: "$1,196", target: "$1,099", progress: 0.68 },
+  { store: "Apple", item: "iPad Air 11", price: "$529", target: "$529", progress: 1 },
 ];
 
-const timelineRows = [
-  { label: "Checked now", value: "$298", tone: "bg-electric-blue" },
-  { label: "Target matched", value: "$289", tone: "bg-success-green" },
-  { label: "Retry queued", value: "2m", tone: "bg-warning-yellow" },
-  { label: "Previous check", value: "$314", tone: "bg-radiant-violet" },
+const usageRows = [
+  { label: "Active trackers", value: "126" },
+  { label: "Checks today", value: "384" },
+  { label: "Fastest interval", value: "30m" },
 ];
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -101,254 +96,349 @@ const Feature = () => {
   const shouldReduceMotion = useReducedMotion();
 
   const reveal = (index = 0) => ({
-    initial: { y: shouldReduceMotion ? 0 : 22, opacity: 0 },
+    initial: { y: shouldReduceMotion ? 0 : 24, opacity: 0 },
     whileInView: { y: 0, opacity: 1 },
-    viewport: { once: true, margin: "-80px" },
+    viewport: { once: true, margin: "-120px" },
     transition: shouldReduceMotion
       ? { duration: 0 }
-      : { delay: index * 0.06, duration: 0.56, ease: easeOut },
+      : { delay: index * 0.06, duration: 0.62, ease: easeOut },
   });
 
   return (
-    <section className="bg-background py-16 font-openrunde">
-      <div className="w-full max-w-5xl mx-auto px-5 grid sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-12 justify-center md:justify-start">
+    <section className="bg-landing-card py-12 font-openrunde sm:py-14 lg:py-16">
+      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-3 px-5 sm:grid-cols-3">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon;
 
           return (
-            <motion.div
+            <motion.article
               key={benefit.title}
               {...reveal(index)}
-              className="flex flex-col items-center justify-start gap-3 max-w-xs md:max-w-none"
+              className="flex items-center gap-3 rounded-[28px] bg-landing-soft-gray p-3 pr-4"
             >
-              <div className="w-10 h-9 rounded-full corner-superellipse/1.125 bg-bg-a1 flex items-center justify-center">
-                <Icon className="size-5 text-electric-blue" aria-hidden="true" stroke={1.5} />
-              </div>
-              <h3 className="text-lg/6 font-medium text-center text-fg-4">
-                {benefit.title} <span className="text-fg-3">{benefit.detail}</span>
-              </h3>
-            </motion.div>
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-landing-yellow-strong text-landing-ink">
+                <Icon className="size-5" aria-hidden="true" stroke={1.6} />
+              </span>
+              <p className="text-body/5 font-medium text-fg-3">
+                <span className="font-semibold text-fg-4">{benefit.title}</span>{" "}
+                {benefit.detail}
+              </p>
+            </motion.article>
           );
         })}
       </div>
 
-      <div className="w-full max-w-5xl px-5 mx-auto py-16 flex flex-col gap-12">
-        <motion.div {...reveal()} className="flex flex-col items-center text-center gap-5">
-          <span className="flex items-center justify-center border font-medium w-fit whitespace-nowrap [&>svg]:pointer-events-none ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0 transition-[color,box-shadow] border-transparent bg-bg-a1 text-fg-3 h-[24px] min-w-[24px] text-sm pl-2 pr-2 gap-1 rounded-sm">
+      <div className="mx-auto mt-12 w-full max-w-7xl px-5 lg:mt-14">
+        <motion.div {...reveal()} className="mx-auto flex max-w-7xl flex-col items-center gap-4 text-center">
+          <span className="rounded-full bg-landing-yellow-strong px-3 py-1.5 text-caption font-bold uppercase leading-none text-landing-ink">
             Features
           </span>
-          <h2 className="text-4xl tracking-tighter text-fg-4 leading-11 font-medium text-balance max-w-lg">
-            Everything you need to track prices with confidence
+          <h2 className="max-w-none text-5xl/14 font-semibold text-fg-4 md:text-balance lg:text-6xl/17 xl:whitespace-nowrap">
+            Simple signals for every product you watch
           </h2>
-          <p className="w-full max-w-md font-medium text-lg/6 text-fg-3">
-            Create trackers, control check frequency, and get useful alerts without babysitting
-            product pages.
-          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {featureCards.map((feature, index) => {
-            const Icon = feature.icon;
-
-            return (
-              <motion.article
-                key={feature.title}
-                {...reveal(index)}
-                className="flex flex-col bg-bg-a1 rounded-xl min-h-[280px] overflow-hidden"
-              >
-                <div className="flex flex-col p-6 px-8 gap-3 items-start">
-                  <span className="w-10 h-9 rounded-full corner-superellipse/1.125 bg-background flex items-center justify-center">
-                    <Icon className={`size-5 ${feature.accent}`} aria-hidden="true" stroke={1.5} />
-                  </span>
-                  <div className="flex flex-col gap-0.5 max-w-72">
-                    <h3 className={`text-2xl/7 font-medium ${feature.accent}`}>
-                      {feature.title}
-                    </h3>
-                    <p className="text-2xl/7 font-medium text-fg-4">{feature.description}</p>
-                  </div>
-                  <ul className="list-none flex flex-col gap-1">
-                    {feature.bullets.map((bullet) => (
-                      <li key={bullet} className="flex items-center gap-2">
-                        <IconCircleCheck
-                          className={`size-4 ${feature.accent}`}
-                          aria-hidden="true"
-                          stroke={1.5}
-                        />
-                        <span className="text-sm font-medium text-fg-4">{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="#pricing"
-                    className="select-none flex items-center relative cursor-pointer justify-center whitespace-nowrap font-medium transition-all corner-superellipse/1.125 bg-background text-fg-4 shadow-subtle-2 hover:shadow-subtle active:bg-bg-2 h-[32px] px-2.5 text-sm rounded-full active:scale-99 gap-1 pr-1.5 mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    See pricing
-                    <IconArrowRight className="size-4" aria-hidden="true" stroke={1.25} />
-                  </a>
-                </div>
-                <FeatureVisual
-                  type={feature.visual}
-                  accent={feature.accent}
-                  shouldReduceMotion={shouldReduceMotion}
-                />
-              </motion.article>
-            );
-          })}
-
-          <motion.div
-            {...reveal(4)}
-            className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <article className="bg-bg-a1 rounded-xl">
-              <div className="flex p-6 px-8 gap-3 justify-between items-center">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-lg font-medium text-fg-4">Clean setup</h3>
-                  <p className="max-w-72 text-fg-3">
-                    No spreadsheet drift. Paste, set target, and watch from one calm dashboard.
-                  </p>
-                </div>
-                <IconArrowsSort className="size-16 text-electric-blue/35" aria-hidden="true" stroke={1.3} />
-              </div>
-            </article>
-            <article className="bg-bg-a1 rounded-xl">
-              <div className="flex p-6 px-8 gap-3 justify-between items-center">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-lg font-medium text-fg-4">Team-ready signals</h3>
-                  <p className="max-w-72 text-fg-3">
-                    Clear statuses, useful alerts, and predictable checks for fast buying calls.
-                  </p>
-                </div>
-                <IconSend className="size-16 text-radiant-violet/35" aria-hidden="true" stroke={1.3} />
-              </div>
-            </article>
-          </motion.div>
+        <div className="mt-9 flex flex-col gap-10 lg:mt-10 lg:gap-12">
+          {stories.map((story, index) => (
+            <FeatureStoryBlock
+              key={story.title}
+              story={story}
+              index={index}
+              shouldReduceMotion={shouldReduceMotion}
+            />
+          ))}
         </div>
       </div>
     </section>
   );
 };
 
-const FeatureVisual = ({
-  type,
-  accent,
+const FeatureStoryBlock = ({
+  story,
+  index,
   shouldReduceMotion,
 }: {
-  type: FeatureCard["visual"];
-  accent: string;
+  story: FeatureStory;
+  index: number;
   shouldReduceMotion: boolean | null;
 }) => {
-  if (type === "trackers") {
-    return (
-      <div className="w-full h-[320px] flex items-end relative overflow-hidden p-6 px-8 pt-0">
-        <div className="w-full flex flex-col gap-1">
-          {trackerRows.map((row) => (
-            <div key={row.item} className="flex group relative h-9 items-center w-full overflow-hidden">
-              <div className="absolute inset-0 flex items-center gap-[3px]">
-                <div
-                  className="h-full pointer-events-none transform-gpu bg-bg-a2 transition-[width] duration-300 ease-out rounded-l-md"
-                  style={{ width: row.width }}
-                />
-                <div className="h-full pointer-events-none transform-gpu bg-electric-blue/20 transition-[width] duration-300 ease-out rounded-r-md" style={{ width: "18%" }} />
-              </div>
-              <div className="relative z-10 flex items-center w-full gap-2 pl-2.5 pr-3">
-                <div className="size-4 shrink-0 rounded-full bg-background shadow-subtle-2" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-fg-4">{row.item}</div>
-                  <div className="truncate text-xs text-fg-3">{row.store}</div>
-                </div>
-                <span className="shrink-0 text-sm font-medium text-fg-4">{row.price}</span>
-                <span className="hidden shrink-0 text-xs text-fg-3 sm:inline">{row.target}</span>
-              </div>
-            </div>
+  const Icon = story.icon;
+
+  return (
+    <article className="grid items-center gap-6 md:grid-cols-[0.92fr_1.08fr] md:gap-8 lg:gap-10">
+      <motion.div
+        initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-120px" }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { delay: 0.05, duration: 0.58, ease: easeOut }
+        }
+        className="w-full"
+      >
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-full bg-landing-soft-gray text-landing-ink">
+            <Icon className="size-5" aria-hidden="true" stroke={1.7} />
+          </span>
+          <span className="text-sm font-semibold uppercase tracking-[0.07em] text-fg-4">
+            {story.eyebrow}
+          </span>
+        </div>
+
+        <h3 className="mt-4 max-w-xl text-5xl/14 font-semibold text-fg-4 md:text-balance lg:text-6xl/17">
+          {story.title}
+        </h3>
+        <p className="mt-3 w-full max-w-lg text-lg/6 font-medium text-fg-3">
+          {story.detail}
+        </p>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {story.chips.map((chip) => (
+            <span
+              key={chip}
+              className="rounded-full bg-landing-soft-gray px-4 py-2 text-sm font-semibold leading-none text-landing-ink"
+            >
+              {chip}
+            </span>
           ))}
         </div>
-      </div>
-    );
-  }
 
-  if (type === "alerts") {
+        {index === 0 ? (
+          <a
+            href="#pricing"
+            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-landing-ink bg-transparent px-5 text-sm font-bold leading-none text-landing-ink transition-colors hover:bg-landing-ink hover:text-landing-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-ink/50"
+          >
+            See plans
+            <IconArrowRight className="size-4" aria-hidden="true" stroke={1.5} />
+          </a>
+        ) : null}
+      </motion.div>
+
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: shouldReduceMotion ? 0 : 44,
+          scale: shouldReduceMotion ? 1 : 0.97,
+        }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, margin: "-160px" }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 0.72, ease: easeOut }
+        }
+        className={cn(
+          "relative overflow-hidden rounded-[28px] p-4 sm:p-5 lg:p-6",
+          story.surfaceClassName,
+        )}
+      >
+        <ProductPreview type={story.visual} shouldReduceMotion={shouldReduceMotion} />
+      </motion.div>
+    </article>
+  );
+};
+
+const ProductPreview = ({
+  type,
+  shouldReduceMotion,
+}: {
+  type: FeatureStory["visual"];
+  shouldReduceMotion: boolean | null;
+}) => {
+  if (type === "alert") {
     return (
-      <div className="w-full h-[320px] relative overflow-hidden p-6 px-8 pt-0 flex items-end">
-        <div className="absolute left-10 right-10 top-8 h-48 rounded-full bg-radiant-violet/15 blur-3xl" />
-        <div className="relative w-full rounded-[24px] bg-background px-5 py-4 shadow-subtle-3">
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-full bg-radiant-violet/15 text-radiant-violet">
-              <IconSend className="size-5" aria-hidden="true" stroke={1.5} />
+      <div className="relative min-h-[360px] overflow-hidden rounded-[24px] bg-landing-card p-4 sm:p-5">
+        <div className="flex items-center justify-between">
+          <span className="rounded-full bg-landing-soft-gray px-3 py-1.5 text-xs font-bold uppercase leading-none text-landing-muted">
+            Telegram
+          </span>
+          <span className="rounded-full bg-landing-yellow-strong px-3 py-1.5 text-xs font-bold leading-none text-landing-ink">
+            now
+          </span>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 26 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.14, duration: 0.54, ease: easeOut }}
+          className="mx-auto mt-10 max-w-md rounded-[22px] bg-landing-ink p-4 text-landing-card sm:mt-12 sm:p-5"
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-landing-yellow-strong text-landing-ink">
+              <IconSend className="size-5" aria-hidden="true" stroke={1.7} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-fg-4">Telegram alert sent</p>
-              <p className="truncate text-sm text-fg-3">Sony WH-1000XM5 reached $289 target</p>
+              <p className="text-sm font-bold leading-5">Target price hit</p>
+              <p className="mt-1 text-sm leading-5 text-landing-card/70">
+                iPad Air 11 reached $529 at Apple.
+              </p>
             </div>
-            <span className="text-xs font-medium text-success-green">now</span>
           </div>
+
           <div className="mt-5 grid grid-cols-3 gap-2">
-            {["Current", "Target", "Saved"].map((label, index) => (
-              <div key={label} className="rounded-lg bg-bg-a1 px-3 py-2">
-                <p className="text-xs text-fg-3">{label}</p>
-                <p className="mt-1 text-sm font-medium text-fg-4">
-                  {index === 0 ? "$289" : index === 1 ? "$289" : "$41"}
+            {[
+              ["Current", "$529"],
+              ["Target", "$529"],
+              ["Saved", "$70"],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-white/10 px-3 py-2">
+                <p className="text-[11px] font-semibold text-landing-card/55">
+                  {label}
                 </p>
+                <p className="mt-1 text-sm font-bold">{value}</p>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 28 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.28, duration: 0.58, ease: easeOut }}
+          className="absolute bottom-5 right-5 hidden rounded-[20px] bg-landing-soft-gray p-4 sm:block"
+        >
+          <p className="text-xs font-bold uppercase text-landing-muted">Next check</p>
+          <p className="mt-1 text-2xl font-semibold text-landing-ink">
+            30 min
+          </p>
+        </motion.div>
       </div>
     );
   }
 
   if (type === "credits") {
     return (
-      <div className="w-full h-[320px] p-6 px-8 pt-0 flex flex-col justify-end gap-5">
-        <div className="flex items-end justify-between">
+      <div className="relative min-h-[360px] overflow-hidden rounded-[24px] bg-landing-card p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-fg-3">Monthly credits</p>
-            <p className="mt-1 text-5xl font-medium text-fg-4">7,420</p>
+            <p className="text-sm font-bold uppercase tracking-[0.07em] text-landing-muted">
+              Monthly credits
+            </p>
+            <p className="mt-2 text-6xl font-semibold leading-none text-landing-ink">
+              7,420
+            </p>
           </div>
-          <span className="rounded-full bg-success-green/15 px-3 py-1 text-sm font-medium text-success-green">
+          <span className="rounded-full bg-landing-yellow-strong px-4 py-2 text-sm font-bold leading-none text-landing-ink">
             74% left
           </span>
         </div>
-        <div className="h-8 overflow-hidden rounded-full bg-bg-a2">
+
+        <div className="mt-7 overflow-hidden rounded-full bg-landing-soft-gray p-1.5">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-electric-blue to-success-green"
-            initial={{ width: shouldReduceMotion ? "74%" : "38%" }}
-            whileInView={{ width: "74%" }}
+            className="h-8 origin-left rounded-full bg-landing-ink"
+            initial={{ scaleX: shouldReduceMotion ? 0.74 : 0.38 }}
+            whileInView={{ scaleX: 0.74 }}
             viewport={{ once: true }}
             transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.9, ease: easeOut }}
           />
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          {[
-            ["126", "trackers"],
-            ["15m", "checks"],
-            ["Pro", "plan"],
-          ].map(([value, label]) => (
-            <div key={label} className="rounded-lg bg-background px-3 py-2">
-              <p className="text-sm font-medium text-fg-4">{value}</p>
-              <p className="text-xs text-fg-3">{label}</p>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          {usageRows.map((row) => (
+            <div key={row.label} className="rounded-[22px] bg-landing-soft-gray p-4">
+              <p className="text-xs font-bold uppercase leading-none text-landing-muted">
+                {row.label}
+              </p>
+              <p className="mt-3 text-3xl font-semibold leading-none text-landing-ink">
+                {row.value}
+              </p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 rounded-[20px] bg-landing-ink p-4 text-landing-card">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm font-semibold">Pro plan capacity</span>
+            <span className="text-sm font-bold text-landing-yellow-strong">
+              steady
+            </span>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[320px] p-6 px-8 pt-0 flex flex-col justify-end gap-3">
-      <div className="flex items-center gap-2 font-medium text-fg-4">
-        <IconShieldCheck className={`size-4 ${accent}`} aria-hidden="true" stroke={1.5} />
-        Last activity
+    <div className="relative min-h-[360px] overflow-hidden rounded-[24px] bg-landing-card p-3.5 sm:p-4">
+      <div className="flex items-center justify-between rounded-[18px] bg-landing-soft-gray px-3.5 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="size-3 rounded-full bg-landing-ink" />
+          <span className="text-sm font-bold text-landing-ink">Price board</span>
+        </div>
+        <button
+          type="button"
+          className="rounded-full bg-landing-yellow-strong px-3 py-1.5 text-xs font-bold leading-none text-landing-ink"
+        >
+          + New
+        </button>
       </div>
-      <div className="flex flex-col gap-2">
-        {timelineRows.map((row) => (
-          <div key={row.label} className="flex h-11 items-center gap-3 rounded-lg bg-background px-3">
-            <span className={`size-2.5 rounded-full ${row.tone}`} />
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg-4">
-              {row.label}
-            </span>
-            <span className="text-sm text-fg-3">{row.value}</span>
-          </div>
-        ))}
+
+      <div className="mt-4 space-y-2.5">
+        {trackerRows.map((row, index) => {
+          const isHit = row.progress === 1;
+
+          return (
+            <motion.div
+              key={row.item}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { delay: 0.1 + index * 0.08, duration: 0.48, ease: easeOut }
+              }
+              className="rounded-[18px] border border-[#e0e5e7] bg-white p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-semibold text-landing-ink">
+                    {row.item}
+                  </p>
+                  <p className="mt-1 text-xs font-bold uppercase leading-none text-landing-muted">
+                    {row.store}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1.5 text-xs font-bold leading-none",
+                    isHit
+                      ? "bg-landing-yellow-strong text-landing-ink"
+                      : "bg-landing-soft-gray text-landing-muted",
+                  )}
+                >
+                  {isHit ? "Hit" : "Watching"}
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-[1fr_auto_auto] items-center gap-3">
+                <div className="h-2.5 overflow-hidden rounded-full bg-landing-soft-gray">
+                  <motion.div
+                    className="h-full origin-left rounded-full bg-landing-ink"
+                    initial={{ scaleX: shouldReduceMotion ? row.progress : 0.28 }}
+                    whileInView={{ scaleX: row.progress }}
+                    viewport={{ once: true }}
+                    transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.18 + index * 0.08, duration: 0.82, ease: easeOut }}
+                  />
+                </div>
+                <span className="text-sm font-semibold text-landing-ink">
+                  {row.price}
+                </span>
+                <span className="text-sm font-semibold text-landing-muted">
+                  {row.target}
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-[18px] bg-landing-ink p-3 text-landing-card">
+        <IconCircleCheck className="size-5 text-landing-yellow-strong" aria-hidden="true" stroke={1.7} />
+        <p className="text-sm font-semibold">iPad Air crossed its target line.</p>
       </div>
     </div>
   );

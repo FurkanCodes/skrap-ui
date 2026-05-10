@@ -12,7 +12,7 @@ export interface MarketingPricingPlan {
 export const MARKETING_PRICING_PLANS: readonly MarketingPricingPlan[] = [
   {
     planKey: "free",
-    surfaceClassName: "bg-[#00000008]",
+    surfaceClassName: "bg-landing-soft-gray",
     name: "Free",
     description: "For shoppers tracking a few high-intent products without the pressure to upgrade fast.",
     price: 0,
@@ -26,7 +26,7 @@ export const MARKETING_PRICING_PLANS: readonly MarketingPricingPlan[] = [
   },
   {
     planKey: "plus",
-    surfaceClassName: "bg-whisper-purple/55",
+    surfaceClassName: "bg-landing-yellow",
     name: "Plus",
     description: "For regular deal hunters who want more coverage, faster checks, and a simple monthly upgrade.",
     price: 9,
@@ -41,7 +41,7 @@ export const MARKETING_PRICING_PLANS: readonly MarketingPricingPlan[] = [
   },
   {
     planKey: "pro",
-    surfaceClassName: "bg-pale-mint/70",
+    surfaceClassName: "bg-landing-paper",
     name: "Pro",
     description: "For power users covering more stores, more products, and faster-moving opportunities.",
     price: 19,

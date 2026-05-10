@@ -20,7 +20,7 @@ export default function Faq() {
           >
             FAQs
           </Badge>
-          <h2 className="max-w-md text-4xl font-semibold leading-[1.1] tracking-tight text-fg-4 sm:text-[44px]">
+          <h2 className="max-w-md text-4xl font-semibold leading-[1.1] text-fg-4 sm:text-[44px]">
             Questions before you start tracking?
           </h2>
         </div>
@@ -41,7 +41,7 @@ export default function Faq() {
               >
                 <AccordionTrigger className="cursor-pointer p-0 text-left text-body font-semibold leading-body text-fg-4 hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
                   {faq.question}
-                  <IconPlus className="h-5 w-5 shrink-0 text-electric-blue transition-transform duration-200 group-aria-expanded/accordion-trigger:rotate-45" stroke={1.5} />
+                  <IconPlus className="h-5 w-5 shrink-0 text-landing-ink transition-transform duration-200 group-aria-expanded/accordion-trigger:rotate-45" stroke={1.5} />
                 </AccordionTrigger>
                 <AccordionContent className="p-0 text-body leading-body text-fg-3">
                   {faq.answer}

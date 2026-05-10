@@ -4,7 +4,12 @@ import type { CSSProperties } from "react";
 import { getMessages } from "@/lib/messages";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
-import { IconLoader2 } from "@tabler/icons-react";
+import {
+  IconBellRinging,
+  IconCircleCheck,
+  IconGauge,
+  IconLoader2,
+} from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
 
@@ -40,16 +45,16 @@ type AuthFormFieldErrors = Partial<Record<AuthFormField, string>>;
 type ParsedAuthError = { message: string; code: string | null };
 const SESSION_EXPIRED_SEARCH_PARAM = "expired";
 const authLogoVars = {
-  "--brand-logo-accent": "#918df6",
-  "--brand-logo-wordmark": "#181925",
-  "--brand-logo-cutout": "#ffffff",
+  "--brand-logo-accent": "#fffa56",
+  "--brand-logo-wordmark": "#fffffb",
+  "--brand-logo-cutout": "#142127",
 } as CSSProperties;
 const visitorsInputClassName =
-  "h-10 rounded-[12px] border-0 !bg-[#f5f5f5] px-4 py-0 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-[#181925] shadow-none outline-2 outline-transparent placeholder:!text-[#b3b3b3] focus:!outline-[#918df6] focus:!ring-2 focus:!ring-[#dad9fc] focus-visible:!outline-[#918df6] focus-visible:!ring-2 focus-visible:!ring-[#dad9fc] disabled:opacity-50 md:text-[16px]";
+  "h-10 rounded-[12px] border-0 !bg-landing-soft-gray px-4 py-0 text-[16px] font-medium leading-6 !text-landing-ink shadow-none outline-2 outline-transparent placeholder:!text-landing-muted/55 focus:!outline-landing-ink focus:!ring-2 focus:!ring-landing-yellow focus-visible:!outline-landing-ink focus-visible:!ring-2 focus-visible:!ring-landing-yellow disabled:opacity-50 md:text-[16px]";
 const visitorsPrimaryButtonClassName =
-  "h-11 w-full rounded-full border-0 !bg-[#918df6] px-5 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-white shadow-none transition-all hover:!bg-[#918df6] hover:opacity-90 disabled:!bg-[#dad9fc] disabled:!text-white disabled:opacity-100";
+  "h-11 w-full rounded-full border-0 !bg-landing-ink px-5 text-[16px] font-semibold leading-6 !text-landing-card shadow-none transition-all hover:!bg-landing-muted disabled:!bg-landing-soft-gray disabled:!text-landing-muted disabled:opacity-100";
 const visitorsSocialButtonClassName =
-  "h-11 w-full rounded-full border-0 !bg-[rgba(0,0,0,0.03)] px-5 text-[16px] font-medium leading-6 tracking-[-0.32px] !text-[#666666] shadow-none transition-all hover:!bg-[rgba(0,0,0,0.05)] hover:!text-[#666666] disabled:!bg-[#f5f5f5] disabled:!text-[#999999]";
+  "h-11 w-full rounded-full border-0 !bg-landing-soft-gray px-5 text-[16px] font-medium leading-6 !text-landing-muted shadow-none transition-all hover:!bg-landing-paper hover:!text-landing-ink disabled:!bg-landing-soft-gray disabled:!text-landing-muted/55";
 
 function GoogleIcon() {
   return (
@@ -158,66 +163,106 @@ function getAuthFormFieldErrors(
   return mapAuthFieldErrors(parsed.error.issues);
 }
 
-const radarPoints = [
+const authTrackerRows = [
   {
-    label: "Amazon",
-    position: "left-[18%] top-[31%]",
-    className: "bg-radiant-violet",
-    count: "12",
+    product: "Sony WH-1000XM5",
+    store: "Amazon",
+    price: "$298",
+    target: "$289",
+    status: "Watching",
   },
   {
-    label: "Target",
-    position: "left-[36%] top-[22%]",
-    className: "bg-electric-blue",
-    count: "8",
+    product: "LG C3 OLED",
+    store: "Best Buy",
+    price: "$1,196",
+    target: "$1,099",
+    status: "Checking",
   },
   {
-    label: "Best Buy",
-    position: "left-[51%] top-[36%]",
-    className: "bg-accent-pink",
-    count: "5",
-  },
-  {
-    label: "Walmart",
-    position: "left-[68%] top-[27%]",
-    className: "bg-warning-yellow",
-    count: "4",
-  },
-  {
-    label: "Shopify",
-    position: "left-[77%] top-[49%]",
-    className: "bg-vivid-orange",
-    count: "2",
+    product: "iPad Air 11",
+    store: "Apple",
+    price: "$529",
+    target: "$529",
+    status: "Hit",
   },
 ] as const;
 
-function PriceRadarGlobe() {
+function AuthProductPreview() {
   return (
-    <div className="pointer-events-none absolute -bottom-[15rem] left-1/2 h-[760px] w-[760px] -translate-x-1/2 overflow-hidden rounded-full bg-[radial-gradient(circle_at_33%_24%,rgba(255,255,255,0.95),rgba(218,217,252,0.62)_24%,rgba(44,120,252,0.42)_42%,rgba(44,120,252,0.24)_64%,rgba(44,120,252,0.12)_100%)] shadow-[inset_0_0_0_1px_rgba(145,141,246,0.16),inset_0_20px_80px_rgba(255,255,255,0.72)]">
-      <div className="absolute inset-[7%] rounded-full bg-[radial-gradient(circle_at_62%_42%,rgba(222,246,228,0.92),transparent_0_10%,transparent_10%),radial-gradient(circle_at_43%_34%,rgba(222,246,228,0.88),transparent_0_14%,transparent_14%),radial-gradient(circle_at_61%_57%,rgba(222,246,228,0.78),transparent_0_18%,transparent_18%),radial-gradient(circle_at_30%_53%,rgba(250,250,250,0.82),transparent_0_12%,transparent_12%)]" />
-      <div className="absolute left-[12%] top-[42%] text-[18px] font-medium leading-none tracking-[0.28em] text-electric-blue/45">
-        PRICE
-      </div>
-      <div className="absolute left-[14%] top-[47%] text-[18px] font-medium leading-none tracking-[0.3em] text-electric-blue/35">
-        RADAR
-      </div>
-      <div className="absolute left-[36%] top-[33%] h-px w-[42%] rotate-12 bg-radiant-violet/25" />
-      <div className="absolute left-[39%] top-[44%] h-px w-[40%] -rotate-6 bg-radiant-violet/20" />
-      <div className="absolute left-[29%] top-[56%] h-px w-[48%] rotate-[18deg] bg-radiant-violet/20" />
-      {radarPoints.map((point) => (
-        <div key={point.label} className={`absolute ${point.position}`}>
-          <div className="relative flex items-center gap-2">
-            <span
-              className={`flex size-12 items-center justify-center rounded-full text-body font-bold leading-none text-canvas-white shadow-[0_0_0_5px_rgba(255,255,255,0.82),0_10px_28px_rgba(24,25,37,0.14)] ${point.className}`}
+    <div className="rounded-[30px] bg-landing-soft-blue p-5 shadow-subtle-3">
+      <div className="rounded-[24px] border border-border bg-landing-card p-5">
+        <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+          <div>
+            <p className="text-caption font-bold uppercase leading-caption text-landing-muted">
+              Product board
+            </p>
+            <h3 className="mt-1 text-heading-lg font-semibold leading-heading-lg text-landing-ink">
+              28 products under watch
+            </h3>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full bg-landing-yellow-strong px-3 py-2 text-caption font-bold leading-none text-landing-ink">
+            <IconBellRinging className="size-3.5" aria-hidden="true" stroke={1.6} />
+            Telegram ready
+          </span>
+        </div>
+
+        <div className="mt-4 space-y-2.5">
+          {authTrackerRows.map((row) => (
+            <div
+              key={row.product}
+              className="rounded-[18px] bg-landing-soft-gray px-4 py-3"
             >
-              {point.count}
-            </span>
-            <span className="rounded-full bg-canvas-white/82 px-2.5 py-1 text-caption font-semibold leading-none text-slate-ink shadow-subtle-2">
-              {point.label}
-            </span>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-body font-semibold leading-body text-landing-ink">
+                    {row.product}
+                  </p>
+                  <p className="mt-1 text-caption font-bold uppercase leading-caption text-landing-muted">
+                    {row.store}
+                  </p>
+                </div>
+                <span className="rounded-full bg-landing-card px-2.5 py-1 text-[11px] font-bold uppercase leading-none text-landing-muted">
+                  {row.status}
+                </span>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 text-body">
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-landing-card">
+                  <div className="h-full w-[78%] rounded-full bg-landing-ink" />
+                </div>
+                <span className="font-semibold text-landing-ink">{row.price}</span>
+                <span className="font-medium text-landing-muted">{row.target}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-[1fr_0.78fr] gap-3">
+          <div className="rounded-[20px] bg-landing-ink p-4 text-landing-card">
+            <div className="flex items-center gap-2">
+              <IconBellRinging className="size-4 text-landing-yellow-strong" aria-hidden="true" stroke={1.6} />
+              <p className="text-caption font-bold uppercase leading-caption text-landing-card/60">
+                Last alert
+              </p>
+            </div>
+            <p className="mt-3 text-heading-sm font-semibold leading-heading-sm">
+              iPad Air reached target.
+            </p>
+          </div>
+
+          <div className="rounded-[20px] bg-landing-yellow p-4 text-landing-ink">
+            <div className="flex items-center justify-between">
+              <p className="text-caption font-bold uppercase leading-caption text-landing-muted">
+                Credits
+              </p>
+              <IconGauge className="size-4" aria-hidden="true" stroke={1.6} />
+            </div>
+            <p className="mt-4 text-3xl font-semibold leading-none">7,420</p>
+            <p className="mt-1 text-caption font-semibold leading-caption text-landing-muted">
+              left
+            </p>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -228,21 +273,26 @@ function AuthVisualPanel({ mode }: { mode: AuthMode }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.48, ease: "easeOut" }}
-      className="relative hidden min-h-screen overflow-hidden bg-[#fafafa] lg:block"
+      className="relative hidden min-h-screen overflow-hidden bg-landing-yellow lg:block"
       aria-hidden="true"
     >
-      <div className="absolute inset-x-0 top-[28%] z-10 mx-auto max-w-lg px-8 text-center">
-        <h2 className="text-balance text-4xl font-semibold leading-[1.12] text-muted-gray xl:text-5xl">
-          {mode === "sign-up"
-            ? "Track target prices in realtime, across every store"
-            : "Welcome back to your live price radar"}
-        </h2>
-        <p className="mx-auto mt-6 max-w-md text-heading-sm font-medium leading-heading-sm text-muted-gray/80">
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-8 py-12">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-landing-ink text-landing-yellow-strong">
+            <IconCircleCheck className="size-6" aria-hidden="true" stroke={1.7} />
+          </div>
+          <h2 className="text-balance text-4xl font-semibold leading-[1.08] text-landing-ink xl:text-5xl">
+            {mode === "sign-up"
+              ? "Track target prices in realtime, across every store"
+              : "Welcome back to your live price radar"}
+          </h2>
+          <p className="mx-auto mt-5 max-w-md text-heading-sm font-medium leading-heading-sm text-landing-muted">
           Turn product pages into monitored opportunities, then get the alert
           before the margin is gone.
-        </p>
+          </p>
+        </div>
+        <AuthProductPreview />
       </div>
-      <PriceRadarGlobe />
     </motion.aside>
   );
 }
@@ -516,7 +566,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="auth-light-surface min-h-screen bg-canvas-white font-openrunde text-slate-ink">
+    <div className="auth-light-surface min-h-screen bg-landing-yellow font-openrunde text-landing-ink">
       <div className="grid min-h-screen lg:grid-cols-2">
         <motion.section
           initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
@@ -526,22 +576,25 @@ export function AuthForm({ mode }: AuthFormProps) {
               ? { duration: 0 }
               : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
           }
-          className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8"
+          className="flex min-h-screen items-center justify-center bg-landing-yellow px-5 py-10 sm:px-8 lg:bg-landing-card"
         >
-          <div className="w-full max-w-[344px]">
+          <div className="w-full max-w-[360px] rounded-[32px] bg-landing-card p-6 shadow-subtle-3 sm:p-8 lg:max-w-[344px] lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none">
             <Link
               href="/"
-              className="mx-auto mb-8 flex w-fit items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
+              className="mx-auto mb-8 flex h-12 w-fit items-center justify-center rounded-full bg-landing-ink px-4 shadow-subtle-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-landing-card"
               aria-label="Dealvinci home"
             >
-              <Logo iconOnly className="[&_svg]:h-14 [&_svg]:w-14" style={authLogoVars} />
+              <Logo
+                className="[&_span]:text-[1.35rem] [&_svg]:h-7 [&_svg]:w-7"
+                style={authLogoVars}
+              />
             </Link>
 
             <div className="text-center">
-              <h1 className="text-[20px] font-medium leading-7 tracking-[-0.32px] text-[#181925]">
+              <h1 className="text-[20px] font-medium leading-7 text-landing-ink">
                 {isSignUp ? t("signUp.title") : t("signIn.title")}
               </h1>
-              <p className="mt-0.5 text-[16px] font-normal leading-6 tracking-[-0.32px] text-[#666666]">
+              <p className="mt-0.5 text-[16px] font-normal leading-6 text-landing-muted">
                 {isSignUp ? t("signUp.subtitle") : t("signIn.subtitle")}
               </p>
             </div>
@@ -566,7 +619,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               {!isSignUp && signInNotice ? (
                 <div
                   role="status"
-                  className="rounded-2xl border border-warning-yellow/35 bg-warning-yellow/10 px-4 py-3 text-body leading-body text-slate-ink"
+                  className="rounded-2xl border border-landing-yellow-strong/50 bg-landing-yellow/45 px-4 py-3 text-body leading-body text-landing-ink"
                 >
                   {signInNotice}
                 </div>
@@ -574,13 +627,13 @@ export function AuthForm({ mode }: AuthFormProps) {
               {isSignUp && signUpNotice ? (
                 <div
                   role="status"
-                  className="rounded-2xl border border-success-green/35 bg-pale-mint px-4 py-3 text-body leading-body text-slate-ink"
+                  className="rounded-2xl border border-landing-soft-green bg-landing-soft-green px-4 py-3 text-body leading-body text-landing-ink"
                 >
                   {signUpNotice}
                 </div>
               ) : null}
               {isSignUp && process.env.NODE_ENV !== "production" ? (
-                <p className="text-caption leading-caption text-muted-gray">
+                <p className="text-caption leading-caption text-landing-muted">
                   Local dev tip: if external email delivery is unavailable, use the
                   verification link printed in the server logs with
                   <span className="font-mono"> [auth-email][dev-link] </span>.
@@ -677,7 +730,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     {passwordError}
                   </p>
                 ) : isSignUp ? (
-                  <p className="text-caption leading-caption text-muted-gray">
+                  <p className="text-caption leading-caption text-landing-muted">
                     {t("signUp.passwordHint")}
                   </p>
                 ) : null}
@@ -718,20 +771,20 @@ export function AuthForm({ mode }: AuthFormProps) {
                   ) : null}
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-4 pt-1 text-body text-medium-gray">
+                <div className="flex items-center justify-between gap-4 pt-1 text-body text-landing-muted">
                   <Label htmlFor="remember-device" className="inline-flex cursor-pointer items-center gap-2.5">
                     <Checkbox
                       id="remember-device"
                       checked={rememberDevice}
                       onCheckedChange={(checked) => setRememberDevice(Boolean(checked))}
                       disabled={isBusy}
-                      className="border-light-gray data-checked:border-radiant-violet data-checked:bg-radiant-violet data-checked:text-canvas-white"
+                      className="border-landing-soft-gray data-checked:border-landing-ink data-checked:bg-landing-ink data-checked:text-landing-yellow-strong"
                     />
                     {t("signIn.rememberDevice")}
                   </Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="font-semibold text-electric-blue transition-colors hover:text-deep-purple"
+                    className="font-semibold text-landing-ink transition-colors hover:text-landing-muted"
                   >
                     {t("signIn.forgotPassword")}
                   </Link>
@@ -789,7 +842,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </Button>
             </div>
 
-            <p className="mt-4 text-center text-[14px] font-normal leading-5 tracking-[-0.32px] text-[#666666]">
+            <p className="mt-4 text-center text-[14px] font-normal leading-5 text-landing-muted">
               {isSignUp ? t("links.alreadyHaveAccount") : t("links.dontHaveAccount")}{" "}
               <Link
                 href={
@@ -797,19 +850,19 @@ export function AuthForm({ mode }: AuthFormProps) {
                     ? `/auth/sign-in?next=${encodeURIComponent(redirectTo)}`
                     : `/auth/sign-up?next=${encodeURIComponent(redirectTo)}`
                 }
-                className="font-normal text-[#2c78fc] transition-colors hover:text-[#2c78fc]/80"
+                className="font-semibold text-landing-ink transition-colors hover:text-landing-muted"
               >
                 {isSignUp ? t("links.signIn") : t("links.createAccount")}
               </Link>
             </p>
 
-            <p className="mt-5 text-center text-caption leading-caption text-muted-gray">
+            <p className="mt-5 text-center text-caption leading-caption text-landing-muted">
               {t("legal.prefix")}{" "}
-              <Link href="/terms" className="font-semibold text-slate-ink underline underline-offset-4">
+              <Link href="/terms" className="font-semibold text-landing-ink underline underline-offset-4">
                 {t("legal.terms")}
               </Link>{" "}
               {t("legal.and")}{" "}
-              <Link href="/privacy" className="font-semibold text-slate-ink underline underline-offset-4">
+              <Link href="/privacy" className="font-semibold text-landing-ink underline underline-offset-4">
                 {t("legal.privacy")}
               </Link>
               .

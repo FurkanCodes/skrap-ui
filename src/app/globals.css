@@ -32,6 +32,16 @@
   --color-pale-mint: #def6e4;
   --color-deep-purple: #9580ff;
   --color-vivid-orange: #ff3e00;
+  --color-landing-ink: var(--landing-ink);
+  --color-landing-yellow: var(--landing-yellow);
+  --color-landing-yellow-strong: var(--landing-yellow-strong);
+  --color-landing-paper: var(--landing-paper);
+  --color-landing-card: var(--landing-card);
+  --color-landing-soft-blue: var(--landing-soft-blue);
+  --color-landing-soft-green: var(--landing-soft-green);
+  --color-landing-soft-lavender: var(--landing-soft-lavender);
+  --color-landing-soft-gray: var(--landing-soft-gray);
+  --color-landing-muted: var(--landing-muted);
   --font-sans: var(--font-ui-sans), ui-sans-serif, system-ui, sans-serif;
   --font-openrunde: var(--font-ui-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
@@ -210,23 +220,47 @@
 @layer components {
   .auth-light-surface {
     color-scheme: light;
-    --background: oklch(0.992 0.006 255);
-    --foreground: oklch(0.205 0.02 255);
-    --bg-2: oklch(0.965 0.008 252);
-    --bg-a1: oklch(0.955 0.016 292 / 66%);
-    --bg-a2: oklch(0.925 0.034 292 / 88%);
-    --bg-a3: oklch(0.955 0.016 292 / 66%);
-    --bg-a4: oklch(0.925 0.034 292 / 88%);
-    --fg-1: oklch(0.57 0.026 255);
-    --fg-3: oklch(0.34 0.026 255);
-    --fg-4: oklch(0.205 0.02 255);
-    --fg-a1: oklch(0.205 0.02 255);
-    --purple-2: oklch(0.78 0.11 292 / 40%);
-    --purple-4: oklch(0.62 0.18 292);
-    --card: oklch(0.998 0.004 255);
-    --card-foreground: oklch(0.205 0.02 255);
-    --border: oklch(0.89 0.012 250);
-    --ring: oklch(0.62 0.12 257);
+    --landing-ink: #142127;
+    --landing-yellow: #fffa77;
+    --landing-yellow-strong: #fffa56;
+    --landing-paper: #f4eae0;
+    --landing-card: #fffffb;
+    --landing-soft-blue: #c7d8e8;
+    --landing-soft-green: #d8ead6;
+    --landing-soft-lavender: #ddd6f4;
+    --landing-soft-gray: #edf1f3;
+    --landing-muted: #525f64;
+    --background: var(--landing-yellow);
+    --foreground: var(--landing-ink);
+    --bg-2: var(--landing-paper);
+    --bg-a1: var(--landing-soft-gray);
+    --bg-a2: #dce7eb;
+    --bg-a3: #d1dde2;
+    --bg-a4: #becbd1;
+    --fg-1: var(--landing-muted);
+    --fg-3: var(--landing-muted);
+    --fg-4: var(--landing-ink);
+    --fg-a1: var(--landing-ink);
+    --purple-2: color-mix(in oklab, var(--landing-yellow-strong) 32%, transparent);
+    --purple-4: var(--landing-ink);
+    --card: var(--landing-card);
+    --card-foreground: var(--landing-ink);
+    --popover: var(--landing-card);
+    --popover-foreground: var(--landing-ink);
+    --primary: var(--landing-ink);
+    --primary-foreground: var(--landing-card);
+    --secondary: var(--landing-soft-gray);
+    --secondary-foreground: var(--landing-ink);
+    --muted: var(--landing-soft-gray);
+    --muted-foreground: var(--landing-muted);
+    --accent: var(--landing-yellow-strong);
+    --accent-foreground: var(--landing-ink);
+    --border: #d9e1e4;
+    --input: #d9e1e4;
+    --ring: var(--landing-ink);
+    --brand-logo-accent: var(--landing-yellow-strong);
+    --brand-logo-wordmark: var(--landing-ink);
+    --brand-logo-cutout: var(--landing-ink);
   }
 
   .visitors-shell {
@@ -256,6 +290,49 @@
     --sidebar-foreground: #181925;
     --sidebar-accent: #f3f3f3;
     --sidebar-border: #e8e8e8;
+  }
+
+  .landing-honey-shell {
+    color-scheme: light;
+    --landing-ink: #142127;
+    --landing-yellow: #fffa77;
+    --landing-yellow-strong: #fffa56;
+    --landing-paper: #f4eae0;
+    --landing-card: #ffffff;
+    --landing-soft-blue: #c7d8e8;
+    --landing-soft-green: #d8ead6;
+    --landing-soft-lavender: #ddd6f4;
+    --landing-soft-gray: #edf1f3;
+    --landing-muted: #525f64;
+    --background: #ffffff;
+    --foreground: var(--landing-ink);
+    --fg-1: var(--landing-muted);
+    --fg-3: var(--landing-muted);
+    --fg-4: var(--landing-ink);
+    --fg-a1: var(--landing-ink);
+    --bg-2: var(--landing-paper);
+    --bg-a1: var(--landing-soft-gray);
+    --bg-a2: #dce7eb;
+    --bg-a3: #d1dde2;
+    --bg-a4: #becbd1;
+    --card: var(--landing-card);
+    --card-foreground: var(--landing-ink);
+    --popover: var(--landing-card);
+    --popover-foreground: var(--landing-ink);
+    --primary: var(--landing-ink);
+    --primary-foreground: var(--landing-card);
+    --secondary: var(--landing-soft-gray);
+    --secondary-foreground: var(--landing-ink);
+    --muted: var(--landing-soft-gray);
+    --muted-foreground: var(--landing-muted);
+    --accent: var(--landing-yellow-strong);
+    --accent-foreground: var(--landing-ink);
+    --border: #d9e1e4;
+    --input: #d9e1e4;
+    --ring: var(--landing-ink);
+    --brand-logo-accent: var(--landing-yellow-strong);
+    --brand-logo-wordmark: var(--landing-ink);
+    --brand-logo-cutout: var(--landing-ink);
   }
 
   .app-loading-screen {

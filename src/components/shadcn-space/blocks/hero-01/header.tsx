@@ -29,19 +29,13 @@ type HeaderProps = {
 };
 
 const darkLogoVars = {
-  "--brand-logo-accent": "#7cc8ff",
+  "--brand-logo-accent": "#fffa56",
   "--brand-logo-wordmark": "#ffffff",
-  "--brand-logo-cutout": "#181925",
-} as CSSProperties;
-
-const lightLogoVars = {
-  "--brand-logo-accent": "#2c78fc",
-  "--brand-logo-wordmark": "#181925",
-  "--brand-logo-cutout": "#ffffff",
+  "--brand-logo-cutout": "#142127",
 } as CSSProperties;
 
 const navLinkClass =
-  "rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/68 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50";
+  "rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/68 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-yellow-strong/70";
 
 const MobileLink = ({
   href,
@@ -55,10 +49,10 @@ const MobileLink = ({
   <a
     href={href}
     onClick={onClick}
-    className="flex items-center justify-between rounded-2xl bg-[#00000008] px-4 py-4 text-heading-sm font-semibold leading-heading-sm text-slate-ink transition-colors hover:bg-whisper-purple/45"
+    className="flex items-center justify-between rounded-2xl bg-landing-soft-gray px-4 py-4 text-heading-sm font-semibold leading-heading-sm text-landing-ink transition-colors hover:bg-landing-paper"
   >
     {title}
-    <span className="h-2 w-2 rounded-full bg-radiant-violet" aria-hidden="true" />
+    <span className="h-2 w-2 rounded-full bg-landing-yellow-strong" aria-hidden="true" />
   </a>
 );
 
@@ -90,59 +84,59 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
             : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
         }
         className={cn(
-          "dark fixed top-8 left-1/2 -translate-x-1/2 z-99 w-[460px] bg-background backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xs corner-superellipse/1.125 hidden md:block font-openrunde",
+          "dark fixed top-8 left-1/2 -translate-x-1/2 z-99 w-[460px] bg-landing-ink backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xs corner-superellipse/1.125 hidden md:block font-openrunde",
           className,
         )}
       >
-      <nav
-        aria-label="Main navigation"
-        className="flex h-13 items-center gap-2 px-4 pr-3"
-      >
-        <a
-          href="#home"
-          className="flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
-          aria-label="Dealvinci home"
+        <nav
+          aria-label="Main navigation"
+          className="flex h-13 items-center gap-2 px-4 pr-3"
         >
-          <Logo iconOnly className="text-canvas-white" style={darkLogoVars} />
-        </a>
+          <a
+            href="#home"
+            className="flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-yellow-strong/70"
+            aria-label="Dealvinci home"
+          >
+            <Logo iconOnly className="text-canvas-white" style={darkLogoVars} />
+          </a>
 
-        <div className="flex flex-1 items-center gap-0.5">
-          {navigationData.map((navItem) => (
-            <a key={navItem.title} href={navItem.href} className={navLinkClass}>
-              {navItem.title}
-            </a>
-          ))}
-        </div>
+          <div className="flex flex-1 items-center gap-0.5">
+            {navigationData.map((navItem) => (
+              <a key={navItem.title} href={navItem.href} className={navLinkClass}>
+                {navItem.title}
+              </a>
+            ))}
+          </div>
 
-        <div className="flex items-center gap-2">
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={handleDashboard}
-              className="rounded-full bg-deep-purple px-4 py-2.5 text-[15px] font-medium leading-none text-canvas-white shadow-subtle transition-colors hover:bg-radiant-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-radiant-violet/70"
-            >
-              Dashboard
-            </button>
-          ) : (
-            <>
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
               <button
                 type="button"
-                onClick={handleLogin}
-                className="rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/74 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50"
+                onClick={handleDashboard}
+                className="rounded-full bg-landing-yellow-strong px-4 py-2.5 text-[15px] font-semibold leading-none text-landing-ink shadow-subtle transition-colors hover:bg-landing-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-yellow-strong/70"
               >
-                Login
+                Dashboard
               </button>
-              <button
-                type="button"
-                onClick={handleRegister}
-                className="h-8 rounded-full bg-electric-blue px-3.5 text-sm font-medium leading-none text-canvas-white shadow-subtle transition-all hover:bg-radiant-violet active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue/50"
-              >
-                Register
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleLogin}
+                  className="rounded-full px-2.5 py-2 text-sm font-medium leading-none text-canvas-white/74 transition-colors hover:text-canvas-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-yellow-strong/70"
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRegister}
+                  className="h-8 rounded-full bg-landing-yellow-strong px-3.5 text-sm font-semibold leading-none text-landing-ink shadow-subtle transition-all hover:bg-landing-yellow active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-yellow-strong/70"
+                >
+                  Register
+                </button>
+              </>
+            )}
+          </div>
+        </nav>
       </motion.header>
 
       <motion.header
@@ -158,91 +152,91 @@ const Header = ({ navigationData, isAuthenticated, className }: HeaderProps) => 
           className,
         )}
       >
-      <div className="flex h-13 w-full items-center justify-between rounded-[24px] border border-light-gray bg-canvas-white/95 px-3 shadow-subtle backdrop-blur-xl">
-        <a href="#home" className="flex items-center" aria-label="Dealvinci home">
-          <Logo iconOnly style={lightLogoVars} />
-        </a>
+        <div className="flex h-13 w-full items-center justify-between rounded-[24px] border border-landing-ink bg-landing-ink px-3 shadow-subtle">
+          <a href="#home" className="flex items-center" aria-label="Dealvinci home">
+            <Logo iconOnly style={darkLogoVars} />
+          </a>
 
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger id="mobile-menu-trigger">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00000008] text-slate-ink">
-              <IconMenu2 width={20} height={20} stroke={1.5} />
-              <span className="sr-only">Menu</span>
-            </span>
-          </SheetTrigger>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger id="mobile-menu-trigger">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-landing-yellow-strong text-landing-ink">
+                <IconMenu2 width={20} height={20} stroke={1.5} />
+                <span className="sr-only">Menu</span>
+              </span>
+            </SheetTrigger>
 
-          <SheetContent
-            showCloseButton={false}
-            side="right"
-            className="w-full border-l-0 bg-canvas-white p-0 font-openrunde sm:w-96"
-          >
-            <div className="flex items-center justify-between border-b border-light-gray px-5 py-4">
-              <a href="#home" className="flex items-center" onClick={() => setIsOpen(false)}>
-                <Logo style={lightLogoVars} />
-              </a>
-              <SheetClose id="mobile-menu-close">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00000008] text-slate-ink">
+            <SheetContent
+              showCloseButton={false}
+              side="right"
+              className="landing-honey-shell w-full border-l-0 bg-landing-paper p-0 font-openrunde text-landing-ink sm:w-96"
+            >
+              <div className="flex items-center justify-between border-b border-landing-ink/10 bg-landing-ink px-5 py-4">
+                <a href="#home" className="flex items-center" onClick={() => setIsOpen(false)}>
+                  <Logo style={darkLogoVars} />
+                </a>
+                <SheetClose id="mobile-menu-close">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-landing-yellow-strong text-landing-ink">
                     <IconX width={18} height={18} stroke={1.5} />
-                  <span className="sr-only">Close menu</span>
-                </span>
-              </SheetClose>
-            </div>
-
-            <div className="flex min-h-[calc(100dvh-73px)] flex-col gap-8 px-5 py-6">
-              <SheetTitle className="sr-only">Menu</SheetTitle>
-
-              <div className="flex flex-col gap-3">
-                {navigationData.map((item) => (
-                  <MobileLink
-                    key={item.title}
-                    href={item.href}
-                    title={item.title}
-                    onClick={() => setIsOpen(false)}
-                  />
-                ))}
+                    <span className="sr-only">Close menu</span>
+                  </span>
+                </SheetClose>
               </div>
 
-              <div className="mt-auto flex flex-col gap-3">
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleDashboard();
-                    }}
-                    className="h-12 rounded-full bg-radiant-violet px-5 text-body font-semibold leading-body text-canvas-white shadow-subtle"
-                  >
-                    Dashboard
-                  </button>
-                ) : (
-                  <>
+              <div className="flex min-h-[calc(100dvh-73px)] flex-col gap-8 px-5 py-6">
+                <SheetTitle className="sr-only">Menu</SheetTitle>
+
+                <div className="flex flex-col gap-3">
+                  {navigationData.map((item) => (
+                    <MobileLink
+                      key={item.title}
+                      href={item.href}
+                      title={item.title}
+                      onClick={() => setIsOpen(false)}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-auto flex flex-col gap-3">
+                  {isAuthenticated ? (
                     <button
                       type="button"
                       onClick={() => {
                         setIsOpen(false);
-                        handleRegister();
+                        handleDashboard();
                       }}
-                      className="h-12 rounded-full bg-radiant-violet px-5 text-body font-semibold leading-body text-canvas-white shadow-subtle"
+                      className="h-12 rounded-full bg-landing-yellow-strong px-5 text-body font-semibold leading-body text-landing-ink shadow-subtle"
                     >
-                      Register
+                      Dashboard
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsOpen(false);
-                        handleLogin();
-                      }}
-                      className="h-12 rounded-full bg-[#00000008] px-5 text-body font-semibold leading-body text-slate-ink"
-                    >
-                      Login
-                    </button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpen(false);
+                          handleRegister();
+                        }}
+                        className="h-12 rounded-full bg-landing-yellow-strong px-5 text-body font-semibold leading-body text-landing-ink shadow-subtle"
+                      >
+                        Register
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpen(false);
+                          handleLogin();
+                        }}
+                        className="h-12 rounded-full bg-landing-soft-gray px-5 text-body font-semibold leading-body text-landing-ink"
+                      >
+                        Login
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </motion.header>
     </>
   );

@@ -3,8 +3,8 @@ import { Separator } from "@/components/ui/separator";
 import type { CSSProperties } from "react";
 
 const lightLogoVars = {
-  "--brand-logo-accent": "#918df6",
-  "--brand-logo-wordmark": "#181925",
+  "--brand-logo-accent": "#fffa56",
+  "--brand-logo-wordmark": "#142127",
   "--brand-logo-cutout": "#ffffff",
 } as CSSProperties;
 
@@ -108,17 +108,17 @@ const footerSections: FooterData[] = [
 
 const Footer = () => {
   return (
-    <footer className="bg-canvas-white py-10 font-openrunde">
+    <footer className="bg-landing-card py-10 font-openrunde">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 sm:gap-12">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-10 rounded-3xl bg-[#00000008] px-6 py-10 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-12">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 rounded-3xl bg-landing-soft-gray px-6 py-10 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-12">
             <div className="col-span-full lg:col-span-4">
               <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
                 <a href="#home" className="flex items-center">
                   <Logo style={lightLogoVars} />
                 </a>
 
-                <p className="max-w-sm text-body font-medium leading-body text-medium-gray">
+                <p className="max-w-sm text-body font-medium leading-body text-landing-muted">
                   Dealvinci is the credits-and-tiers price tracking platform for
                   operators who need reliable monitoring and instant Telegram alerts.
                 </p>
@@ -127,21 +127,21 @@ const Footer = () => {
                   <a
                     href="#pricing"
                     aria-label="Jump to pricing"
-                    className="text-muted-gray transition-colors hover:text-slate-ink"
+                    className="text-landing-muted transition-colors hover:text-landing-ink"
                   >
                     <TwitterIcon />
                   </a>
                   <a
                     href="#faq"
                     aria-label="Jump to FAQ"
-                    className="text-muted-gray transition-colors hover:text-slate-ink"
+                    className="text-landing-muted transition-colors hover:text-landing-ink"
                   >
                     <LinkedinIcon />
                   </a>
                   <a
                     href="mailto:hello@dealvinci.com"
                     aria-label="Email Dealvinci"
-                    className="text-muted-gray transition-colors hover:text-slate-ink"
+                    className="text-landing-muted transition-colors hover:text-landing-ink"
                   >
                     <TelegramIcon />
                   </a>
@@ -152,7 +152,7 @@ const Footer = () => {
             {footerSections.map(({ title, links }, index) => (
               <div key={index} className="col-span-2">
                 <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
-                  <p className="text-body font-semibold leading-body text-slate-ink">
+                  <p className="text-body font-semibold leading-body text-landing-ink">
                     {title}
                   </p>
                   <ul className="flex flex-col gap-3">
@@ -160,7 +160,7 @@ const Footer = () => {
                       <li key={title}>
                         <a
                           href={href}
-                          className="text-body font-medium leading-body text-medium-gray transition-colors hover:text-slate-ink"
+                          className="text-body font-medium leading-body text-landing-muted transition-colors hover:text-landing-ink"
                         >
                           {title}
                         </a>
@@ -173,19 +173,19 @@ const Footer = () => {
 
             <div className="col-span-2">
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
-                <p className="text-body font-semibold leading-body text-slate-ink">
+                <p className="text-body font-semibold leading-body text-landing-ink">
                   Contact
                 </p>
                 <ul className="flex flex-col gap-3">
                   <li>
-                    <p className="text-body font-medium leading-body text-medium-gray">
+                    <p className="text-body font-medium leading-body text-landing-muted">
                       Built for global ecommerce and sourcing teams
                     </p>
                   </li>
                   <li>
                     <a
                       href="mailto:hello@dealvinci.com"
-                      className="text-body font-medium leading-body text-medium-gray transition-colors hover:text-slate-ink"
+                      className="text-body font-medium leading-body text-landing-muted transition-colors hover:text-landing-ink"
                     >
                       hello@dealvinci.com
                     </a>
@@ -194,8 +194,8 @@ const Footer = () => {
               </div>
             </div>
           </div>
-          <Separator orientation="horizontal" className="bg-light-gray" />
-          <p className="text-center text-caption font-medium leading-caption text-muted-gray animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
+          <Separator orientation="horizontal" className="bg-landing-soft-gray" />
+          <p className="text-center text-caption font-medium leading-caption text-landing-muted animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
             ©2026 Dealvinci. All Rights Reserved
           </p>
         </div>
