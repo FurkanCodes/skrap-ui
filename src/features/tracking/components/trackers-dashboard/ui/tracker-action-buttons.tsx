@@ -54,7 +54,7 @@ export function TrackerActionButtons({
   const t = getMessages("tracking.dashboard.actions");
   const controlsDisabled = busy || isRefreshPending;
   const shouldReduceMotion = useReducedMotion();
-  const productHref = item.outbound_url ?? item.source_url;
+  const productHref = item.tracked_listing_url ?? item.outbound_url ?? item.source_url;
   const smoothEase = [0.22, 1, 0.36, 1] as const;
   const quickTransition = shouldReduceMotion
     ? { duration: 0 }

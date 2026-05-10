@@ -82,6 +82,7 @@ export const TrackerRow = memo(function TrackerRow({
     aboveTargetCompact: t("aboveTargetCompact"),
   });
   const domain = getDomainLabel(item.source_url);
+  const sourceHref = item.tracked_listing_url ?? item.outbound_url ?? item.source_url;
   const productName = item.product_name ?? item.source_url;
   const showDomainBadge = domain.toLowerCase() !== productName.trim().toLowerCase();
   const showExtensionBadge = item.created_via === "extension";
@@ -161,9 +162,17 @@ export const TrackerRow = memo(function TrackerRow({
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-1">
             {showDomainBadge ? (
-              <Chip tone="muted">
-                {domain}
-              </Chip>
+              <a
+                href={sourceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label={t("openProduct")}
+              >
+                <Chip tone="muted" className="hover:bg-muted/70 hover:text-foreground">
+                  {domain}
+                </Chip>
+              </a>
             ) : null}
             {showExtensionBadge ? (
               <Chip tone="muted">
