@@ -7,7 +7,6 @@ import {
   IconAlertCircle,
   IconBell,
   IconCheck,
-  IconChevronDown,
   IconExternalLink,
   IconLink,
   IconLoader2,
@@ -103,6 +102,102 @@ function isStableListing(listingUrl: string | null): boolean {
   return (listingUrl ?? "").trim().length > 0;
 }
 
+interface TrackerDefaultsCardProps {
+  trackingMode: TrackingMode;
+  setTrackingMode: (value: TrackingMode) => void;
+  interval: string;
+  setInterval: (value: string) => void;
+  intervalOptions: Array<{ value: string; label: string }>;
+  notifyOnPriceIncrease: boolean;
+  notifyOnStockChange: boolean;
+  setNotifyOnPriceIncrease: (value: boolean) => void;
+  setNotifyOnStockChange: (value: boolean) => void;
+  description?: string;
+  disabled?: boolean;
+}
+
+function TrackerDefaultsCard({
+  trackingMode,
+  setTrackingMode,
+  interval,
+  setInterval,
+  intervalOptions,
+  notifyOnPriceIncrease,
+  notifyOnStockChange,
+  setNotifyOnPriceIncrease,
+  setNotifyOnStockChange,
+  description = "Apply once to this batch. Fine-tune individual items after preview.",
+  disabled = false,
+}: TrackerDefaultsCardProps) {
+  return (
+    <Card size="sm" className="overflow-visible">
+      <CardHeader>
+        <CardTitle>Tracker defaults</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4 pb-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(0,0.9fr)] lg:items-start">
+        <TrackingModePicker
+          trackingMode={trackingMode}
+          setTrackingMode={setTrackingMode}
+        />
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold text-foreground">Check every</Label>
+          <AnimatedDropdown
+            value={interval}
+            onValueChange={setInterval}
+            options={intervalOptions}
+            className="w-full"
+            disabled={disabled}
+          />
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Higher plans unlock faster checks.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold text-foreground">Extra alerts</Label>
+          <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
+            <span className="flex items-center gap-3">
+              <IconBell className="size-4 text-muted-foreground" stroke={1.5} />
+              <span>
+                <span className="block text-xs font-medium text-foreground">Price increases</span>
+                <span className="block text-[11px] leading-snug text-muted-foreground">
+                  Notify upward moves.
+                </span>
+              </span>
+            </span>
+            <Checkbox
+              checked={notifyOnPriceIncrease}
+              onCheckedChange={(checked) => setNotifyOnPriceIncrease(Boolean(checked))}
+              disabled={disabled}
+            />
+          </label>
+          <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
+            <span className="flex items-center gap-3">
+              <IconShieldCheck className="size-4 text-muted-foreground" stroke={1.5} />
+              <span>
+                <span className="block text-xs font-medium text-foreground">Stock changes</span>
+                <span className="block text-[11px] leading-snug text-muted-foreground">
+                  Restock and stock-out.
+                </span>
+              </span>
+            </span>
+            <Checkbox
+              checked={notifyOnStockChange}
+              onCheckedChange={(checked) => setNotifyOnStockChange(Boolean(checked))}
+              disabled={disabled}
+            />
+          </label>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Telegram required for delivery.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function CreateTrackerModal({
   isModalOpen,
   modalStep,
@@ -160,6 +255,8 @@ export function CreateTrackerModal({
   const hasInvalidUrlRow = urlRows.some(
     (row) => row.value.trim().length > 0 && !isHttpUrl(row.value)
   );
+  const validUrlCount = urlRows.filter((row) => isHttpUrl(row.value)).length;
+  const showInitialTrackerDefaults = validUrlCount > 1;
   const canReview = hasAnyUrlValue && !hasInvalidUrlRow && !isPreviewPending;
 
   const intervalOptions = INTERVAL_OPTIONS.filter((option) => option.value >= minInterval).map(
@@ -291,140 +388,23 @@ export function CreateTrackerModal({
                 </CardFooter>
               </Card>
 
-              <Card size="sm" className="overflow-visible">
-                <CardHeader>
-                  <CardTitle>Tracker defaults</CardTitle>
-                  <CardDescription>Apply once to this batch. Fine-tune individual items after preview.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4 pb-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(0,0.9fr)] lg:items-start">
-                  <div>
-                    <TrackingModePicker
-                      trackingMode={sharedTrackingMode}
-                      setTrackingMode={setSharedTrackingMode}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-foreground">Check every</Label>
-                    <AnimatedDropdown
-                      value={sharedInterval}
-                      onValueChange={setSharedInterval}
-                      options={intervalOptions}
-                      className="w-full"
-                      disabled={isPreviewPending}
-                    />
-                    <p className="text-[11px] leading-snug text-muted-foreground">
-                      Higher plans unlock faster checks.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-foreground">Extra alerts</Label>
-                    <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
-                      <span className="flex items-center gap-3">
-                        <IconBell className="size-4 text-muted-foreground" stroke={1.5} />
-                        <span>
-                          <span className="block text-xs font-medium text-foreground">Price increases</span>
-                          <span className="block text-[11px] leading-snug text-muted-foreground">
-                            Notify upward moves.
-                          </span>
-                        </span>
-                      </span>
-                      <Checkbox
-                        checked={sharedNotifyOnPriceIncrease}
-                        onCheckedChange={(checked) => setSharedNotifyOnPriceIncrease(Boolean(checked))}
-                        disabled={isPreviewPending}
-                      />
-                    </label>
-                    <label className="flex min-h-9 cursor-pointer items-center justify-between gap-3 rounded-lg bg-muted/35 px-3 py-2">
-                      <span className="flex items-center gap-3">
-                        <IconShieldCheck className="size-4 text-muted-foreground" stroke={1.5} />
-                        <span>
-                          <span className="block text-xs font-medium text-foreground">Stock changes</span>
-                          <span className="block text-[11px] leading-snug text-muted-foreground">
-                            Restock and stock-out.
-                          </span>
-                        </span>
-                      </span>
-                      <Checkbox
-                        checked={sharedNotifyOnStockChange}
-                        onCheckedChange={(checked) => setSharedNotifyOnStockChange(Boolean(checked))}
-                        disabled={isPreviewPending}
-                      />
-                    </label>
-                    <p className="text-[11px] leading-snug text-muted-foreground">
-                      Telegram required for delivery.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {showInitialTrackerDefaults ? (
+                <TrackerDefaultsCard
+                  trackingMode={sharedTrackingMode}
+                  setTrackingMode={setSharedTrackingMode}
+                  interval={sharedInterval}
+                  setInterval={setSharedInterval}
+                  intervalOptions={intervalOptions}
+                  notifyOnPriceIncrease={sharedNotifyOnPriceIncrease}
+                  notifyOnStockChange={sharedNotifyOnStockChange}
+                  setNotifyOnPriceIncrease={setSharedNotifyOnPriceIncrease}
+                  setNotifyOnStockChange={setSharedNotifyOnStockChange}
+                  disabled={isPreviewPending}
+                />
+              ) : null}
             </div>
           ) : (
             <div className="space-y-4">
-              {!isSingleDraft ? (
-                <details className="group rounded-lg border border-border/60 bg-muted/20">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-left">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("sharedDefaults")}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">{t("sharedDefaultsHint")}</p>
-                    </div>
-                    <IconChevronDown
-                      className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
-                      stroke={1.5}
-                    />
-                  </summary>
-                  <div className="overflow-hidden border-t border-border/60 px-3 py-3">
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-foreground">{t("mode")}</Label>
-                        <TrackingModePicker
-                          trackingMode={sharedTrackingMode}
-                          setTrackingMode={setSharedTrackingMode}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
-                        <AnimatedDropdown
-                          options={intervalOptions}
-                          value={sharedInterval}
-                          onValueChange={setSharedInterval}
-                          disabled={isSavePending || isPreviewPending}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-foreground">
-                          {t("extraAlerts")}
-                        </Label>
-                        <div className="space-y-2">
-                          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
-                            <Checkbox
-                              checked={sharedNotifyOnPriceIncrease}
-                              onCheckedChange={(checked) =>
-                                setSharedNotifyOnPriceIncrease(Boolean(checked))
-                              }
-                              disabled={isSavePending || isPreviewPending}
-                            />
-                            {t("notifyIncrease")}
-                          </Label>
-                          <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-2.5 py-2 text-xs text-foreground">
-                            <Checkbox
-                              checked={sharedNotifyOnStockChange}
-                              onCheckedChange={(checked) =>
-                                setSharedNotifyOnStockChange(Boolean(checked))
-                              }
-                              disabled={isSavePending || isPreviewPending}
-                            />
-                            {t("notifyStockChange")}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </details>
-              ) : null}
-
               <div
                 className={cn(
                   "grid gap-3",
@@ -684,12 +664,7 @@ export function CreateTrackerModal({
                         )}
                       </div>
 
-                      <TrackingModePicker
-                        trackingMode={activeDraft.trackingMode}
-                        setTrackingMode={(value) => setDraftTrackingMode(activeDraft.clientId, value)}
-                      />
-
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      {activeDraft.trackingMode === "alert" ? (
                         <div className="space-y-2">
                           <Label className="text-xs font-semibold text-foreground">{t("targetPrice")}</Label>
                           <CurrencyInput
@@ -697,47 +672,11 @@ export function CreateTrackerModal({
                             value={activeDraft.targetAmount}
                             onChange={(event) => setDraftTargetAmount(activeDraft.clientId, event.target.value)}
                             placeholder="84.99"
-                            disabled={activeDraft.trackingMode === "monitor" || isSavePending}
+                            disabled={isSavePending}
                             className="h-10 border-input"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">{t("checkEvery")}</Label>
-                          <AnimatedDropdown
-                            options={intervalOptions}
-                            value={activeDraft.interval}
-                            onValueChange={(value) => setDraftInterval(activeDraft.clientId, value)}
-                            disabled={isSavePending}
-                          />
-                        </div>
-                      </div>
-
-                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-xs text-foreground">
-                        <Checkbox
-                          checked={activeDraft.notifyOnPriceIncrease}
-                          onCheckedChange={(checked) =>
-                            setDraftNotifyOnPriceIncrease(
-                              activeDraft.clientId,
-                              Boolean(checked)
-                            )
-                          }
-                          disabled={isSavePending}
-                        />
-                        {t("notifyIncrease")}
-                      </Label>
-                      <Label className="inline-flex cursor-pointer items-center gap-2.5 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-xs text-foreground">
-                        <Checkbox
-                          checked={activeDraft.notifyOnStockChange}
-                          onCheckedChange={(checked) =>
-                            setDraftNotifyOnStockChange(
-                              activeDraft.clientId,
-                              Boolean(checked)
-                            )
-                          }
-                          disabled={isSavePending}
-                        />
-                        {t("notifyStockChange")}
-                      </Label>
+                      ) : null}
 
                       {activeDraft.trackingMode === "monitor" ? (
                         <p className="text-xs text-muted-foreground">
@@ -760,6 +699,26 @@ export function CreateTrackerModal({
                   )}
                 </div>
               </div>
+
+              {isSingleDraft && activeDraft?.previewStatus === "ready" ? (
+                <TrackerDefaultsCard
+                  trackingMode={activeDraft.trackingMode}
+                  setTrackingMode={(value) => setDraftTrackingMode(activeDraft.clientId, value)}
+                  interval={activeDraft.interval}
+                  setInterval={(value) => setDraftInterval(activeDraft.clientId, value)}
+                  intervalOptions={intervalOptions}
+                  notifyOnPriceIncrease={activeDraft.notifyOnPriceIncrease}
+                  notifyOnStockChange={activeDraft.notifyOnStockChange}
+                  setNotifyOnPriceIncrease={(value) =>
+                    setDraftNotifyOnPriceIncrease(activeDraft.clientId, value)
+                  }
+                  setNotifyOnStockChange={(value) =>
+                    setDraftNotifyOnStockChange(activeDraft.clientId, value)
+                  }
+                  description="Applies to this tracker."
+                  disabled={isSavePending}
+                />
+              ) : null}
 
               {telegramConnected === false ? (
                 <div className="rounded-md border border-amber-300/50 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
