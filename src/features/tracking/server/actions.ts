@@ -111,12 +111,14 @@ function toTrackedItemBatchPreviewResult(
   if (!result) {
     return {
       url: normalizedUrl,
+      result_ref: null,
       success: false,
       site_key: null,
       product_name: null,
       amount: null,
       currency: null,
       image_url: null,
+      listings: [],
       error: "No product result returned. Try a different URL.",
     };
   }
@@ -124,24 +126,28 @@ function toTrackedItemBatchPreviewResult(
   if (!result.success) {
     return {
       url: normalizedUrl,
+      result_ref: result.result_ref ?? null,
       success: false,
       site_key: result.site_key ?? result.adapter_key ?? null,
       product_name: null,
       amount: result.amount,
       currency: result.currency,
       image_url: pickImageUrl(result),
+      listings: result.listings ?? [],
       error: result.error ?? "Could not fetch product info. Try another URL.",
     };
   }
 
   return {
     url: normalizedUrl,
+    result_ref: result.result_ref ?? null,
     success: true,
     site_key: result.site_key ?? result.adapter_key ?? null,
     product_name: deriveProductName(normalizedUrl, pickStringValue(result, METADATA_KEYS)),
     amount: result.amount,
     currency: result.currency,
     image_url: pickImageUrl(result),
+    listings: result.listings ?? [],
     error: null,
   };
 }

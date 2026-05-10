@@ -4,6 +4,7 @@ import { getMessages } from "@/lib/messages";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { extractUrls } from "@/features/scraper/utils";
+import type { PriceListingResponse } from "@/features/scraper/types";
 import {
   ACTION_ERROR_DURATION_MS,
   ACTION_LOADING_MIN_DURATION_MS,
@@ -82,6 +83,24 @@ function dedupeNormalizedUrls(values: string[]): string[] {
   }
 
   return next;
+}
+
+function getStableListings(listings: PriceListingResponse[]): PriceListingResponse[] {
+  return listings.filter((listing) => (listing.listing_url ?? "").trim().length > 0);
+}
+
+function getDefaultSelectedListingId(listings: PriceListingResponse[]): string | null {
+  return getStableListings(listings)[0]?.item_id ?? null;
+}
+
+function resolveSelectedListing(
+  listings: PriceListingResponse[],
+  selectedListingId: string | null
+): PriceListingResponse | null {
+  if (selectedListingId) {
+    return listings.find((listing) => listing.item_id === selectedListingId) ?? null;
+  }
+  return null;
 }
 
 export function useTrackersDashboardController({
@@ -667,6 +686,15 @@ export function useTrackersDashboardController({
         const seededDrafts: BulkTrackerDraft[] = results.map((result) => {
           const isReady = result.success;
           const shouldSelect = isReady && selectedReadyCount < remainingSlots;
+          const selectedListingId = isReady
+            ? getDefaultSelectedListingId(result.listings)
+            : null;
+          const selectedListing = resolveSelectedListing(
+            result.listings,
+            selectedListingId
+          );
+          const amount = selectedListing?.amount ?? result.amount;
+          const currency = selectedListing?.currency ?? result.currency;
           if (shouldSelect) {
             selectedReadyCount += 1;
           }
@@ -676,6 +704,7 @@ export function useTrackersDashboardController({
             sourceRowId: firstRowByNormalizedUrl.get(result.url) ?? null,
             rawUrl: result.url,
             normalizedUrl: result.url,
+            scrapeResultRef: result.result_ref,
             previewStatus: isReady ? "ready" : "failed",
             selected: shouldSelect,
             overLimit: false,
@@ -683,12 +712,14 @@ export function useTrackersDashboardController({
             submitError: null,
             productName: isReady ? (result.product_name ?? result.url) : null,
             imageUrl: result.image_url,
-            amount: result.amount,
-            currency: result.currency,
+            amount,
+            currency,
             siteKey: result.site_key,
+            listings: result.listings,
+            selectedListingId,
             trackingMode: sharedTrackingMode,
             interval: sharedInterval,
-            targetAmount: isReady ? getSuggestedTargetAmount(result.amount) : "",
+            targetAmount: isReady ? getSuggestedTargetAmount(amount) : "",
             notifyOnPriceIncrease: sharedNotifyOnPriceIncrease,
             notifyOnStockChange: sharedNotifyOnStockChange,
             modeOverridden: false,
@@ -866,6 +897,32 @@ export function useTrackersDashboardController({
     [remainingSlots]
   );
 
+  const setDraftSelectedListing = useCallback(
+    (clientId: string, listingId: string | null) => {
+      setDrafts((current) => {
+        const next = current.map((draft) => {
+          if (draft.clientId !== clientId) {
+            return draft;
+          }
+          const selectedListing = resolveSelectedListing(draft.listings, listingId);
+          return {
+            ...draft,
+            selectedListingId: selectedListing?.item_id ?? null,
+            amount: selectedListing?.amount ?? draft.amount,
+            currency: selectedListing?.currency ?? draft.currency,
+            targetAmount:
+              draft.trackingMode === "alert"
+                ? getSuggestedTargetAmount(selectedListing?.amount ?? draft.amount)
+                : draft.targetAmount,
+            submitError: null,
+          };
+        });
+        return syncBulkDraftSelectionLimits(next, remainingSlots);
+      });
+    },
+    [remainingSlots]
+  );
+
   const setDraftNotifyOnPriceIncrease = useCallback(
     (clientId: string, enabled: boolean) => {
       setDrafts((current) => {
@@ -915,11 +972,14 @@ export function useTrackersDashboardController({
           return {
             ...draft,
             rawUrl: value,
+            scrapeResultRef: null,
             previewStatus: "failed" as const,
             selected: false,
             overLimit: false,
             previewError: null,
             submitError: null,
+            listings: [],
+            selectedListingId: null,
           };
         });
         return syncBulkDraftSelectionLimits(next, remainingSlots);
@@ -978,6 +1038,7 @@ export function useTrackersDashboardController({
                   ...entry,
                   rawUrl: normalized,
                   normalizedUrl: normalized,
+                  scrapeResultRef: result.result_ref,
                   previewStatus: "failed" as const,
                   selected: false,
                   overLimit: false,
@@ -988,13 +1049,23 @@ export function useTrackersDashboardController({
                   amount: result.amount,
                   currency: result.currency,
                   siteKey: result.site_key,
+                  listings: result.listings,
+                  selectedListingId: null,
                 };
               }
+              const selectedListingId = getDefaultSelectedListingId(result.listings);
+              const selectedListing = resolveSelectedListing(
+                result.listings,
+                selectedListingId
+              );
+              const amount = selectedListing?.amount ?? result.amount;
+              const currency = selectedListing?.currency ?? result.currency;
 
               return {
                 ...entry,
                 rawUrl: normalized,
                 normalizedUrl: normalized,
+                scrapeResultRef: result.result_ref,
                 previewStatus: "ready" as const,
                 selected: canSelect,
                 overLimit: false,
@@ -1002,11 +1073,13 @@ export function useTrackersDashboardController({
                 submitError: null,
                 productName: result.product_name ?? result.url,
                 imageUrl: result.image_url,
-                amount: result.amount,
-                currency: result.currency,
+                amount,
+                currency,
                 siteKey: result.site_key,
+                listings: result.listings,
+                selectedListingId,
                 targetAmount:
-                  entry.targetAmount || getSuggestedTargetAmount(result.amount),
+                  entry.targetAmount || getSuggestedTargetAmount(amount),
               };
             });
             return syncBulkDraftSelectionLimits(next, remainingSlots);
@@ -1368,6 +1441,9 @@ export function useTrackersDashboardController({
           : null;
       return {
         url: draft.normalizedUrl,
+        scrape_result_ref:
+          draft.selectedListingId && draft.scrapeResultRef ? draft.scrapeResultRef : null,
+        selected_listing_id: draft.selectedListingId,
         check_interval_minutes: Number(draft.interval),
         target_amount: normalizedTargetAmount,
         notify_on_price_increase: draft.notifyOnPriceIncrease,
@@ -1412,6 +1488,10 @@ export function useTrackersDashboardController({
               created_via: "dashboard",
               outbound_url: null,
               outbound_is_affiliate: false,
+              tracked_listing_id: draft.selectedListingId,
+              tracked_listing_url:
+                resolveSelectedListing(draft.listings, draft.selectedListingId)?.listing_url ??
+                null,
               last_amount: draft.amount,
               currency: draft.currency,
               availability: null,
@@ -1559,6 +1639,7 @@ export function useTrackersDashboardController({
     setDraftNotifyOnPriceIncrease,
     setDraftNotifyOnStockChange,
     setDraftRawUrl,
+    setDraftSelectedListing,
     setDraftTargetAmount,
     setDraftTrackingMode,
     setSharedInterval: setSharedIntervalAndSeed,

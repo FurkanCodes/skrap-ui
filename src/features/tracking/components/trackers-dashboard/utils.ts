@@ -341,6 +341,14 @@ export function toTrackedItemSummary(
     outbound_url: outboundUrl,
     outbound_is_affiliate:
       toOptionalBoolean(record.outbound_is_affiliate) ?? fallback.outbound_is_affiliate,
+    tracked_listing_id:
+      record.tracked_listing_id === null
+        ? null
+        : (toOptionalString(record.tracked_listing_id) ?? fallback.tracked_listing_id),
+    tracked_listing_url:
+      record.tracked_listing_url === null
+        ? null
+        : (toOptionalString(record.tracked_listing_url) ?? fallback.tracked_listing_url),
     last_amount:
       record.last_amount === null
         ? null

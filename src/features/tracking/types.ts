@@ -1,9 +1,13 @@
+import type { PriceListingResponse } from "@/features/scraper/types";
+
 export type FetchMode = "auto" | "http" | "dynamic" | "stealth";
 export type TrackingStatus = "active" | "paused";
 export type TrackingCreatedVia = "dashboard" | "extension";
 
 export interface TrackedItemRequest {
-  url: string;
+  url?: string;
+  scrape_result_ref?: string | null;
+  selected_listing_id?: string | null;
   sites?: string[];
   timeout_seconds?: number;
   fetch_mode?: FetchMode;
@@ -17,6 +21,7 @@ export interface TrackedItemRequest {
 export interface TrackedItemBulkRequestItem {
   url?: string | null;
   scrape_result_ref?: string | null;
+  selected_listing_id?: string | null;
   check_interval_minutes?: number | null;
   target_amount?: string | null;
   notify_on_price_increase?: boolean | null;
@@ -54,12 +59,14 @@ export interface TrackedItemPreview {
 
 export interface TrackedItemBatchPreviewResult {
   url: string;
+  result_ref: string | null;
   success: boolean;
   site_key: string | null;
   product_name: string | null;
   amount: string | null;
   currency: string | null;
   image_url: string | null;
+  listings: PriceListingResponse[];
   error: string | null;
 }
 
@@ -77,6 +84,8 @@ export interface TrackedItemSummary {
   created_via: TrackingCreatedVia | null;
   outbound_url: string | null;
   outbound_is_affiliate: boolean;
+  tracked_listing_id?: string | null;
+  tracked_listing_url?: string | null;
   last_amount: string | null;
   currency: string | null;
   availability: string | null;

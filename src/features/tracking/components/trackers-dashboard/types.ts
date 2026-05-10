@@ -1,3 +1,4 @@
+import type { PriceListingResponse } from "@/features/scraper/types";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 
 export interface TrackersDashboardClientProps {
@@ -47,6 +48,7 @@ export interface BulkTrackerDraft {
   sourceRowId: string | null;
   rawUrl: string;
   normalizedUrl: string;
+  scrapeResultRef: string | null;
   previewStatus: BulkTrackerDraftStatus;
   selected: boolean;
   overLimit: boolean;
@@ -57,6 +59,8 @@ export interface BulkTrackerDraft {
   amount: string | null;
   currency: string | null;
   siteKey: string | null;
+  listings: PriceListingResponse[];
+  selectedListingId: string | null;
   trackingMode: TrackingMode;
   interval: string;
   targetAmount: string;

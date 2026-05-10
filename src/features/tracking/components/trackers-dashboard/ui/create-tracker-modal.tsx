@@ -6,7 +6,9 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   IconAlertCircle,
   IconBell,
+  IconCheck,
   IconChevronDown,
+  IconExternalLink,
   IconLink,
   IconLoader2,
   IconPlus,
@@ -70,6 +72,7 @@ interface CreateTrackerModalProps {
   toggleDraftSelection: (clientId: string) => void;
   setDraftTrackingMode: (clientId: string, value: TrackingMode) => void;
   setDraftInterval: (clientId: string, value: string) => void;
+  setDraftSelectedListing: (clientId: string, listingId: string | null) => void;
   setDraftTargetAmount: (clientId: string, value: string) => void;
   setDraftNotifyOnPriceIncrease: (clientId: string, value: boolean) => void;
   setDraftNotifyOnStockChange: (clientId: string, value: boolean) => void;
@@ -90,6 +93,10 @@ function isHttpUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isStableListing(listingUrl: string | null): boolean {
+  return (listingUrl ?? "").trim().length > 0;
 }
 
 export function CreateTrackerModal({
@@ -126,6 +133,7 @@ export function CreateTrackerModal({
   toggleDraftSelection,
   setDraftTrackingMode,
   setDraftInterval,
+  setDraftSelectedListing,
   setDraftTargetAmount,
   setDraftNotifyOnPriceIncrease,
   setDraftNotifyOnStockChange,
@@ -579,6 +587,78 @@ export function CreateTrackerModal({
                             {formatPrice(activeDraft.amount, activeDraft.currency)}
                           </p>
                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <Label className="text-xs font-semibold text-foreground">Tracked offer</Label>
+                          {activeDraft.selectedListingId ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                              <IconCheck className="size-3" stroke={1.6} />
+                              Locked
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                              Auto
+                            </span>
+                          )}
+                        </div>
+                        {activeDraft.listings.length > 0 ? (
+                          <div className="max-h-44 space-y-1.5 overflow-y-auto rounded-lg border border-border/60 bg-background/70 p-1.5">
+                            {activeDraft.listings.map((listing) => {
+                              const trackable = isStableListing(listing.listing_url);
+                              const selected = activeDraft.selectedListingId === listing.item_id;
+                              return (
+                                <button
+                                  key={listing.item_id}
+                                  type="button"
+                                  onClick={() =>
+                                    trackable
+                                      ? setDraftSelectedListing(
+                                          activeDraft.clientId,
+                                          listing.item_id
+                                        )
+                                      : undefined
+                                  }
+                                  disabled={!trackable || isSavePending}
+                                  className={cn(
+                                    "flex w-full items-center justify-between gap-3 rounded-md border px-2.5 py-2 text-left transition-colors",
+                                    selected
+                                      ? "border-emerald-500/40 bg-emerald-500/10"
+                                      : "border-transparent hover:border-border/70 hover:bg-muted/50",
+                                    !trackable && "cursor-not-allowed opacity-60"
+                                  )}
+                                >
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-xs font-semibold text-foreground">
+                                      {listing.seller ??
+                                        (listing.listing_url
+                                          ? getDomainLabel(listing.listing_url)
+                                          : "Detected price")}
+                                    </span>
+                                    <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                      {trackable ? (
+                                        <IconExternalLink className="size-3" stroke={1.5} />
+                                      ) : null}
+                                      <span className="truncate">
+                                        {trackable
+                                          ? getDomainLabel(listing.listing_url ?? "")
+                                          : "Exact offer lock unavailable"}
+                                      </span>
+                                    </span>
+                                  </span>
+                                  <span className="shrink-0 text-xs font-semibold text-foreground">
+                                    {formatPrice(listing.amount, listing.currency)}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="rounded-md border border-border/60 bg-background/70 px-2.5 py-2 text-xs text-muted-foreground">
+                            No separate offer rows found. This tracker will use automatic price detection.
+                          </p>
+                        )}
                       </div>
 
                       <TrackingModePicker

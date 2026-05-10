@@ -91,6 +91,7 @@ export function TrackersDashboardAuthenticatedView({
         toggleDraftSelection={controller.toggleDraftSelection}
         setDraftTrackingMode={controller.setDraftTrackingMode}
         setDraftInterval={controller.setDraftInterval}
+        setDraftSelectedListing={controller.setDraftSelectedListing}
         setDraftTargetAmount={controller.setDraftTargetAmount}
         setDraftNotifyOnPriceIncrease={controller.setDraftNotifyOnPriceIncrease}
         setDraftNotifyOnStockChange={controller.setDraftNotifyOnStockChange}

@@ -12,6 +12,7 @@ export interface PriceListingResponse {
 }
 
 export interface PriceResultResponse {
+  result_ref: string | null;
   url: string;
   success: boolean;
   product_id: string | null;
@@ -29,6 +30,7 @@ export interface PriceResultResponse {
 
 export interface ScrapesResponse {
   request_id: string;
+  scrape_ref?: string | null;
   total_urls: number;
   success_count: number;
   failure_count: number;
