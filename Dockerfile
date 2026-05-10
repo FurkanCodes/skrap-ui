@@ -1,12 +1,14 @@
 FROM node:lts-alpine AS base
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV CI=true
 
 WORKDIR /app
 
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/extension/package.json ./apps/extension/package.json
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 FROM base AS builder
