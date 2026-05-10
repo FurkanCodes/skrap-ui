@@ -16,6 +16,7 @@ import type { ActionFeedbackState, ItemAction } from "@/features/tracking/compon
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { resolveExternalUrl } from "@/features/tracking/components/trackers-dashboard/utils";
 import { cn } from "@/lib/utils";
 
 interface TrackerActionButtonsProps {
@@ -54,7 +55,11 @@ export function TrackerActionButtons({
   const t = getMessages("tracking.dashboard.actions");
   const controlsDisabled = busy || isRefreshPending;
   const shouldReduceMotion = useReducedMotion();
-  const productHref = item.tracked_listing_url ?? item.outbound_url ?? item.source_url;
+  const productHref =
+    resolveExternalUrl(item.tracked_listing_url, item.source_url) ??
+    resolveExternalUrl(item.outbound_url) ??
+    resolveExternalUrl(item.source_url) ??
+    item.source_url;
   const smoothEase = [0.22, 1, 0.36, 1] as const;
   const quickTransition = shouldReduceMotion
     ? { duration: 0 }

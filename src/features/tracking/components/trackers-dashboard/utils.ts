@@ -81,6 +81,23 @@ export function normalizeHttpUrl(value: string): string | null {
   }
 }
 
+export function resolveExternalUrl(value: string | null | undefined, baseUrl?: string | null): string | null {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = baseUrl ? new URL(trimmed, baseUrl) : new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 export function getSuggestedTargetAmount(value: string | null): string {
   const parsed = parseNumberish(value);
   if (parsed === null || parsed <= 0) {
@@ -144,9 +161,10 @@ function formatDeltaAmount(
   });
 }
 
-export function getDomainLabel(url: string): string {
+export function getDomainLabel(url: string, baseUrl?: string | null): string {
   try {
-    return new URL(url).hostname.replace(/^www\./, "");
+    const resolvedUrl = resolveExternalUrl(url, baseUrl) ?? url;
+    return new URL(resolvedUrl).hostname.replace(/^www\./, "");
   } catch {
     return "Source";
   }

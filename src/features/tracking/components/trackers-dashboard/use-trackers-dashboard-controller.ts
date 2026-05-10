@@ -33,6 +33,7 @@ import {
   normalizePositiveTargetAmount,
   parseNumberish,
   reconcileItemsPreservingOrder,
+  resolveExternalUrl,
   sleep,
   syncBulkDraftSelectionLimits,
   toTrackedItemSummary,
@@ -1490,7 +1491,10 @@ export function useTrackersDashboardController({
               outbound_is_affiliate: false,
               tracked_listing_id: draft.selectedListingId,
               tracked_listing_url:
-                resolveSelectedListing(draft.listings, draft.selectedListingId)?.listing_url ??
+                resolveExternalUrl(
+                  resolveSelectedListing(draft.listings, draft.selectedListingId)?.listing_url,
+                  draft.normalizedUrl
+                ) ??
                 null,
               last_amount: draft.amount,
               currency: draft.currency,

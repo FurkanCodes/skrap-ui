@@ -24,7 +24,11 @@ import type {
   TrackerUrlInputRow,
   TrackingMode,
 } from "@/features/tracking/components/trackers-dashboard/types";
-import { formatPrice, getDomainLabel } from "@/features/tracking/components/trackers-dashboard/utils";
+import {
+  formatPrice,
+  getDomainLabel,
+  resolveExternalUrl,
+} from "@/features/tracking/components/trackers-dashboard/utils";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -606,51 +610,70 @@ export function CreateTrackerModal({
                         {activeDraft.listings.length > 0 ? (
                           <div className="max-h-44 space-y-1.5 overflow-y-auto rounded-lg border border-border/60 bg-background/70 p-1.5">
                             {activeDraft.listings.map((listing) => {
-                              const trackable = isStableListing(listing.listing_url);
+                              const listingHref = resolveExternalUrl(
+                                listing.listing_url,
+                                activeDraft.normalizedUrl
+                              );
+                              const trackable = isStableListing(listing.listing_url) && listingHref !== null;
                               const selected = activeDraft.selectedListingId === listing.item_id;
                               return (
-                                <button
+                                <div
                                   key={listing.item_id}
-                                  type="button"
-                                  onClick={() =>
-                                    trackable
-                                      ? setDraftSelectedListing(
-                                          activeDraft.clientId,
-                                          listing.item_id
-                                        )
-                                      : undefined
-                                  }
-                                  disabled={!trackable || isSavePending}
                                   className={cn(
                                     "flex w-full items-center justify-between gap-3 rounded-md border px-2.5 py-2 text-left transition-colors",
                                     selected
                                       ? "border-emerald-500/40 bg-emerald-500/10"
                                       : "border-transparent hover:border-border/70 hover:bg-muted/50",
-                                    !trackable && "cursor-not-allowed opacity-60"
+                                    !trackable && "opacity-60"
                                   )}
                                 >
-                                  <span className="min-w-0">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      trackable
+                                        ? setDraftSelectedListing(
+                                            activeDraft.clientId,
+                                            listing.item_id
+                                          )
+                                        : undefined
+                                    }
+                                    disabled={!trackable || isSavePending}
+                                    className="min-w-0 flex-1 text-left disabled:cursor-not-allowed"
+                                  >
                                     <span className="block truncate text-xs font-semibold text-foreground">
                                       {listing.seller ??
-                                        (listing.listing_url
-                                          ? getDomainLabel(listing.listing_url)
+                                        (listingHref
+                                          ? getDomainLabel(listingHref)
                                           : "Detected price")}
                                     </span>
                                     <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                                      {trackable ? (
+                                      {listingHref ? (
                                         <IconExternalLink className="size-3" stroke={1.5} />
                                       ) : null}
                                       <span className="truncate">
-                                        {trackable
-                                          ? getDomainLabel(listing.listing_url ?? "")
+                                        {listingHref
+                                          ? getDomainLabel(listingHref)
                                           : "Exact offer lock unavailable"}
                                       </span>
                                     </span>
+                                  </button>
+                                  <span className="flex shrink-0 items-center gap-2">
+                                    <span className="text-xs font-semibold text-foreground">
+                                      {formatPrice(listing.amount, listing.currency)}
+                                    </span>
+                                    {listingHref ? (
+                                      <a
+                                        href={listingHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        aria-label="Open offer source"
+                                      >
+                                        <IconExternalLink className="size-3.5" stroke={1.5} />
+                                      </a>
+                                    ) : null}
                                   </span>
-                                  <span className="shrink-0 text-xs font-semibold text-foreground">
-                                    {formatPrice(listing.amount, listing.currency)}
-                                  </span>
-                                </button>
+                                </div>
                               );
                             })}
                           </div>

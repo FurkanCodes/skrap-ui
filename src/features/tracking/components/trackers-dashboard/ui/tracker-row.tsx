@@ -12,6 +12,7 @@ import {
   getDomainLabel,
   getProgress,
   getRelativeCheckedLabel,
+  resolveExternalUrl,
 } from "@/features/tracking/components/trackers-dashboard/utils";
 import type { TrackedItemSummary } from "@/features/tracking/types";
 import { Chip } from "@/components/ui/chip";
@@ -82,7 +83,11 @@ export const TrackerRow = memo(function TrackerRow({
     aboveTargetCompact: t("aboveTargetCompact"),
   });
   const domain = getDomainLabel(item.source_url);
-  const sourceHref = item.tracked_listing_url ?? item.outbound_url ?? item.source_url;
+  const sourceHref =
+    resolveExternalUrl(item.tracked_listing_url, item.source_url) ??
+    resolveExternalUrl(item.outbound_url) ??
+    resolveExternalUrl(item.source_url) ??
+    item.source_url;
   const productName = item.product_name ?? item.source_url;
   const showDomainBadge = domain.toLowerCase() !== productName.trim().toLowerCase();
   const showExtensionBadge = item.created_via === "extension";
