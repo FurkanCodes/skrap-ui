@@ -27,13 +27,44 @@ Next.js 16 frontend scaffold for your scraping backend.
   - `src/app/loading.tsx`
   - `src/app/error.tsx`
 
+## Environment profiles
+
+Use explicit env profiles instead of a mixed `.env`.
+
+```bash
+cp .env.local.example .env.local
+cp .env.production.example .env.production
+```
+
+Local UI and backend should agree on:
+
+```bash
+BACKEND_BASE_URL=http://127.0.0.1:8000
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_JWT_ISSUER=http://localhost:3000
+BETTER_AUTH_JWT_AUDIENCE=http://127.0.0.1:8000
+```
+
+Production UI and backend should agree on:
+
+```bash
+BACKEND_BASE_URL=https://api.dealvinci.com
+BETTER_AUTH_URL=https://dealvinci.com
+NEXT_PUBLIC_BETTER_AUTH_URL=https://dealvinci.com
+BETTER_AUTH_JWT_ISSUER=https://dealvinci.com
+BETTER_AUTH_JWT_AUDIENCE=https://api.dealvinci.com
+```
+
+Docker compose uses `.env.production` by default. Override with `ENV_FILE=.env.local` when needed.
+
 ## Run
 
 1. Start backend (default expected at `http://127.0.0.1:8000`).
 2. Configure env:
 
 ```bash
-cp .env.example .env.local
+cp .env.local.example .env.local
 ```
 
 3. Adjust backend URL if needed:

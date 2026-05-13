@@ -3,7 +3,7 @@ services:
     image: ghcr.io/furkancodes/skrap-ui:main
     pull_policy: always
     env_file:
-      - .env
+      - ${ENV_FILE:-.env.production}
     environment:
       HOSTNAME: 0.0.0.0
       PORT: 3000
