@@ -166,7 +166,8 @@ export const TrackerRow = memo(function TrackerRow({
     <article
       ref={rowRef}
       className={cn(
-        "relative grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] transition-[background-color,border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        "relative grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] transition-[background-color,border-color,box-shadow,grid-template-columns] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        isDeleteConfirmOpen && "md:grid-cols-[minmax(0,1fr)_15.75rem]",
         isNotInStock &&
           "border-amber-300/55 bg-amber-50/35 dark:border-amber-400/25 dark:bg-amber-400/6",
         highlightVisible &&

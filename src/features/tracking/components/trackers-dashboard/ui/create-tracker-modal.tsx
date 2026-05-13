@@ -627,9 +627,6 @@ export function CreateTrackerModal({
                                           : "Detected price")}
                                     </span>
                                     <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                                      {listingHref ? (
-                                        <IconExternalLink className="size-3" stroke={1.5} />
-                                      ) : null}
                                       <span className="truncate">
                                         {listingHref
                                           ? getDomainLabel(listingHref)

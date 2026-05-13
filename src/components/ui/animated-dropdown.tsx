@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { IconChevronDown } from "@tabler/icons-react";
 
@@ -39,8 +40,10 @@ export function AnimatedDropdown({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [openUpward, setOpenUpward] = React.useState(false);
   const [menuMaxHeight, setMenuMaxHeight] = React.useState(256);
+  const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties | null>(null);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const updateMenuLayout = React.useCallback(() => {
@@ -64,9 +67,22 @@ export function AnimatedDropdown({
     const preferredSpace = shouldOpenUpward ? spaceAbove : spaceBelow;
     const fallbackSpace = Math.max(spaceAbove, spaceBelow);
     const resolvedSpace = preferredSpace >= 96 ? preferredSpace : fallbackSpace;
+    const resolvedMaxHeight = Math.max(96, Math.min(maxMenuHeight, Math.floor(resolvedSpace)));
+    const safeLeft = Math.min(
+      Math.max(viewportPadding, triggerRect.left),
+      Math.max(viewportPadding, window.innerWidth - triggerRect.width - viewportPadding)
+    );
 
     setOpenUpward(shouldOpenUpward);
-    setMenuMaxHeight(Math.max(96, Math.min(maxMenuHeight, Math.floor(resolvedSpace))));
+    setMenuMaxHeight(resolvedMaxHeight);
+    setMenuStyle({
+      left: safeLeft,
+      width: triggerRect.width,
+      maxHeight: resolvedMaxHeight,
+      ...(shouldOpenUpward
+        ? { bottom: window.innerHeight - triggerRect.top + gap }
+        : { top: triggerRect.bottom + gap }),
+    });
   }, [searchable]);
 
   const listMaxHeight = React.useMemo(() => {
@@ -86,7 +102,11 @@ export function AnimatedDropdown({
     }
 
     const onPointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        !rootRef.current?.contains(target) &&
+        !menuRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -183,75 +203,88 @@ export function AnimatedDropdown({
         />
       </button>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ duration: 0.12, ease: "easeOut" }}
-            style={{ maxHeight: menuMaxHeight }}
-            className={cn(
-              "absolute right-0 left-0 z-50 flex flex-col overflow-hidden rounded-xl border border-border/70 bg-popover p-1 shadow-[0_14px_34px_-24px_rgb(24_25_37_/_0.42),0_0_0_1px_rgb(24_25_37_/_0.03)]",
-              openUpward ? "bottom-full mb-1.5" : "top-full mt-1.5"
-            )}
-          >
-            {searchable ? (
-              <div className="border-b border-border/70 p-2">
-                <div className="relative">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder={searchPlaceholder}
-                    className="h-9 w-full rounded-[10px] border border-transparent bg-muted px-3 text-sm font-medium text-foreground transition-all outline-none placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-ring/25"
-                  />
-                </div>
-              </div>
-            ) : null}
-
-            <div className="min-h-0 overflow-y-auto" style={{ maxHeight: listMaxHeight }}>
-              {filteredOptions.length === 0 ? (
-                <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                  No options found
-                </div>
-              ) : (
-                filteredOptions.map((option, index) => {
-                  const isSelected = option.value === value;
-                  return (
-                    <motion.button
-                      key={option.value}
-                      layout
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 8 }}
-                      transition={{ duration: 0.14, delay: index * 0.015 }}
-                      type="button"
-                      onClick={() => {
-                        onValueChange(option.value);
-                        setOpen(false);
-                        setSearchQuery("");
-                      }}
-                      className={cn(
-                        "flex min-h-8 w-full cursor-pointer select-none items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors",
-                        isSelected ? "text-foreground" : "text-foreground hover:bg-muted"
-                      )}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium">
-                          {option.label}
-                        </p>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {open ? (
+                <motion.div
+                  ref={menuRef}
+                  initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.12, ease: "easeOut" }}
+                  style={menuStyle ?? undefined}
+                  className={cn(
+                    "fixed z-50 flex flex-col overflow-hidden rounded-xl border border-border/70 bg-popover p-1 shadow-[0_14px_34px_-24px_rgb(24_25_37_/_0.42),0_0_0_1px_rgb(24_25_37_/_0.03)]",
+                    openUpward && "origin-bottom"
+                  )}
+                >
+                  {searchable ? (
+                    <div className="border-b border-border/70 p-2">
+                      <div className="relative">
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(event) => setSearchQuery(event.target.value)}
+                          placeholder={searchPlaceholder}
+                          className="h-9 w-full rounded-[10px] border border-transparent bg-muted px-3 text-sm font-medium text-foreground transition-all outline-none placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-ring/25"
+                        />
                       </div>
-                      {isSelected ? <span className="size-1.5 rounded-full bg-radiant-violet" /> : null}
-                    </motion.button>
-                  );
-                })
-              )}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                    </div>
+                  ) : null}
+
+                  <div
+                    className="min-h-0 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    style={{ maxHeight: listMaxHeight }}
+                  >
+                    {filteredOptions.length === 0 ? (
+                      <div className="px-3 py-8 text-center text-sm text-muted-foreground">
+                        No options found
+                      </div>
+                    ) : (
+                      filteredOptions.map((option, index) => {
+                        const isSelected = option.value === value;
+                        return (
+                          <motion.button
+                            key={option.value}
+                            layout
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 8 }}
+                            transition={{ duration: 0.14, delay: index * 0.015 }}
+                            type="button"
+                            onClick={() => {
+                              onValueChange(option.value);
+                              setOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className={cn(
+                              "flex min-h-8 w-full cursor-pointer select-none items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors",
+                              isSelected
+                                ? "text-foreground"
+                                : "text-foreground hover:bg-muted"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[13px] font-medium">
+                                {option.label}
+                              </p>
+                            </div>
+                            {isSelected ? (
+                              <span className="size-1.5 rounded-full bg-radiant-violet" />
+                            ) : null}
+                          </motion.button>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </div>
   );
 }
