@@ -3,6 +3,7 @@
 import { getMessages } from "@/lib/messages";
 import { memo, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { IconPackageOff } from "@tabler/icons-react";
 
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import {
@@ -36,6 +37,21 @@ interface TrackerRowProps {
   runItemAction: (itemId: string, action: ItemAction) => void;
   requestDeleteAction: (itemId: string) => void;
   isHighlighted: boolean;
+}
+
+function getUnavailablePriceLabel(
+  availability: string,
+  t: ReturnType<typeof getMessages>
+): string {
+  if (availability === "out_of_stock") {
+    return t("lastInStock");
+  }
+
+  if (availability === "preorder") {
+    return t("listedPrice");
+  }
+
+  return t("lastKnownPrice");
 }
 
 export const TrackerRow = memo(function TrackerRow({
@@ -109,6 +125,9 @@ export const TrackerRow = memo(function TrackerRow({
           : availability === "discontinued"
             ? t("availabilityDiscontinued")
             : null;
+  const unavailablePriceLabel = isNotInStock
+    ? getUnavailablePriceLabel(availability, t)
+    : null;
   const isTrackingLive = item.status === "active";
   const trackingStatusChipLabel = isTrackingLive ? t("live") : t("paused");
   const trackingStatusLineLabel = isTrackingLive ? t("trackingLive") : t("trackingPaused");
@@ -137,20 +156,28 @@ export const TrackerRow = memo(function TrackerRow({
     <article
       ref={rowRef}
       className={cn(
-        "relative grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] transition-[border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        "relative grid gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-[0_1px_1px_rgb(24_25_37_/_0.03)] transition-[background-color,border-color,box-shadow] duration-300 md:grid-cols-[minmax(0,1fr)_172px]",
+        isNotInStock &&
+          "border-amber-300/55 bg-amber-50/35 dark:border-amber-400/25 dark:bg-amber-400/6",
         highlightVisible &&
           "border-primary/55 ring-2 ring-primary/25 ring-offset-2 ring-offset-background"
       )}
     >
       <div className="flex gap-3">
-        <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border/70 bg-muted text-lg font-semibold text-muted-foreground">
+        <div
+          className={cn(
+            "relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border/70 bg-muted text-lg font-semibold text-muted-foreground",
+            isNotInStock &&
+              "border-amber-300/45 bg-amber-100/45 text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200"
+          )}
+        >
           {productImageUrl ? (
             <Image
               src={productImageUrl}
               alt={productName}
               fill
               unoptimized
-              className="object-cover"
+              className={cn("object-cover", isNotInStock && "grayscale opacity-60")}
             />
           ) : (
             <Image
@@ -158,7 +185,7 @@ export const TrackerRow = memo(function TrackerRow({
               alt={t("store")}
               fill
               unoptimized
-              className="object-cover p-5 opacity-70"
+              className={cn("object-cover p-5 opacity-70", isNotInStock && "grayscale")}
             />
           )}
           {!productImageUrl ? <span className="relative z-10">{imageFallbackText}</span> : null}
@@ -203,20 +230,34 @@ export const TrackerRow = memo(function TrackerRow({
                 {t("priceIncrease")}
               </Chip>
             ) : null}
-            {availabilityLabel ? (
-              <Chip tone={isNotInStock ? "muted" : "subtle"}>{availabilityLabel}</Chip>
+            {availabilityLabel && !isNotInStock ? (
+              <Chip tone="subtle">{availabilityLabel}</Chip>
             ) : null}
           </div>
 
           <p className="line-clamp-1 text-sm font-semibold text-foreground">{productName}</p>
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-2xl font-semibold text-foreground">
-              {formatPrice(item.last_amount, item.currency, locale)}
-            </span>
             {isNotInStock ? (
-              <span className="text-xs text-muted-foreground">{t("lastInStock")}</span>
-            ) : null}
+              <>
+                <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-amber-400/14 px-2.5 text-[11px] font-semibold text-amber-800 ring-1 ring-amber-500/25 dark:bg-amber-400/12 dark:text-amber-200 dark:ring-amber-300/20">
+                  <IconPackageOff className="size-3.5" stroke={1.5} />
+                  {availabilityLabel}
+                </span>
+                <span className="text-lg font-semibold tabular-nums text-foreground/75">
+                  {formatPrice(item.last_amount, item.currency, locale)}
+                </span>
+                {unavailablePriceLabel ? (
+                  <span className="text-xs text-muted-foreground">
+                    {unavailablePriceLabel}
+                  </span>
+                ) : null}
+              </>
+            ) : (
+              <span className="text-2xl font-semibold text-foreground">
+                {formatPrice(item.last_amount, item.currency, locale)}
+              </span>
+            )}
             {formattedTargetAmount ? (
               <span className="text-xs text-muted-foreground">
                 {t("target", { value: formattedTargetAmount })}

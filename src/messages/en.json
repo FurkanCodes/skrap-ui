@@ -510,6 +510,8 @@
         "availabilityPreorder": "Preorder",
         "availabilityDiscontinued": "Discontinued",
         "lastInStock": "Last in-stock price",
+        "lastKnownPrice": "Last known price",
+        "listedPrice": "Listed price",
         "target": "Target: {value}",
         "every": "every",
         "checkedRecently": "Checked recently",
