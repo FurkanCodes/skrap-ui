@@ -121,7 +121,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
         <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10", pageHero ? "mt-20" : "")}>
           <aside className="w-full md:w-48">
             <nav
-              className="flex w-full items-start gap-3 overflow-x-auto rounded-[24px] border border-border bg-card p-2 shadow-subtle-2 md:sticky md:top-20 md:flex-col md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+              className="flex w-full items-start gap-3 overflow-x-auto rounded-[24px] border border-border bg-card p-2 shadow-subtle-2 md:sticky md:top-20 md:flex-col md:gap-2 md:overflow-visible md:border-0 md:bg-transparent md:p-0 md:shadow-none"
               aria-label={t("workspace")}
             >
               {navItems.map((item) => {
@@ -138,7 +138,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                         : "cursor-pointer text-[var(--fg-2)] hover:bg-muted hover:text-[var(--fg-3)] md:hover:bg-transparent"
                     )}
                   >
-                    <item.icon className="size-4 shrink-0" stroke={1.5} />
+                    <item.icon className="block size-4 shrink-0 overflow-visible" stroke={1.5} />
                     {t(`nav.${item.titleKey}`)}
                   </Link>
                 );

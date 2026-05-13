@@ -215,6 +215,9 @@
   html {
     @apply font-sans;
   }
+  svg.tabler-icon {
+    overflow: visible;
+  }
 }
 
 @layer components {
