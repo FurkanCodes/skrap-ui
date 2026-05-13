@@ -32,9 +32,9 @@ import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TargetPriceControl } from "@/features/tracking/components/trackers-dashboard/ui/target-price-control";
 import { TrackingModePicker } from "@/features/tracking/components/trackers-dashboard/ui/tracking-mode-picker";
 import { cn } from "@/lib/utils";
 
@@ -662,17 +662,18 @@ export function CreateTrackerModal({
                       </div>
 
                       {activeDraft.trackingMode === "alert" ? (
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">{t("targetPrice")}</Label>
-                          <CurrencyInput
-                            currency={activeDraft.currency}
-                            value={activeDraft.targetAmount}
-                            onChange={(event) => setDraftTargetAmount(activeDraft.clientId, event.target.value)}
-                            placeholder="84.99"
-                            disabled={isSavePending}
-                            className="h-10 border-input"
-                          />
-                        </div>
+                        <TargetPriceControl
+                          key={activeDraft.clientId}
+                          id={`target-price-${activeDraft.clientId}`}
+                          label={t("targetPrice")}
+                          currency={activeDraft.currency}
+                          baseAmount={activeDraft.amount}
+                          value={activeDraft.targetAmount}
+                          onValueChange={(value) =>
+                            setDraftTargetAmount(activeDraft.clientId, value)
+                          }
+                          disabled={isSavePending}
+                        />
                       ) : null}
 
                       {activeDraft.trackingMode === "monitor" ? (

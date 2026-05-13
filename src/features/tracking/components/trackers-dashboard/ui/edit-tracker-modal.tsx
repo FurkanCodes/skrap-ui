@@ -10,8 +10,8 @@ import type { TrackedItemSummary } from "@/features/tracking/types";
 import { AnimatedDropdown } from "@/components/ui/animated-dropdown";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
+import { TargetPriceControl } from "@/features/tracking/components/trackers-dashboard/ui/target-price-control";
 
 interface EditTrackerModalProps {
   isOpen: boolean;
@@ -94,17 +94,15 @@ export function EditTrackerModal({
 
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="edit-target-price" className="text-xs font-semibold text-foreground">
-                {t("targetPrice")}
-              </Label>
-              <CurrencyInput
+              <TargetPriceControl
                 id="edit-target-price"
+                label={t("targetPrice")}
                 currency={item.currency}
+                baseAmount={item.last_amount}
                 value={targetAmount}
-                onChange={(event) => setTargetAmount(event.target.value)}
-                placeholder="84.99"
+                onValueChange={setTargetAmount}
+                percentEnabled={trackingMode === "alert"}
                 disabled={trackingMode === "monitor" || isSavePending}
-                className="h-10 border-border"
               />
               {trackingMode === "monitor" ? (
                 <p className="text-[11px] text-muted-foreground">
