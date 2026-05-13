@@ -367,6 +367,10 @@ export function toTrackedItemSummary(
       record.tracked_listing_url === null
         ? null
         : (toOptionalString(record.tracked_listing_url) ?? fallback.tracked_listing_url),
+    tracked_listing_seller:
+      record.tracked_listing_seller === null
+        ? null
+        : (toOptionalString(record.tracked_listing_seller) ?? fallback.tracked_listing_seller),
     last_amount:
       record.last_amount === null
         ? null

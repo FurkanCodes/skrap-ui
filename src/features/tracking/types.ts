@@ -86,6 +86,7 @@ export interface TrackedItemSummary {
   outbound_is_affiliate: boolean;
   tracked_listing_id?: string | null;
   tracked_listing_url?: string | null;
+  tracked_listing_seller?: string | null;
   last_amount: string | null;
   currency: string | null;
   availability: string | null;

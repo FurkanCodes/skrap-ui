@@ -1496,6 +1496,8 @@ export function useTrackersDashboardController({
                   draft.normalizedUrl
                 ) ??
                 null,
+              tracked_listing_seller:
+                resolveSelectedListing(draft.listings, draft.selectedListingId)?.seller ?? null,
               last_amount: draft.amount,
               currency: draft.currency,
               availability: null,
