@@ -3,7 +3,14 @@
 import { getMessages } from "@/lib/messages";
 import { memo, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { IconPackageOff } from "@tabler/icons-react";
+import {
+  IconBell,
+  IconExternalLink,
+  IconPackage,
+  IconPackageOff,
+  IconTrendingDown,
+  IconTrendingUp,
+} from "@tabler/icons-react";
 
 import type { ActionFeedbackState, ItemAction } from "@/features/tracking/components/trackers-dashboard/types";
 import {
@@ -38,6 +45,8 @@ interface TrackerRowProps {
   requestDeleteAction: (itemId: string) => void;
   isHighlighted: boolean;
 }
+
+const CHIP_ICON_CLASS_NAME = "size-3 shrink-0";
 
 function getUnavailablePriceLabel(
   availability: string,
@@ -134,6 +143,7 @@ export const TrackerRow = memo(function TrackerRow({
   const trackingStatusChipClassName = isTrackingLive
     ? "text-emerald-700 ring-1 ring-emerald-500/30 dark:text-emerald-300 dark:ring-emerald-400/30"
     : undefined;
+  const TrackingModeIcon = item.tracking_mode === "alert" ? IconBell : IconTrendingDown;
   const imageFallbackText = productName.slice(0, 1).toUpperCase() || "P";
   const productImageUrl =
     typeof item.image_url === "string" && item.image_url.trim().length > 0
@@ -203,6 +213,11 @@ export const TrackerRow = memo(function TrackerRow({
               >
                 <Chip tone="muted" className="hover:bg-muted/70 hover:text-foreground">
                   {domain}
+                  <IconExternalLink
+                    aria-hidden="true"
+                    className="size-2.5 shrink-0 opacity-60"
+                    stroke={1.8}
+                  />
                 </Chip>
               </a>
             ) : null}
@@ -220,18 +235,47 @@ export const TrackerRow = memo(function TrackerRow({
               tone={isTrackingLive ? "success" : "muted"}
               className={trackingStatusChipClassName}
             >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "size-1.5 rounded-full",
+                  isTrackingLive
+                    ? "bg-emerald-500 shadow-[0_0_0_3px_rgb(16_185_129_/_0.12)] dark:bg-emerald-300"
+                    : "bg-muted-foreground/50"
+                )}
+              />
               {trackingStatusChipLabel}
             </Chip>
             <Chip tone={item.tracking_mode === "alert" ? "selected" : "subtle"}>
+              <TrackingModeIcon
+                aria-hidden="true"
+                className={CHIP_ICON_CLASS_NAME}
+                stroke={1.7}
+              />
               {item.tracking_mode === "alert" ? t("priceAlert") : t("priceDrop")}
             </Chip>
             {item.notify_on_price_increase ? (
               <Chip tone="subtle">
+                <IconTrendingUp
+                  aria-hidden="true"
+                  className={CHIP_ICON_CLASS_NAME}
+                  stroke={1.7}
+                />
                 {t("priceIncrease")}
               </Chip>
             ) : null}
             {availabilityLabel && !isNotInStock ? (
-              <Chip tone="subtle">{availabilityLabel}</Chip>
+              <Chip
+                tone="subtle"
+                className="text-emerald-700/90 dark:text-emerald-300/90"
+              >
+                <IconPackage
+                  aria-hidden="true"
+                  className={CHIP_ICON_CLASS_NAME}
+                  stroke={1.7}
+                />
+                {availabilityLabel}
+              </Chip>
             ) : null}
           </div>
 
