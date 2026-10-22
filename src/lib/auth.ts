@@ -327,7 +327,9 @@ function buildAuth() {
   const secret = requiredEnv("BETTER_AUTH_SECRET");
   assertSecretSecurity(secret);
   const authEmailOptions = getAuthEmailOptions(baseUrl);
-  if (!authEmailOptions.emailVerification) {
+  // Demo deployments run without a verified sending domain, so sign-up skips email verification.
+  const demoMode = process.env.AUTH_DEMO_MODE?.trim().toLowerCase() === "true";
+  if (!authEmailOptions.emailVerification && !demoMode) {
     throw new Error(
       "Email verification is required. Configure RESEND_API_KEY and AUTH_EMAIL_FROM to enable auth email delivery."
     );
@@ -349,7 +351,7 @@ function buildAuth() {
     }),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: !demoMode,
       minPasswordLength: PASSWORD_MIN_LENGTH,
       maxPasswordLength: PASSWORD_MAX_LENGTH,
       ...authEmailOptions.emailAndPassword,
@@ -358,7 +360,7 @@ function buildAuth() {
       ? {
           emailVerification: {
             ...authEmailOptions.emailVerification,
-            sendOnSignUp: true,
+            sendOnSignUp: !demoMode,
           },
         }
       : {}),

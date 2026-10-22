@@ -512,14 +512,17 @@ export function AuthForm({ mode }: AuthFormProps) {
           setError(parsedError.message);
           return;
         }
-        setSignUpNotice(
-          t("signUp.verificationSentNotice", { email: normalizedEmail })
-        );
-        setPassword("");
-        setConfirmPassword("");
-        setTouchedFields({});
-        setHasSubmittedAttempt(false);
-        return;
+        // A session token means verification is disabled (demo mode), so the user is already signed in.
+        if (!response.data?.token) {
+          setSignUpNotice(
+            t("signUp.verificationSentNotice", { email: normalizedEmail })
+          );
+          setPassword("");
+          setConfirmPassword("");
+          setTouchedFields({});
+          setHasSubmittedAttempt(false);
+          return;
+        }
       } else {
         const response = await authClient.signIn.email({
           email: normalizedEmail,
