@@ -18,7 +18,7 @@ What works: sign-in/sign-up, scraping a product URL, discovery, adding and viewi
 What does not work in the demo:
 
 - **Payments / upgrades.** Paddle is not configured, so checkout and "manage billing" fail. Everyone stays on the Free plan (5 active trackers, 100 checks per month).
-- **Automatic price re-checks and alerts.** The scheduler and notifier workers are not deployed, so tracked items are not re-checked and no Telegram alerts are sent.
+- **Automatic price re-checks and price-drop alerts.** The scheduler is not deployed, so tracked items are not re-checked. Telegram linking and "tracking started/stopped" messages do work.
 - **Google/GitHub sign-in and auth emails** (verification, password reset).
 - **Speed.** The API sleeps after 15 minutes idle, so the first request can take about a minute. Some sites that need a headless browser may fail due to the 512 MB memory limit.
 
