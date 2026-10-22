@@ -2,6 +2,28 @@
 
 Next.js 16 frontend scaffold for your scraping backend.
 
+## Live demo
+
+**https://skrap-ui.vercel.app**: frontend on Vercel, API on Render, database on Supabase, all on free tiers.
+
+| | |
+| --- | --- |
+| Email | `demo@tilvg.app` |
+| Password | `TilvgDemo-2026!` |
+
+This is a shared account, so please don't change its password. You can also sign up with any email; no verification email is sent in demo mode.
+
+What works: sign-in/sign-up, scraping a product URL, discovery, adding and viewing tracked items with their price history.
+
+What does not work in the demo:
+
+- **Payments / upgrades.** Paddle is not configured, so checkout and "manage billing" fail. Everyone stays on the Free plan (5 active trackers, 100 checks per month).
+- **Automatic price re-checks and alerts.** The scheduler and notifier workers are not deployed, so tracked items are not re-checked and no Telegram alerts are sent.
+- **Google/GitHub sign-in and auth emails** (verification, password reset).
+- **Speed.** The API sleeps after 15 minutes idle, so the first request can take about a minute. Some sites that need a headless browser may fail due to the 512 MB memory limit.
+
+Deployment setup: [`docs/deploy-free-demo.md`](https://github.com/FurkanCodes/skrap/blob/main/docs/deploy-free-demo.md) in the backend repo.
+
 ## Stack
 
 - Next.js App Router + TypeScript
